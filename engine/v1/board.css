@@ -58,7 +58,9 @@ button{font:inherit;color:inherit}
 .board{position:relative;overflow:hidden;touch-action:none;cursor:grab;
   background-color:var(--board);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px}
 .board.dragging{cursor:grabbing}
-.world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.world{position:absolute;left:0;top:0;transform-origin:0 0}
+/* 움직이는 동안만 한 장의 층으로 — 멈추면 지금 크기로 다시 그려 흐림 · 빈 칸이 남지 않게 */
+.board.moving .world{will-change:transform}
 .layer{position:absolute;left:0;top:0}
 svg.layer{overflow:visible;pointer-events:none}
 
