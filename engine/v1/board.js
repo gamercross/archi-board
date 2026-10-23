@@ -676,14 +676,17 @@ mini.innerHTML = FRAMES.map(f => `<rect class="mf${f.main ? ' main' : ''}" x="${
 const KMIN = 0.06, KMAX = 2.4, FAR = 0.45, VFAR = 0.12, HYS = 1.1;
 let cam = {x: 0, y: 0, k: 1}, anim = 0;
 const lvl = {far: null, vfar: null};
-let uiRaf = 0, idle = 0;
+let uiRaf = 0, idle = 0, rk = 0;
 const below = (on, k, at) => k < (on ? at * HYS : at);
 function moving() {
   board.classList.add('moving');
-  clearTimeout(idle); idle = setTimeout(() => board.classList.remove('moving'), 180);
+  clearTimeout(idle); idle = setTimeout(() => { board.classList.remove('moving'); rk = 0; }, 180);
 }
 function apply() {
-  world.style.transform = `translate3d(${cam.x}px,${cam.y}px,0) scale(${cam.k})`;
+  world.style.transform = `translate(${cam.x}px,${cam.y}px) scale(${cam.k})`;
+  // 움직이는 중에도 크기가 반이나 두 배로 바뀌면 층을 한 번 풀어 지금 크기로 다시 그린다
+  if (!rk) rk = cam.k;
+  else if (cam.k / rk > 2 || rk / cam.k > 2) { rk = cam.k; world.style.willChange = 'auto'; requestAnimationFrame(() => { world.style.willChange = ''; }); }
   const far = below(lvl.far, cam.k, FAR), vfar = below(lvl.vfar, cam.k, VFAR);
   if (far !== lvl.far) { lvl.far = far; board.classList.toggle('far', far); board.classList.toggle('oz', far); }
   if (vfar !== lvl.vfar) { lvl.vfar = vfar; board.classList.toggle('vfar', vfar); }
