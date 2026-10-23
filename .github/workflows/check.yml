@@ -1,0 +1,15 @@
+name: check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: 엔진 문법
+        run: node --check engine/v1/board.js
+      - name: 예시 데이터 점검
+        run: node skills/archi-board/scripts/check.mjs examples/memo/board-data.js
+      - name: 묶기 스크립트
+        run: node skills/archi-board/scripts/inline.mjs examples/memo /tmp/memo.single.html
