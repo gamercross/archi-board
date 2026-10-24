@@ -444,12 +444,14 @@ if (FSCR) SCR.forEach((x, i) => {
   $('#seqs').append(d); x.dom = d;
 });
 // 카드 창의 카드
+// 칸: p 글 · say 말풍선 · list 목록(항목은 글 또는 [글, 출처]) · code [무엇, 파일]. full: 두 줄 다, box: 점선 상자(제안 · 후보), badge: 제목 옆 표
 const cardSec = c => {
-  const h = c.h ? `<h5>${esc(c.h)}</h5>` : '';
-  if (c.say != null) return `<div${c.full ? ' class="full"' : ''}>${h}<p class="say">${esc(c.say)}</p></div>`;
-  if (c.list) return `<div${c.full ? ' class="full"' : ''}>${h}<ul>${c.list.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
-  if (c.code) return `<div${c.full ? ' class="full"' : ''}>${h}<ul class="how">${c.code.map(([t, k]) => `<li>${esc(t)}${k ? `<code>${esc(k)}</code>` : ''}</li>`).join('')}</ul></div>`;
-  return `<div${c.full ? ' class="full"' : ''}>${h}<p>${esc(c.p || '')}</p></div>`;
+  const cls = [c.full || c.box ? 'full' : '', c.box ? 'box' : ''].filter(Boolean).join(' '), at = cls ? ` class="${cls}"` : '';
+  const h = c.h || c.badge ? `<h5>${esc(c.h || '')}${c.badge ? ` <span class="rq">${esc(c.badge)}</span>` : ''}</h5>` : '';
+  if (c.say != null) return `<div${at}>${h}<p class="say">${esc(c.say)}</p></div>`;
+  if (c.list) return `<div${at}>${h}<ul>${c.list.map(t => Array.isArray(t) ? `<li>${esc(t[0])}${t[1] ? `<small class="src">${esc(t[1])}</small>` : ''}</li>` : `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+  if (c.code) return `<div${at}>${h}<ul class="how">${c.code.map(([t, k]) => `<li>${esc(t)}${k ? `<code>${esc(k)}</code>` : ''}</li>`).join('')}</ul></div>`;
+  return `<div${at}>${h}<p>${esc(c.p || '')}</p></div>`;
 };
 const cardName = id => { const y = CI[id]; return `${y.no ? y.no + ' ' : ''}${y.n}`; };
 CARDS.forEach(x => {
@@ -526,7 +528,8 @@ FRAMES.filter(f => f.layout === 'cards' && f.notes && f.notes.collection).forEac
 function cardPanel(f) {
   const cs = cardsOf(f), tot = cs.reduce((a, x) => a + NOTES[x.id].length, 0);
   const lk = f.links || [];
-  return (lk.length ? `<div class="row">${lk.map(l => `<a class="btn pri" href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.t)}</a>`).join('')}</div>` : '') +
+  // 창 옆 칸에 더하는 목록: more: [{h, list, ol}] — 항목은 **굵게**가 된다
+  return (f.more || []).map(m => `<div><h3>${esc(m.h || '')}</h3><${m.ol ? 'ol' : 'ul class="dot"'}>${(m.list || []).map(t => `<li>${md(t)}</li>`).join('')}</${m.ol ? 'ol' : 'ul'}></div>`).join('') + (lk.length ? `<div class="row">${lk.map(l => `<a class="btn pri" href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.t)}</a>`).join('')}</div>` : '') +
     `<div><h3>카드 ${cs.length}${f.notes ? ` · ${esc(f.notes.title || '메모')} ${tot}` : ''}</h3><ul class="sclist">${cs.map(x => `<li><button class="go" type="button" data-cd="${esc(x.id)}">${esc(cardName(x.id))}<small>${[x.tag, cst(x)].filter(Boolean).map(esc).join(' · ')}</small></button><span class="sn">${
       NOTES[x.id].length ? NOTES[x.id].map(n => (n.done ? '✓ ' : '· ') + esc(n.text)).join('<br>') : x.to.length ? '→ ' + x.to.map(id => esc(CI[id].no || CI[id].n)).join(' · ') : ''}</span></li>`).join('')}</ul></div>`;
 }

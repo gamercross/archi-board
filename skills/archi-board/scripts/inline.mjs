@@ -13,13 +13,16 @@ const read = f => fs.readFileSync(f, 'utf8');
 const data = read(path.join(dir, 'board-data.js'));
 const title = (data.match(/["']?title["']?\s*:\s*['"]([^'"]+)['"]/) || [])[1] || 'archi-board';  // JS 칸 이름 · JSON 둘 다
 const guard = s => s.replace(/<\/script/gi, '<\\/script');
+// 폴더에 head.html(unpack.mjs가 남긴 머리 주석)이 있으면 <title> 아래에 그대로 붙인다
+const headFile = path.join(dir, 'head.html');
+const head = fs.existsSync(headFile) ? read(headFile).trimEnd() + '\n' : '';
 const html = `<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title.replace(/[<&]/g, '')}</title>
-<style>
+${head}<style>
 ${read(path.join(eng, 'board.css'))}
 </style>
 </head>

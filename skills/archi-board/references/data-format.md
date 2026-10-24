@@ -161,7 +161,8 @@ cards: [{f: 'onboard', id: 's1', no: '1', k: '장면 1 · 0:00', n: '켜짐과 �
          links: [{t: '열어 보기', href: 'demo.html#s1'}], alt: false, sl: ''}]   // alt: 갈래 색, sl: 상태 표 글자 바꾸기
 ```
 
-- `sections`의 칸마다 `p` · `say` · `list` · `code` 중 하나, `full: true`면 두 줄을 다 쓴다.
+- `sections`의 칸마다 `p` · `say` · `list` · `code` 중 하나, `full: true`면 두 줄을 다 쓴다. `box: true`는 점선 상자(제안 · 후보), `badge`는 제목 옆 표. `list` 항목은 `'글'` 또는 `['글', '출처']`.
+- 창의 `more: [{h: '제목', list: ['**굵게** 글'], ol: true}]`는 창을 눌렀을 때 옆 칸 위쪽에 보이는 목록이다.
 - `notes`는 **claude.ai 아티팩트로 올렸을 때만** 적힌다(db 기능). 문서 `{[key]: 카드 id, text, done, at}`. 다른 곳에서는 안내 문구만 보인다.
 
 ## arrange — 자리
