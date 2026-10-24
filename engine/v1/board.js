@@ -108,6 +108,15 @@ const DSI = {}; DS.forEach(s => { DSI[s.id] = s; s.ids = DM.filter(x => x.st ===
 const ODM = {};
 DM.forEach(x => [['w','쓴다'],['r','읽는다'],['v','거친다']].forEach(([k, verb]) => (x[k] || []).forEach(([o]) => { if (!o) return; (ODM[o] = ODM[o] || []).push({x, verb}); })));
 
+// 카드 창 — layout 'cards' 창마다 카드를 격자로 놓는다. 사진 · 칸 · 이어지는 카드 · 메모(claude.ai db)
+const CARDS = arr(B.cards).filter(x => FRAMES.some(f => f.id === x.f && f.layout === 'cards'))
+  .map(x => Object.assign({no: '', k: '', n: x.id, tag: '', s: '', sl: '', img: '', lead: '', sections: [], refs: [], els: [], to: [], links: [], alt: false}, x));
+const CI = {}; CARDS.forEach(x => { CI[x.id] = x; x.from = []; });
+CARDS.forEach(x => { x.to = x.to.filter(id => CI[id]); x.to.forEach(id => CI[id].from.push(x.id)); });
+const cardsOf = f => CARDS.filter(x => x.f === f.id);
+const cst = x => x.sl || ST[x.s] || '';
+const md = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
 const SHELL = `<div class="app">
   <header class="top">
     <div class="top-row">
@@ -115,6 +124,7 @@ const SHELL = `<div class="app">
       <div class="acts">
         <button class="btn pri" id="bObj" type="button">객체 지도</button>
         <button class="btn" id="bData" type="button">데이터 지도</button>
+${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="button" data-frb="${esc(f.id)}">${esc(f.button)}</button>`).join('\n')}
         <button class="btn" id="bTour" type="button">흐름 따라가기</button>
         <button class="btn" id="bUC" type="button">순서 · 앱</button>
         <button class="btn" id="bFit" type="button">전체 보기</button>
@@ -163,6 +173,7 @@ const SHELL = `<div class="app">
       <p data-sec="lgQ">창 아래의 <b>순서</b> 칸은 사람과 앱 사이를 어떤 차례로 오가는지(유즈케이스)다. 세로 줄 하나가 사람이나 앱 하나이고, 위에서 아래로 시간이 흐른다. <b>▶ 따라가기</b>를 누르면 한 칸씩 짚어 준다.</p>
       <p data-sec="lgO"><b>객체 지도</b>는 프로그램을 이루는 부품 하나를 카드 하나로 그린 것이다. 카드를 누르면 맡은 일 · 안에서 도는 순서 · 실패할 때 · 고칠 때 볼 파일이 나온다. 카드 안의 작은 순서도를 누르면 카드 사이로 점이 움직이며 따라간다.</p>
       <p data-sec="lgD"><b>데이터 지도</b>는 데이터가 놓이는 곳과, 데이터마다 어느 부품이 쓰고(→) 읽는지(←)를 카드로 그린 것이다. 카드를 누르면 모양 · 한도 · 언제 사라지나 · 남기지 않는 것 · 바꿀 때 같이 고칠 곳이 나온다.</p>
+${arr(B.legend).map(t => `      <p>${md(t)}</p>`).join('\n')}
       <h3 data-sec="lgO">객체 지도</h3><div class="lg" id="lgO" data-sec="lgO"></div>
       <h3 data-sec="lgD">데이터 지도</h3><div class="lg" id="lgD" data-sec="lgD"></div>
       <h3>층 (상자 색)</h3><div class="lg" id="lgL"></div>
@@ -276,6 +287,11 @@ function layout(f) {
     const cols = 4, gap = 30, cw = (f.w - 2 * PAD - (cols - 1) * gap) / cols, ih = Math.round(cw * 820 / 1280), ch = ih + 430;
     SCR.forEach((x, i) => { x.lx = PAD + (i % cols) * (cw + gap); x.ly = HEAD + 26 + Math.floor(i / cols) * (ch + gap); x.w = cw; x.h = ch; x.ih = ih; });
     bottom = HEAD + 26 + Math.ceil(SCR.length / cols) * (ch + gap) - gap + G;
+  } else if (f.layout === 'cards') {
+    const cs = cardsOf(f), cols = f.cols || 4, gap = 30, cw = (f.w - 2 * PAD - (cols - 1) * gap) / cols;
+    const ih = cs.some(x => x.img) ? Math.round(cw * (f.imgRatio || 0.625)) : 0, ch = f.ch || (ih ? ih + 360 : 660);
+    cs.forEach((x, i) => { x.lx = PAD + (i % cols) * (cw + gap); x.ly = HEAD + 26 + Math.floor(i / cols) * (ch + gap); x.w = cw; x.h = ch; x.ih = x.img ? ih : 0; });
+    bottom = HEAD + 26 + Math.ceil(cs.length / cols) * (ch + gap) - gap + G;
   } else if (f.layout === 'matrix') {
     f.mx = {x: PAD, y: HEAD + 20, w: f.w - 2 * PAD, h: 70 + MXR.length * 39};
     bottom = f.mx.y + f.mx.h + G;
@@ -307,6 +323,7 @@ function layout(f) {
 E.forEach(it => { const f = FR[it.f]; it.x = f.x + it.lx; it.y = f.y + it.ly; });
 UC.forEach(u => { const f = FR[u.f]; u.x = f.x + u.lx; u.y = f.y + u.ly; });
 if (FSCR) SCR.forEach(x => { const f = FSCR; x.x = f.x + x.lx; x.y = f.y + x.ly; });
+CARDS.forEach(x => { const f = FR[x.f]; x.x = f.x + x.lx; x.y = f.y + x.ly; });
 const WORLD = FRAMES.reduce((a, f) => ({w: Math.max(a.w, f.x + f.w), h: Math.max(a.h, f.y + f.h)}), {w: 0, h: 0});
 
 /* ───────── 그리기 ───────── */
@@ -330,7 +347,7 @@ function meter(c) {
 function countText(c) { return ['done','part','todo','cand','gone'].filter(k => c[k]).map(k => `${ST[k]} ${c[k]}`).join(' · '); }
 
 FRAMES.forEach(f => {
-  f.c = counts(f.layout === 'datamap' ? DM : f.items);
+  f.c = counts(f.layout === 'datamap' ? DM : f.layout === 'cards' ? cardsOf(f) : f.items);
   const d = document.createElement('section');
   d.className = `fr w${f.weight}` + (f.main ? ' main' : '');
   d.style.cssText = `left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px`;
@@ -426,7 +443,98 @@ if (FSCR) SCR.forEach((x, i) => {
   d.querySelectorAll('[data-e]').forEach(b => b.addEventListener('click', () => { if (!moved) select(b.dataset.e, true); }));
   $('#seqs').append(d); x.dom = d;
 });
+// 카드 창의 카드
+// 칸: p 글 · say 말풍선 · list 목록(항목은 글 또는 [글, 출처]) · code [무엇, 파일]. full: 두 줄 다, box: 점선 상자(제안 · 후보), badge: 제목 옆 표
+const cardSec = c => {
+  const cls = [c.full || c.box ? 'full' : '', c.box ? 'box' : ''].filter(Boolean).join(' '), at = cls ? ` class="${cls}"` : '';
+  const h = c.h || c.badge ? `<h5>${esc(c.h || '')}${c.badge ? ` <span class="rq">${esc(c.badge)}</span>` : ''}</h5>` : '';
+  if (c.say != null) return `<div${at}>${h}<p class="say">${esc(c.say)}</p></div>`;
+  if (c.list) return `<div${at}>${h}<ul>${c.list.map(t => Array.isArray(t) ? `<li>${esc(t[0])}${t[1] ? `<small class="src">${esc(t[1])}</small>` : ''}</li>` : `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+  if (c.code) return `<div${at}>${h}<ul class="how">${c.code.map(([t, k]) => `<li>${esc(t)}${k ? `<code>${esc(k)}</code>` : ''}</li>`).join('')}</ul></div>`;
+  return `<div${at}>${h}<p>${esc(c.p || '')}</p></div>`;
+};
+const cardName = id => { const y = CI[id]; return `${y.no ? y.no + ' ' : ''}${y.n}`; };
+CARDS.forEach(x => {
+  const f = FR[x.f], d = document.createElement('article');
+  d.className = 'cd' + (x.img ? ' pic' : '') + (f.notes ? ' nt' : '');
+  d.style.cssText = `left:${x.x}px;top:${x.y}px;width:${x.w}px;height:${x.h}px`;
+  const tags = x.refs.map(r => `<span class="rq">${esc(r)}</span>`).join('') +
+    x.els.filter(id => byId[id]).map(id => `<button class="go" type="button" data-e="${id}">${esc(byId[id].n)}</button>`).join('') +
+    x.from.map(id => `<button class="go sg" type="button" data-cd="${esc(id)}" title="${esc(cardName(id))}">← ${esc(CI[id].no || CI[id].n)}</button>`).join('');
+  const acts = x.to.map(id => `<button class="btn" type="button" data-cd="${esc(id)}">→ ${esc(cardName(id))}</button>`).join('') +
+    x.links.map(l => `<a class="btn" href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.t)}</a>`).join('');
+  d.innerHTML = (x.img ? `<button class="shot" type="button" style="height:${x.ih}px" aria-label="${esc(cardName(x.id))} 크게 보기"><img src="${esc(IMG[x.img] || x.img)}" alt="${esc(cardName(x.id))}" loading="lazy" decoding="async"></button>` : '') +
+    `<header>${x.no ? `<em class="${x.alt ? 'br' : ''}">${esc(x.no)}</em>` : ''}<div class="sh">${x.k ? `<small>${esc(x.k)}</small>` : ''}<b>${esc(x.n)}</b></div>${x.tag ? `<span class="stp">${esc(x.tag)}</span>` : ''}${cst(x) ? `<b class="chip ${x.s || 'part'}">${esc(cst(x))}</b>` : ''}</header>` +
+    `<div class="sbd">${x.lead ? `<p class="lead full">${esc(x.lead)}</p>` : ''}${x.sections.map(cardSec).join('')}` +
+    (tags ? `<div class="tags full">${tags}</div>` : '') + (acts ? `<div class="sacts full">${acts}</div>` : '') + `</div>` +
+    (f.notes ? `<div class="notes"><h5>${esc(f.notes.title || '메모')}<span data-cnt></span></h5><ul class="nl" data-list></ul>` +
+      `<form class="nf" data-form><input id="note-${esc(x.id)}" aria-label="${esc(cardName(x.id))}에 ${esc(f.notes.title || '메모')}" maxlength="300" autocomplete="off" placeholder="${esc(f.notes.placeholder || '한 줄로 적는다')}" disabled><button class="btn pri" type="submit" disabled>더하기</button></form>` +
+      `<p class="nmsg" data-msg>불러오는 중…</p></div>` : '');
+  const sh = d.querySelector('.shot'); if (sh) sh.addEventListener('click', () => { if (!moved) openCardShot(x.id); });
+  d.querySelectorAll('[data-e]').forEach(b => b.addEventListener('click', () => { if (!moved) select(b.dataset.e, true); }));
+  d.querySelectorAll('[data-cd]').forEach(b => b.addEventListener('click', () => { if (!moved) showCard(b.dataset.cd); }));
+  $('#seqs').append(d); x.dom = d;
+});
+function showCard(id) {
+  stopTour(); clearFocus();
+  const x = CI[id];
+  board.classList.add('focus'); x.dom.classList.add('on');
+  x.to.concat(x.from).forEach(y => CI[y].dom.classList.add('on'));
+  x.els.forEach(e => byId[e] && byId[e].dom.classList.add('on'));
+  fly(camFor({x: x.x, y: x.y, w: x.w, h: x.h}, 30));
+}
+// 카드 메모 — 창의 notes: {collection, key}. claude.ai에서 db가 열리고 쓸 권한이 있을 때만 적는다. 다른 곳에서는 안내만.
+const NOTES = Object.fromEntries(CARDS.map(x => [x.id, []]));
+const NCOL = {};
+function noteMsg(x, t, err) { const m = x.dom.querySelector('[data-msg]'); if (!m) return; m.textContent = t; m.classList.toggle('err', !!err); m.hidden = !t; }
+function renderNotes(x) {
+  const ul = x.dom.querySelector('[data-list]'); if (!ul) return;
+  const list = NOTES[x.id], col = NCOL[x.f];
+  x.dom.querySelector('[data-cnt]').textContent = list.length ? `${list.filter(n => n.done).length} / ${list.length} 끝냄` : '';
+  ul.innerHTML = list.map(n => `<li class="${n.done ? 'done' : ''}"><input type="checkbox" id="nd-${esc(n.id)}" data-done="${esc(n.id)}"${n.done ? ' checked' : ''}${col ? '' : ' disabled'} aria-label="끝냄"><span>${esc(n.text)}</span>${col ? `<button type="button" data-del="${esc(n.id)}" aria-label="지우기">지우기</button>` : ''}</li>`).join('');
+}
+FRAMES.filter(f => f.layout === 'cards' && f.notes && f.notes.collection).forEach(f => (async () => {
+  const cs = cardsOf(f), key = f.notes.key || 'card';
+  let db = null, user = null, can = null;
+  try { db = await (window.claude && window.claude.use ? window.claude.use('db') : null); } catch (_) { db = null; }
+  if (!db) { cs.forEach(x => noteMsg(x, f.notes.off || 'claude.ai에서 열면 여기에 적을 수 있다.')); return; }
+  try { user = await window.claude.use('user'); } catch (_) { user = null; }
+  try { can = user ? await user.can('data.write') : null; } catch (_) { can = null; }
+  const col = db.collection(f.notes.collection);
+  col.onSnapshot(snap => {
+    cs.forEach(x => { NOTES[x.id] = []; });
+    snap.docs.forEach(doc => { const v = doc.data() || {}; if (NOTES[v[key]] && cs.includes(CI[v[key]]) && typeof v.text === 'string') NOTES[v[key]].push({id: doc.id, text: v.text, done: !!v.done, at: +v.at || 0}); });
+    cs.forEach(x => { NOTES[x.id].sort((a, b) => a.at - b.at); renderNotes(x); noteMsg(x, NOTES[x.id].length ? '' : NCOL[f.id] ? '아직 적은 것이 없다. 한 줄로 적고 더하기를 누른다.' : '읽기만 할 수 있다.'); });
+  }, () => { cs.forEach(x => noteMsg(x, '적은 것을 불러오지 못했다. 다시 열어 본다.', true)); });
+  if (can === false) return;
+  NCOL[f.id] = col;
+  cs.forEach(x => {
+    const fm = x.dom.querySelector('[data-form]'), inp = fm.querySelector('input'), btn = fm.querySelector('button');
+    inp.disabled = false; btn.disabled = false;
+    fm.addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const text = inp.value.trim(); if (!text) return;
+      btn.disabled = true;
+      try { await col.add({[key]: x.id, text: text.slice(0, 300), done: false, at: Date.now()}); inp.value = ''; }
+      catch (e) { noteMsg(x, e && e.code === 'invalid_argument' ? '이 보드에 적을 권한이 없다. 읽기만 할 수 있다.' : '저장하지 못했다. 잠시 뒤 다시 누른다.', true); }
+      btn.disabled = false;
+    });
+    const ul = x.dom.querySelector('[data-list]');
+    ul.addEventListener('click', async ev => { const del = ev.target.closest('[data-del]'); if (del) { try { await col.doc(del.dataset.del).delete(); } catch (_) { noteMsg(x, '지우지 못했다. 잠시 뒤 다시 누른다.', true); } } });
+    ul.addEventListener('change', async ev => { const t = ev.target.closest('[data-done]'); if (t) { try { await col.doc(t.dataset.done).update({done: t.checked}); } catch (_) { t.checked = !t.checked; noteMsg(x, '바꾸지 못했다. 잠시 뒤 다시 누른다.', true); } } });
+    renderNotes(x);
+  });
+})());
+function cardPanel(f) {
+  const cs = cardsOf(f), tot = cs.reduce((a, x) => a + NOTES[x.id].length, 0);
+  const lk = f.links || [];
+  // 창 옆 칸에 더하는 목록: more: [{h, list, ol}] — 항목은 **굵게**가 된다
+  return (f.more || []).map(m => `<div><h3>${esc(m.h || '')}</h3><${m.ol ? 'ol' : 'ul class="dot"'}>${(m.list || []).map(t => `<li>${md(t)}</li>`).join('')}</${m.ol ? 'ol' : 'ul'}></div>`).join('') + (lk.length ? `<div class="row">${lk.map(l => `<a class="btn pri" href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.t)}</a>`).join('')}</div>` : '') +
+    `<div><h3>카드 ${cs.length}${f.notes ? ` · ${esc(f.notes.title || '메모')} ${tot}` : ''}</h3><ul class="sclist">${cs.map(x => `<li><button class="go" type="button" data-cd="${esc(x.id)}">${esc(cardName(x.id))}<small>${[x.tag, cst(x)].filter(Boolean).map(esc).join(' · ')}</small></button><span class="sn">${
+      NOTES[x.id].length ? NOTES[x.id].map(n => (n.done ? '✓ ' : '· ') + esc(n.text)).join('<br>') : x.to.length ? '→ ' + x.to.map(id => esc(CI[id].no || CI[id].n)).join(' · ') : ''}</span></li>`).join('')}</ul></div>`;
+}
 const lb = $('#lightbox');
+function openCardShot(id) { const x = CI[id]; $('#lbImg').src = IMG[x.img] || x.img; $('#lbImg').alt = cardName(id); $('#lbCap').textContent = `${cardName(id)} · 누르면 닫힌다`; lb.hidden = false; }
 function openShot(i) { const x = SCR[i]; $('#lbImg').src = (IMG[x.img] || x.img); $('#lbImg').alt = x.t; $('#lbCap').textContent = `${i + 1}. ${x.t} · 누르면 닫힌다`; lb.hidden = false; }
 lb.addEventListener('click', () => { lb.hidden = true; });
 function showScreen(i) {
@@ -816,6 +924,7 @@ function focusOn(ids, edgeIdx, run) {
 function clearFocus() {
   board.classList.remove('focus');
   SCR.forEach(x => x.dom && x.dom.classList.remove('on'));
+  CARDS.forEach(x => x.dom.classList.remove('on'));
   E.forEach(it => it.dom.classList.remove('on', 'sel'));
   EDGE.forEach(p => { if (p.classList.contains('on')) { p.classList.remove('on', 'run'); setHi(p, false); } });
   FRAMES.forEach(f => f.dom.classList.remove('on'));
@@ -834,8 +943,7 @@ function openPanel(k, t, html, wide) {
   $('#pB').querySelectorAll('[data-uc]').forEach(b => b.addEventListener('click', () => playUC(b.dataset.uc, +b.dataset.k)));
   $('#pB').querySelectorAll('[data-app]').forEach(b => b.addEventListener('click', () => openApp(b.dataset.app)));
   $('#pB').querySelectorAll('[data-scr]').forEach(b => b.addEventListener('click', () => showScreen(+b.dataset.scr)));
-  $('#pB').querySelectorAll('[data-scn]').forEach(b => b.addEventListener('click', () => showScene(+b.dataset.scn)));
-  $('#pB').querySelectorAll('[data-sty]').forEach(b => b.addEventListener('click', () => showStory(+b.dataset.sty)));
+  $('#pB').querySelectorAll('[data-cd]').forEach(b => b.addEventListener('click', () => showCard(b.dataset.cd)));
   $('#pB').querySelectorAll('[data-obj]').forEach(b => b.addEventListener('click', () => openObj(b.dataset.obj)));
   $('#pB').querySelectorAll('[data-objuc]').forEach(b => b.addEventListener('click', () => { const [u, k] = b.dataset.objuc.split(':'); playObj(u, +k); }));
   $('#pB').querySelectorAll('[data-ucx]').forEach(b => b.addEventListener('click', () => openUCInfo(b.dataset.ucx)));
@@ -901,6 +1009,7 @@ function openFrame(id) {
     const its = f.items.filter(x => TYPES[x.t][2] === lk);
     if (its.length) h += `<div><h3>${ko} 층 · ${its.length}</h3><ul>${its.map(x => `<li>${goBtn(x.id).replace(/<small>.*?<\/small>/, '')}${ST[x.s] ? `<b class="chip ${x.s}">${ST[x.s]}</b>` : ''}</li>`).join('')}</ul></div>`;
   }
+  if (f.layout === 'cards') h += cardPanel(f);
   openPanel(f.kicker, f.title, h);
   const tl = $('#toList'); if (tl) tl.addEventListener('click', openList);
   fly(camFor(fbox(f), 28));
@@ -1211,6 +1320,7 @@ $('#tSeq').addEventListener('click', () => {
 $('#bObj').addEventListener('click', () => { $('#legend').hidden = true; openObjects(); });
 $('#bData').addEventListener('click', () => { $('#legend').hidden = true; openDataMap(); });
 $('#bTour').addEventListener('click', () => { $('#legend').hidden = true; showStep(0); });
+document.querySelectorAll('[data-frb]').forEach(b => b.addEventListener('click', () => { $('#legend').hidden = true; openFrame(b.dataset.frb); }));
 $('#tNext').addEventListener('click', stepNext);
 $('#tPrev').addEventListener('click', stepPrev);
 $('#tClose').addEventListener('click', stopTour);

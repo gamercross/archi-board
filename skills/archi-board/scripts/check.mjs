@@ -29,7 +29,7 @@ const arr = v => (Array.isArray(v) ? v : []);
 const dup = (list, what) => { const s = new Set(); list.forEach(id => { if (s.has(id)) err(`${what} id가 겹친다: ${id}`); s.add(id); }); return s; };
 
 if (B.format && Math.floor(B.format) !== 1) err(`format ${B.format} — 이 점검은 형식 1용이다`);
-const LAYOUTS = ['rows', 'ring', 'time', 'objects', 'datamap', 'matrix', 'screens'];
+const LAYOUTS = ['rows', 'ring', 'time', 'objects', 'datamap', 'matrix', 'screens', 'cards'];
 const frames = arr(B.frames), fid = dup(frames.map(f => f.id), '창');
 frames.forEach(f => {
   if (f.layout && !LAYOUTS.includes(f.layout)) err(`창 ${f.id}: 모르는 layout ${f.layout} (${LAYOUTS.join(' · ')})`);
@@ -97,11 +97,23 @@ if (DMAP) {
   arr(DMAP.flow).forEach((s, i) => { if (s.o && !objs[s.o]) err(`한 줄 흐름 ${i + 1}: 없는 객체 ${s.o}`); arr(s.dm).forEach(id => { if (!did.has(id)) err(`한 줄 흐름 ${i + 1}: 없는 데이터 ${id}`); }); });
 }
 arr(B.screens).forEach((x, i) => { arr(x.els).forEach(id => { if (!eid.has(id)) err(`화면 ${i + 1}: 없는 상자 ${id}`); }); if (x.uc && !uid.has(x.uc)) err(`화면 ${i + 1}: 없는 유즈케이스 ${x.uc}`); });
+const cid = dup(arr(B.cards).map(x => x.id), '카드');
+arr(B.cards).forEach(x => {
+  const f = frames.find(f => f.id === x.f);
+  if (!f) err(`카드 ${x.id}: 없는 창 ${x.f}`); else if (f.layout !== 'cards') err(`카드 ${x.id}: 창 ${x.f}의 layout이 'cards'가 아니다`);
+  if (!x.n) warn(`카드 ${x.id}: 이름(n)이 없다`);
+  if (x.s && !ST.includes(x.s)) err(`카드 ${x.id}: 모르는 상태 ${x.s}`);
+  arr(x.els).forEach(id => { if (!eid.has(id)) err(`카드 ${x.id}: 없는 상자 ${id}`); });
+  arr(x.to).forEach(id => { if (!cid.has(id)) err(`카드 ${x.id}: to의 ${id}가 카드에 없다`); });
+  if (x.img && !/^(data:|https?:|\.|\/)|\.(png|jpe?g|webp|gif|svg)$/i.test(x.img) && !(B.images || {})[x.img]) err(`카드 ${x.id}: images에 없는 그림 ${x.img}`);
+  arr(x.sections).forEach((c, i) => { if (!['p', 'say', 'list', 'code'].some(k => k in c)) err(`카드 ${x.id} ${i + 1}칸: p · say · list · code 중 하나가 있어야 한다`); });
+});
+frames.filter(f => f.notes && !f.notes.collection).forEach(f => err(`창 ${f.id}: notes에는 collection이 있어야 한다`));
 arr(B.matrixRows).forEach(id => { if (!eid.has(id)) err(`matrixRows: 없는 상자 ${id}`); });
 arr(B.arrange).forEach(col => arr(col).forEach(row => (Array.isArray(row) ? row : [row]).forEach(id => { if (!fid.has(id)) err(`arrange: 없는 창 ${id}`); })));
 if (B.start && !fid.has(B.start)) err(`start: 없는 창 ${B.start}`);
 
 warns.forEach(t => console.log('경고 ·', t));
 errs.forEach(t => console.log('잘못 ·', t));
-console.log(`창 ${frames.length} · 상자 ${els.length} · 관계 ${arr(B.relations).length} · 유즈케이스 ${arr(B.usecases).length} · 객체 ${Object.keys(objs).length} · 데이터 ${DMAP ? arr(DMAP.data).length : 0} — 잘못 ${errs.length} · 경고 ${warns.length}`);
+console.log(`창 ${frames.length} · 상자 ${els.length} · 관계 ${arr(B.relations).length} · 유즈케이스 ${arr(B.usecases).length} · 객체 ${Object.keys(objs).length} · 데이터 ${DMAP ? arr(DMAP.data).length : 0} · 카드 ${arr(B.cards).length} — 잘못 ${errs.length} · 경고 ${warns.length}`);
 process.exit(errs.length ? 1 : 0);

@@ -13,3 +13,9 @@ jobs:
         run: node skills/archi-board/scripts/check.mjs examples/memo/board-data.js
       - name: 묶기 스크립트
         run: node skills/archi-board/scripts/inline.mjs examples/memo /tmp/memo.single.html
+      - name: 꺼내기 → 다시 묶기가 같은 파일인지
+        run: |
+          node skills/archi-board/scripts/unpack.mjs /tmp/memo.single.html /tmp/rt
+          node skills/archi-board/scripts/check.mjs /tmp/rt/board-data.js
+          node skills/archi-board/scripts/inline.mjs /tmp/rt /tmp/rt.single.html
+          cmp /tmp/memo.single.html /tmp/rt.single.html

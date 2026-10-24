@@ -292,7 +292,7 @@ svg.layer{overflow:visible;pointer-events:none}
 .oe{fill:none;stroke:var(--edge);opacity:.45;transition:opacity .2s}
 /* 확대 · 이동 중에는 계속 도는 움직임을 멈춰, 큰 그림을 매 프레임 다시 그리지 않게 한다 */
 .board.moving .flow,.board.moving .oe.cur,.board.moving .e.on.run,.board.moving .seq.stepping .sa.cur{animation-play-state:paused}
-.board.moving .el,.board.moving .sum,.board.moving .flows,.board.moving .ob,.board.moving .seq,.board.moving .scr{transition:none}
+.board.moving .el,.board.moving .sum,.board.moving .flows,.board.moving .ob,.board.moving .seq,.board.moving .scr,.board.moving .cd{transition:none}
 .oe.x{stroke-dasharray:7 6}
 .board.ofocus .oe{opacity:.07}
 .board.ofocus .oe.on{opacity:1;stroke:var(--acc);stroke-width:4}
@@ -445,3 +445,60 @@ a.btn{color:var(--ink);text-decoration:none;display:inline-block}
   .flow,.e.on.run,.seq.stepping .sa.cur,.oe.cur{animation:none}
   .el,.sum,.flows{transition:none}
 }
+
+/* 카드 창 (layout 'cards') — 카드 하나 = 장면 · 화면 · 단계 하나. 사진은 위, 칸은 두 줄(사진이 있으면 한 줄), 메모는 아래 */
+.cd{position:absolute;background:var(--sheet);border:1px solid var(--line2);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;transition:opacity .2s,box-shadow .2s;box-shadow:0 10px 24px -20px var(--shade)}
+.cd.on{box-shadow:0 0 0 4px var(--acc)}
+.board.focus .cd:not(.on){opacity:.3}
+.cd .shot{display:block;border:0;padding:0;background:#0E1330;cursor:zoom-in;flex:none}
+.cd .shot img{display:block;width:100%;height:100%;object-fit:cover}
+.cd header{flex:none;display:flex;align-items:center;gap:12px;padding:12px 18px 10px;border-bottom:1px solid var(--line);background:var(--soft);min-width:0}
+.cd header em{flex:none;font-style:normal;display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 8px;border-radius:18px;background:var(--acc-soft);color:var(--acc-ink);font-weight:700;font-size:15px;border:1px solid var(--acc);font-variant-numeric:tabular-nums}
+.cd header em.br{color:var(--cand);background:var(--candbg);border-color:var(--cand)}
+.cd header .sh{flex:1;min-width:0}
+.cd header small{display:block;font-size:11.5px;letter-spacing:.05em;color:var(--mute);font-weight:600}
+.cd header b:not(.chip){display:block;font-size:19px;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+.cd header .stp{flex:none;font-size:12px;font-weight:700;color:var(--acc-ink);background:var(--acc-soft);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.cd .sbd{flex:1;min-height:0;overflow:auto;padding:12px 18px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;align-content:start;font-size:13.5px;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere}
+.cd.pic .sbd{grid-template-columns:1fr;gap:7px}
+.cd .sbd > *{min-width:0}
+.cd h5{margin:0 0 4px;font-size:11.5px;letter-spacing:.06em;color:var(--mute);font-weight:600}
+.cd p{margin:0;color:var(--ink2)}
+.cd .lead{color:var(--ink);font-weight:600}
+.cd .say{border-left:3px solid var(--acc);padding:4px 10px;background:var(--acc-soft);border-radius:0 8px 8px 0;color:var(--ink)}
+.cd .sbd ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.cd .sbd li{padding-left:14px;position:relative;color:var(--ink2)}
+.cd .sbd li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:2px;background:var(--l-bus);border:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
+.cd .sbd .how li::before{background:var(--l-app)}
+.cd .sbd .how code{display:block;font-family:var(--f-mono);font-size:11.5px;color:var(--mute);overflow-wrap:anywhere}
+.cd .full{grid-column:1/-1}
+.cd .box{border:1px dashed var(--cand);border-radius:10px;padding:8px 12px;background:color-mix(in srgb,var(--candbg) 55%,var(--sheet))}
+.cd .box h5{display:flex;align-items:center;gap:8px}
+.cd .sbd .box li::before{background:var(--candbg);border-color:var(--cand)}
+.cd .src{margin-left:6px;font-size:11px;color:var(--mute);white-space:nowrap}
+.cd .tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.cd .tags .go{font-size:12px;padding:1px 7px}
+.cd .tags .sg{border-color:var(--cand);color:var(--cand)}
+.cd .rq{font-family:var(--f-mono);font-size:11.5px;font-weight:500;color:var(--cand);background:var(--candbg);border-radius:6px;padding:1px 6px}
+.cd .sacts{display:flex;gap:6px;flex-wrap:wrap}
+.cd .sacts .btn{padding:4px 10px;font-size:12.5px}
+.cd .notes{flex:none;border-top:1px dashed var(--line2);padding:10px 18px 14px;display:grid;gap:7px;background:color-mix(in srgb,var(--soft) 60%,var(--sheet))}
+.cd .notes h5{display:flex;justify-content:space-between;gap:8px;margin:0}
+.cd .notes h5 span{font-weight:500;letter-spacing:0;color:var(--mute);font-variant-numeric:tabular-nums}
+.cd .nl{margin:0;padding:0;list-style:none;display:grid;gap:4px;max-height:118px;overflow:auto}
+.cd .nl li{display:flex;align-items:flex-start;gap:6px;font-size:13px;color:var(--ink)}
+.cd .nl li.done span{text-decoration:line-through;color:var(--mute)}
+.cd .nl input[type=checkbox]{margin:3px 0 0;flex:none;accent-color:var(--acc)}
+.cd .nl span{flex:1;min-width:0;overflow-wrap:anywhere}
+.cd .nl button{flex:none;border:0;background:none;color:var(--mute);cursor:pointer;font-size:12px;padding:0 4px}
+.cd .nl button:hover{color:var(--bad)}
+.cd .nf{display:flex;gap:6px}
+.cd .nf input{flex:1;min-width:0;font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--sheet);color:var(--ink)}
+.cd .nf input:focus-visible,.cd .nl input:focus-visible,.cd .nl button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.cd .nf .btn{padding:5px 12px;font-size:12.5px}
+.cd .nmsg{font-size:12px;color:var(--mute)}
+.cd .nmsg.err{color:var(--bad)}
+.panel .sclist li{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:start}
+.panel .sclist .sn{font-size:12px;color:var(--mute)}
+a.btn{color:var(--ink);text-decoration:none;display:inline-block}
+@media (prefers-reduced-motion: reduce){.cd{transition:none}}

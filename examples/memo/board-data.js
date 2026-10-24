@@ -19,7 +19,19 @@ window.BOARD = {
     {id: 'objects', kicker: '한 장으로', title: '객체 지도', weight: 5, w: 2000, layout: 'objects',
      sub: '부품 넷을 카드로', desc: '프로그램을 이루는 부품 하나를 카드 하나로 그렸다.', why: '유지보수할 때 먼저 여는 지도다.'},
     {id: 'data', kicker: '한 장으로 · 데이터', title: '데이터 지도', weight: 5, w: 2000, layout: 'datamap',
-     sub: '어디에 놓이고 누가 쓰나', desc: '데이터가 놓이는 곳 셋과 데이터마다 쓰는 곳 · 읽는 곳.', why: '객체 지도 바로 아래에 둔다.'}
+     sub: '어디에 놓이고 누가 쓰나', desc: '데이터가 놓이는 곳 셋과 데이터마다 쓰는 곳 · 읽는 곳.', why: '객체 지도 바로 아래에 둔다.'},
+    {id: 'first', kicker: '처음 쓰는 길', title: '첫 1분 · 장면 셋', weight: 3, w: 1040, layout: 'cards', cols: 3, ch: 300, button: '첫 1분',
+     sub: '처음 연 사람이 첫 메모를 남기기까지', desc: '장면 하나가 카드 하나다. 카드마다 보는 것과 하는 일, 이어지는 상자.', why: '처음 쓰는 길을 고칠 때 본다.'}
+  ],
+
+  // 카드 창 — 장면 하나 = 카드 하나
+  cards: [
+    {f: 'first', id: 'c1', no: '1', k: '0:00', n: '빈 화면', tag: '시작', s: 'done',
+     sections: [{h: '보는 것', p: '입력 칸 하나와 빈 목록.'}, {h: '화면의 말', say: '첫 메모를 적어 보세요.'}], els: ['ac_web'], to: ['c2']},
+    {f: 'first', id: 'c2', no: '2', k: '0:20', n: '한 줄 적기', tag: '쓰기', s: 'done',
+     sections: [{h: '하는 일', p: '한 줄을 적는다. 적는 동안 초안이 남는다.'}, {h: '만드는 법', code: [['초안 저장', 'web/draft.js']]}], els: ['ac_web'], to: ['c3']},
+    {f: 'first', id: 'c3', no: '3', k: '0:40', n: '저장 · 목록', tag: '저장', s: 'part',
+     sections: [{h: '하는 일', p: '저장을 누르면 목록 맨 위에 보인다.'}, {h: '더할 것', list: ['저장됨 표시를 잠깐 보이기']}], els: ['ac_api', 'node_db']}
   ],
 
   // {f: 창, id, t: 종류(TYPES), n: 이름, d: 설명, s: 상태(done · part · todo · cand · gone), c: 코드 위치}
@@ -135,6 +147,6 @@ window.BOARD = {
   arrange: [
     [['objects'], ['data']],
     [['why'], ['road']],
-    [['loop', 'parts']]
+    [['loop', 'parts'], ['first']]
   ]
 };
