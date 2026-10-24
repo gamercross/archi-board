@@ -21,6 +21,8 @@
 | `objectMap` | 아니오 | 객체 지도 (layout `objects` 창이 있어야 한다) |
 | `dataMap` | 아니오 | 데이터 지도 (layout `datamap` 창이 있어야 한다) |
 | `screens` · `images` | 아니오 | 화면 사진 카드 (layout `screens` 창) |
+| `cards` | 아니오 | 장면 · 단계 카드 (layout `cards` 창, 여러 개 가능) |
+| `legend` | 아니오 | "읽는 법"에 더할 문단. `**굵게**`만 된다 |
 | `matrixRows` · `rowNames` | 아니오 | 앱 × 유즈케이스 표 (layout `matrix` 창) |
 | `arrange` | 아니오 | 창을 놓는 자리 |
 
@@ -33,9 +35,10 @@
 ```
 
 - `weight` 1~5: 글자 크기와 중요도. `w`: 너비(px). 높이는 내용에 맞춰 엔진이 정한다.
-- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens`.
+- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens` · `cards`.
   `objects` · `datamap` · `matrix` · `ring` · `screens`는 보드에 **하나씩만**.
 - `main: true`인 창이 파란 테두리 메인 흐름이다(하나만 권함).
+- `button: '이름'`을 주면 위 띠에 그 창으로 가는 단추가 생긴다.
 
 ## elements — 상자
 
@@ -138,6 +141,28 @@ screens: [{img: 'setup', t: '처음 켜면', url: 'index.html#setup', uc: 'boot'
 images: {setup: 'shots/setup.webp'},        // 경로 · 주소 · data: URI. img에 바로 주소를 써도 된다
 matrixRows: ['ba_user', 'ac_web', 'ac_api'], rowNames: {ba_user: '사용자'}
 ```
+
+## cards — 카드 창
+
+장면 · 단계 · 스토리보드처럼 **같은 모양의 카드를 격자로** 늘어놓는 창. 창 하나에 카드 여럿, 이런 창을 여러 개 둘 수 있다.
+
+```js
+frames: [{id: 'onboard', title: '처음 쓰는 길', layout: 'cards', w: 3000, cols: 4, button: '온보딩',
+          ch: 660,                     // 카드 높이(없으면 사진 있으면 사진+360, 없으면 660)
+          imgRatio: 0.625,              // 사진 높이 / 너비
+          links: [{t: '그림판 열기', href: 'storyboard.html'}],             // 옆 칸 맨 위 단추
+          notes: {collection: 'onboard_notes', key: 'card', title: '더할 것', placeholder: '한 줄로'}}],
+cards: [{f: 'onboard', id: 's1', no: '1', k: '장면 1 · 0:00', n: '켜짐과 인사', tag: '시작', s: 'done',
+         img: 'shot1',                  // images 열쇠 또는 주소. 있으면 칸이 한 줄로
+         lead: '굵게 보일 한 줄',
+         sections: [{h: '보는 것', p: '글'}, {h: '하는 말', say: '말풍선'}, {h: '더할 것', list: ['…']}, {h: '만드는 법', code: [['무엇', 'file.js']]}],
+         refs: ['FR-3'], els: ['ac_web'],  // 요구 번호 표 · 상자로 가는 단추
+         to: ['s2'],                      // 이어지는 카드 (받는 카드에는 ← 표가 저절로 붙는다)
+         links: [{t: '열어 보기', href: 'demo.html#s1'}], alt: false, sl: ''}]   // alt: 갈래 색, sl: 상태 표 글자 바꾸기
+```
+
+- `sections`의 칸마다 `p` · `say` · `list` · `code` 중 하나, `full: true`면 두 줄을 다 쓴다.
+- `notes`는 **claude.ai 아티팩트로 올렸을 때만** 적힌다(db 기능). 문서 `{[key]: 카드 id, text, done, at}`. 다른 곳에서는 안내 문구만 보인다.
 
 ## arrange — 자리
 

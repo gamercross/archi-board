@@ -11,7 +11,7 @@ const out = process.argv[3] || path.join(dir, 'board.single.html');
 const eng = path.resolve(here, '../../../engine/v1');
 const read = f => fs.readFileSync(f, 'utf8');
 const data = read(path.join(dir, 'board-data.js'));
-const title = (data.match(/title:\s*['"]([^'"]+)['"]/) || [])[1] || 'archi-board';
+const title = (data.match(/["']?title["']?\s*:\s*['"]([^'"]+)['"]/) || [])[1] || 'archi-board';  // JS 칸 이름 · JSON 둘 다
 const guard = s => s.replace(/<\/script/gi, '<\\/script');
 const html = `<!doctype html>
 <html lang="ko">
