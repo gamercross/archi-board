@@ -20,6 +20,7 @@
 | `lanes` · `usecases` | 아니오 | 창 아래 순서도(유즈케이스) |
 | `objectMap` | 아니오 | 객체 지도 (layout `objects` 창이 있어야 한다) |
 | `dataMap` | 아니오 | 데이터 지도 (layout `datamap` 창이 있어야 한다) |
+| `insights` | 아니오 | 판단 · 차트 — 사람이나 AI가 매긴 값 (열지도 · 막대 · 흐름도). 엔진 1.1 이상 |
 | `screens` · `images` | 아니오 | 화면 사진 카드 (layout `screens` 창) |
 | `matrixRows` · `rowNames` | 아니오 | 앱 × 유즈케이스 표 (layout `matrix` 창) |
 | `arrange` | 아니오 | 창을 놓는 자리 |
@@ -129,6 +130,41 @@ dataMap: {
 
 - `w` · `r` · `v`의 첫 값은 객체 지도의 객체 id. 사람이 직접 하면 `null`.
 - 모르는 칸은 비우거나 `'—'`. 지어내지 않는다.
+
+## insights — 판단 · 차트 (엔진 1.1 이상)
+
+코드에서 바로 읽히지 않고 **사람이나 AI가 판단해 매긴 값**(위험도 · 복잡도 · 진척 · 흐름의 양)을 그린다.
+위 띠의 "판단 · 차트" 단추, 창 · 상자 · 객체 · 데이터 패널의 "판단 · 차트" 칸에서 열린다. 그리는 자리는 옆 패널이라 창 배치는 바뀌지 않는다.
+
+```js
+insights: [
+  {id: 'risk', f: 'parts', type: 'heatmap', t: '부품별 걱정되는 정도', d: '한 줄',
+   rows: ['ac_web', 'ac_api'], cols: ['보안', '시험', '결합'],
+   values: [[1, 2, 2], [3, 1, null]],                       // 줄 × 칸. 모르면 null
+   scale: {min: 1, max: 3, labels: ['낮음', '보통', '높음'], high: 'bad'},
+   rubric: ['1 — …', '2 — …', '3 — …'],                    // 값의 기준
+   notes: [['ac_api', '보안', '칸 하나의 근거']],
+   basis: ['server/api.js — 근거 한 줄']},
+  {id: 'status', type: 'bar', t: '상태', unit: '개', items: [['done', 9], ['part', 1], ['todo', 3]], basis: ['…']},
+  {id: 'paths', type: 'sankey', t: '길', unit: '칸', links: [['ac_web', 'ac_api', 2]], basis: ['…']}
+]
+```
+
+| 칸 | 필수 | 뜻 |
+|---|---|---|
+| `id` · `type` | 예 | 하나뿐인 id · `heatmap` `bar` `sankey` |
+| `t` · `d` | 아니오 · 아니오 | 제목 · 한 줄 설명 |
+| `f` | 아니오 | 이 판단이 속한 창 id. 그 창의 패널에도 나타나고, 열면 그 창으로 간다 |
+| `basis` | **권함** | 근거 — 문자열이나 목록. 코드 위치나 까닭. 없으면 점검이 경고하고 패널에 "근거 없음"이 뜬다 |
+| `of` | 아니오 | 더 걸고 싶은 상자 · 객체 · 데이터 id (아래 id는 자동으로 걸린다) |
+
+- **heatmap**: `rows`(상자 · 객체 · 데이터 id나 글) × `cols`(글). `values`는 `rows` 수 × `cols` 수의 숫자, 모르면 `null`.
+  `scale.high`가 `bad`(기본)면 큰 값이 붉고 `good`이면 큰 값이 옅다. 색에만 기대지 않도록 칸에 숫자가 함께 보인다.
+  `rubric`에 점수마다 무슨 뜻인지 적는다 — 같은 코드를 보고 사람마다 점수가 달라지지 않게.
+- **bar**: `items`는 `[이름, 숫자]`. 이름이 `done · part · todo · cand · gone`이면 상태 색으로 그린다. `max`로 눈금 끝을 정한다.
+- **sankey**: `links`는 `[보내는 쪽, 받는 쪽, 양]`. 한 방향이어야 한다(돌고 도는 길은 점검이 막는다). `unit`은 양의 단위.
+- `rows` · `items` · `links`의 이름이 상자 · 객체 · 데이터 id이면 이름으로 바뀌고 눌러서 그 카드로 갈 수 있다.
+- 값을 지어내지 않는다. 근거를 댈 수 없는 칸은 `null`로 두고 `basis`에 "확인 못 함"이라고 쓴다.
 
 ## screens · matrix (선택)
 

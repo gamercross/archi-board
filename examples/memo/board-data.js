@@ -131,6 +131,26 @@ window.BOARD = {
     ]
   },
 
+  // 판단 · 차트 — 사람이나 AI가 코드를 보고 매긴 값. 값마다 근거(basis)를 붙인다.
+  insights: [
+    {id: 'risk', f: 'parts', type: 'heatmap', t: '부품별 걱정되는 정도',
+     d: '고치기 전에 어디부터 볼지 정하려고 매겼다.',
+     rows: ['ac_web', 'ac_api', 'node_db'], cols: ['보안', '시험', '결합'],
+     values: [[1, 2, 2], [3, 1, 3], [2, 3, 1]],
+     scale: {min: 1, max: 3, labels: ['낮음', '보통', '높음'], high: 'bad'},
+     rubric: ['1 — 걱정 없음: 막는 장치와 시험이 있다', '2 — 보통: 일부만 있다', '3 — 높음: 없거나 코드로 확인되지 않는다'],
+     notes: [['ac_api', '보안', '로그인 없이도 열리는 길이 있는지 코드에서 못 찾았다'], ['node_db', '시험', 'schema.sql을 확인하는 시험이 없다']],
+     basis: ['server/api.js — 길이 · 로그인 검사는 있으나 속도 제한은 없다', 'tests/ — api.test.js와 draft.test.js뿐']},
+    {id: 'status', f: 'loop', type: 'bar', t: '보드 상자의 상태', unit: '개',
+     d: '상자에 적은 상태를 센 것이다.',
+     items: [['done', 9], ['part', 1], ['todo', 3]],
+     basis: ['elements의 s 값을 센 것 — 상태를 바꾸면 이 숫자도 다시 센다']},
+    {id: 'paths', f: 'objects', type: 'sankey', t: '순서도로 본 길 (요청만)', unit: '칸',
+     d: '유즈케이스 순서도에서 요청 화살표가 몇 칸 지나는지.',
+     links: [['ba_user', 'ac_web', 2], ['ac_web', 'ac_api', 2], ['ac_web', 'd_draft', 1], ['ac_api', 'd_notes', 2]],
+     basis: ['usecases save · find의 steps 중 답(r)이 아닌 칸을 보내는 쪽 → 받는 쪽으로 센 것', '같은 줄 안의 칸(초안 남기기)은 데이터 쪽으로 셌다']}
+  ],
+
   // 열 → 줄 → 창
   arrange: [
     [['objects'], ['data']],

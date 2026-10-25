@@ -6,6 +6,7 @@
 - **객체 지도**: 부품 하나를 카드 하나로. 맡은 일, 안에서 도는 순서, 실패할 때, 고칠 때 볼 파일
 - **데이터 지도**: 데이터가 놓이는 곳과, 데이터마다 쓰는 부품과 읽는 부품
 - **유즈케이스 순서도**: 사람과 부품 사이를 오가는 차례. 한 칸씩 따라가기
+- **판단 · 차트**: 사람이나 AI가 코드를 보고 매긴 값(열지도 · 막대 · 흐름도). 값마다 근거와 기준을 함께 둔다
 
 예시 보드: https://gamercross.github.io/archi-board/
 
@@ -49,6 +50,7 @@ examples/memo/                      예시 보드
 - 푸시 전에 확인할 것:
   - `node --check engine/v1/board.js`
   - `node skills/archi-board/scripts/check.mjs examples/memo/board-data.js`
+  - 차트를 고쳤다면 예시 보드의 `판단 · 차트` 단추로 세 가지가 다 그려지는지 본다
   - 예시 보드를 브라우저로 한 번 연다
   - CI(`.github/workflows/check.yml`)도 같은 것을 돈다.
 
