@@ -446,6 +446,29 @@ a.btn{color:var(--ink);text-decoration:none;display:inline-block}
   .el,.sum,.flows{transition:none}
 }
 
+/* 판단 · 차트 (insights) */
+.insw{overflow-x:auto}
+.hm{border-collapse:separate;border-spacing:3px;width:100%;font-size:12.5px}
+.hm th{font-weight:600;color:var(--ink2);text-align:left;padding:2px 4px;vertical-align:middle}
+.hm thead th{text-align:center;font-size:11.5px;color:var(--mute)}
+.hm td{background:var(--soft);background:color-mix(in srgb,var(--bad) calc(var(--t,0%)*.5),var(--soft));border-radius:6px;text-align:center;padding:6px 4px;min-width:54px;color:var(--ink)}
+.hm td b{display:block;font-size:15px;line-height:1.2}
+.hm td small{display:block;font-size:10.5px;color:var(--ink2)}
+.hm td.na{color:var(--mute)}
+.insbar{display:grid;gap:8px}
+.ib{display:grid;grid-template-columns:minmax(72px,30%) 1fr auto;align-items:center;gap:8px}
+.ib .it{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.ib .it i{display:block;height:100%;background:var(--acc);border-radius:5px}
+.ib .it i.done{background:var(--ok)} .ib .it i.part{background:var(--warn)} .ib .it i.todo{background:var(--bad)} .ib .it i.cand{background:var(--cand)} .ib .it i.gone{background:var(--gone)}
+.ib .iv{font-variant-numeric:tabular-nums;font-size:13px}
+.sankey{width:100%;height:auto;display:block}
+.ins-l{fill:none;stroke:var(--acc);stroke-opacity:.28;transition:stroke-opacity .15s}
+.ins-l:hover{stroke-opacity:.55}
+.ins-n rect{fill:var(--acc-ink)}
+.ins-n text{font-size:11.5px;fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:3px;stroke-linejoin:round}
+.ins-n[data-go],.ins-n[data-obj],.ins-n[data-dm]{cursor:pointer}
+.ins-n[data-go]:hover text,.ins-n[data-obj]:hover text,.ins-n[data-dm]:hover text{fill:var(--acc-ink)}
+
 /* 카드 창 (layout 'cards') — 카드 하나 = 장면 · 화면 · 단계 하나. 사진은 위, 칸은 두 줄(사진이 있으면 한 줄), 메모는 아래 */
 .cd{position:absolute;background:var(--sheet);border:1px solid var(--line2);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;transition:opacity .2s,box-shadow .2s;box-shadow:0 10px 24px -20px var(--shade)}
 .cd.on{box-shadow:0 0 0 4px var(--acc)}

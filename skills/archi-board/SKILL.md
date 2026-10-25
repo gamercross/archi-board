@@ -18,6 +18,7 @@ compatibility: Node 18 이상(점검 스크립트). 보드는 브라우저로 �
    큰 저장소면 폴더마다 나눠 읽고 사실만 모은다. 코드에 없는 것은 쓰지 않는다.
 4. **`board-data.js`를 쓴다.** 형식은 [references/data-format.md](references/data-format.md), 완성 예시는 저장소의 `examples/memo/board-data.js`.
    처음에는 객체 지도 + 데이터 지도 + 유즈케이스 2~3개만으로 시작하고, 사용자가 원하면 ArchiMate 창을 더한다.
+   사용자가 위험도 · 진척 · 흐름의 양 같은 **판단 값**을 원하면 `insights`(차트)를 더한다 — [판단 값 쓰는 법](references/reading-code.md#판단-값-insights-쓰는-법).
 5. **점검한다.** `node <이 스킬 폴더>/scripts/check.mjs <자리>/board-data.js` — 잘못이 0개가 될 때까지 고친다. 경고는 사용자에게 알린다.
 6. **보여 준다.** `<자리>/index.html`을 브라우저로 열라고 안내한다(맥: `open`, 윈도우: `start`). 인터넷이 있어야 엔진을 받는다.
 

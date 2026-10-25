@@ -16,7 +16,7 @@ if (!dataFile) { console.error('쓰는 법: node check.mjs <board-data.js> [boar
 const eng = fs.readFileSync(engineFile, 'utf8');
 const m = eng.match(/\/\*MODEL-START\*\/([\s\S]*?)\/\*MODEL-END\*\//);
 if (!m) { console.error('엔진에서 MODEL 표를 찾지 못했다:', engineFile); process.exit(2); }
-const model = vm.runInNewContext(m[1] + '\n;({TYPES, RELS, LAYERS})');
+const model = vm.runInNewContext(m[1] + "\n;({TYPES, RELS, LAYERS, INSIGHTS: typeof INSIGHTS === 'undefined' ? {} : INSIGHTS})");
 
 const win = {};
 try { vm.runInNewContext(fs.readFileSync(dataFile, 'utf8'), { window: win }, { filename: dataFile }); }
@@ -96,6 +96,49 @@ if (DMAP) {
   });
   arr(DMAP.flow).forEach((s, i) => { if (s.o && !objs[s.o]) err(`한 줄 흐름 ${i + 1}: 없는 객체 ${s.o}`); arr(s.dm).forEach(id => { if (!did.has(id)) err(`한 줄 흐름 ${i + 1}: 없는 데이터 ${id}`); }); });
 }
+// 판단 · 차트 — 사람이나 AI가 매긴 값. 숫자 모양 · 가리키는 id · 근거를 본다
+const INS_TYPES = Object.keys(model.INSIGHTS);
+if (arr(B.insights).length && !INS_TYPES.length) err(`insights가 있는데 이 엔진은 판단 · 차트를 모른다 (엔진 1.1 이상이 필요하다)`);
+const insId = dup(arr(B.insights).map(x => x.id), '판단');
+const known = k => eid.has(k) || !!objs[k] || (DMAP && arr(DMAP.data).some(d => d.id === k)) || ['done', 'part', 'todo', 'cand', 'gone'].includes(k);
+const isNum = v => typeof v === 'number' && Number.isFinite(v);
+arr(B.insights).forEach(x => {
+  const w = `판단 ${x.id}`;
+  if (!x.id) err('판단: id가 없다');
+  if (!INS_TYPES.includes(x.type)) { err(`${w}: 모르는 type ${x.type} (${INS_TYPES.join(' · ')})`); return; }
+  if (!x.t) warn(`${w}: 제목(t)이 없다`);
+  if (x.f && !fid.has(x.f)) err(`${w}: 없는 창 ${x.f}`);
+  [].concat(x.of || []).forEach(k => { if (!known(k)) err(`${w}: of의 ${k}를 찾을 수 없다 (상자 · 객체 · 데이터 id)`); });
+  if (![].concat(x.basis || []).filter(Boolean).length) warn(`${w}: basis(근거)가 없다 — 값마다 코드 위치나 까닭을 적는다`);
+  if (x.type === 'heatmap') {
+    const rows = arr(x.rows), cols = arr(x.cols), vals = arr(x.values);
+    const sc = Object.assign({ min: 1, max: 3 }, x.scale);
+    if (!rows.length || !cols.length) err(`${w}: rows · cols가 비었다`);
+    if (vals.length !== rows.length) err(`${w}: values의 줄 수 ${vals.length}가 rows ${rows.length}와 다르다`);
+    if (!(sc.max > sc.min)) err(`${w}: scale의 max가 min보다 커야 한다`);
+    vals.forEach((r, i) => {
+      if (!Array.isArray(r) || r.length !== cols.length) err(`${w}: values ${i + 1}째 줄의 칸 수가 cols ${cols.length}와 다르다`);
+      else r.forEach((v, j) => { if (v === null) return; if (!isNum(v)) err(`${w}: values[${i}][${j}]가 숫자가 아니다 (${JSON.stringify(v)}) — 모르면 null`); else if (v < sc.min || v > sc.max) err(`${w}: values[${i}][${j}]=${v}이 scale ${sc.min}~${sc.max} 밖이다`); });
+    });
+    if (!arr(x.rubric).length) warn(`${w}: rubric(값의 기준)이 없다 — 1이 무엇이고 3이 무엇인지 적는다`);
+    arr(x.notes).forEach(([r, c], i) => { if (!rows.includes(r) || !cols.includes(c)) err(`${w}: notes ${i + 1}의 [${r}, ${c}]가 rows · cols에 없다`); });
+  } else if (x.type === 'bar') {
+    if (!arr(x.items).length) err(`${w}: items가 비었다`);
+    arr(x.items).forEach((it, i) => { if (!Array.isArray(it) || it.length < 2 || !isNum(it[1]) || it[1] < 0) err(`${w}: items ${i + 1}은 [이름, 0 이상의 숫자]여야 한다`); });
+  } else if (x.type === 'sankey') {
+    const ls = arr(x.links);
+    if (!ls.length) err(`${w}: links가 비었다`);
+    const next = {};
+    ls.forEach(([a, b, v], i) => {
+      if (!a || !b || !isNum(v) || v <= 0) err(`${w}: links ${i + 1}은 [보내는 쪽, 받는 쪽, 0보다 큰 숫자]여야 한다`);
+      else if (a === b) err(`${w}: links ${i + 1}이 자기 자신으로 돌아온다 (${a})`);
+      else (next[a] = next[a] || []).push(b);
+    });
+    // 돌고 도는 길은 한 줄로 못 그린다 — 깊이 우선으로 찾는다
+    const seen = {}, cyc = n => { if (seen[n] === 1) return true; if (seen[n] === 2) return false; seen[n] = 1; const c = (next[n] || []).some(cyc); seen[n] = 2; return c; };
+    if (Object.keys(next).some(cyc)) err(`${w}: links에 돌고 도는 길이 있다 — 흐름도는 한 방향이어야 한다`);
+  }
+});
 arr(B.screens).forEach((x, i) => { arr(x.els).forEach(id => { if (!eid.has(id)) err(`화면 ${i + 1}: 없는 상자 ${id}`); }); if (x.uc && !uid.has(x.uc)) err(`화면 ${i + 1}: 없는 유즈케이스 ${x.uc}`); });
 const cid = dup(arr(B.cards).map(x => x.id), '카드');
 arr(B.cards).forEach(x => {
@@ -115,5 +158,5 @@ if (B.start && !fid.has(B.start)) err(`start: 없는 창 ${B.start}`);
 
 warns.forEach(t => console.log('경고 ·', t));
 errs.forEach(t => console.log('잘못 ·', t));
-console.log(`창 ${frames.length} · 상자 ${els.length} · 관계 ${arr(B.relations).length} · 유즈케이스 ${arr(B.usecases).length} · 객체 ${Object.keys(objs).length} · 데이터 ${DMAP ? arr(DMAP.data).length : 0} · 카드 ${arr(B.cards).length} — 잘못 ${errs.length} · 경고 ${warns.length}`);
+console.log(`창 ${frames.length} · 상자 ${els.length} · 관계 ${arr(B.relations).length} · 유즈케이스 ${arr(B.usecases).length} · 객체 ${Object.keys(objs).length} · 데이터 ${DMAP ? arr(DMAP.data).length : 0} · 판단 ${arr(B.insights).length} · 카드 ${arr(B.cards).length} — 잘못 ${errs.length} · 경고 ${warns.length}`);
 process.exit(errs.length ? 1 : 0);

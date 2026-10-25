@@ -1,9 +1,9 @@
-/*! archi-board engine v1.0.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
+/*! archi-board engine v1.1.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
  * 데이터는 window.BOARD (board-data.js)에서 읽는다. 형식: https://github.com/gamercross/archi-board/blob/main/skills/archi-board/references/data-format.md
  * MIT License */
 (() => {
 'use strict';
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 if (!window.BOARD) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:24px;font:16px system-ui">board-data.js를 board.js보다 먼저 불러 window.BOARD를 채워 주세요.</p>'); return; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /*MODEL-START*/
@@ -27,6 +27,7 @@ const RELS = {
   composition:['으로 이루어진다','Composition'], aggregation:['을 묶는다','Aggregation'], association:['와 관련된다','Association']
 };
 const ST = {done:'있음', part:'일부', todo:'없음', cand:'후보', gone:'뺌'};
+const INSIGHTS = {heatmap:'열지도', bar:'막대', sankey:'흐름도'};
 /*MODEL-END*/
 
 /* ───────── 데이터 읽기 — board-data.js가 window.BOARD에 둔 것을 엔진이 쓰는 모양으로 ───────── */
@@ -105,6 +106,15 @@ const DM = arr(DMAP.data).map(x => Object.assign({k: '', one: '', shape: [], w: 
 const DFLOW = arr(DMAP.flow).map(s => Object.assign({d: '', dm: []}, s));
 const DMI = {}; DM.forEach(x => { DMI[x.id] = x; x.s = x.s || 'done'; });
 const DSI = {}; DS.forEach(s => { DSI[s.id] = s; s.ids = DM.filter(x => x.st === s.id).map(x => x.id); });
+const INS = arr(B.insights).filter(x => x && INSIGHTS[x.type]).map(x => Object.assign({t: x.id, f: '', d: '', rubric: []}, x, {of: [].concat(x.of || []), basis: [].concat(x.basis || [])}));
+const INSI = Object.fromEntries(INS.map(x => [x.id, x]));
+INS.forEach(x => { // 이 판단이 가리키는 모든 id — 상자 · 객체 · 데이터 카드에서 거꾸로 찾을 때 쓴다
+  const k = [...x.of];
+  if (x.type === 'heatmap') k.push(...arr(x.rows), ...arr(x.cols));
+  if (x.type === 'bar') k.push(...arr(x.items).map(i => i[0]));
+  if (x.type === 'sankey') arr(x.links).forEach(l => k.push(l[0], l[1]));
+  x.refs = new Set(k.map(String));
+});
 const ODM = {};
 DM.forEach(x => [['w','쓴다'],['r','읽는다'],['v','거친다']].forEach(([k, verb]) => (x[k] || []).forEach(([o]) => { if (!o) return; (ODM[o] = ODM[o] || []).push({x, verb}); })));
 
@@ -124,6 +134,7 @@ const SHELL = `<div class="app">
       <div class="acts">
         <button class="btn pri" id="bObj" type="button">객체 지도</button>
         <button class="btn" id="bData" type="button">데이터 지도</button>
+        <button class="btn" id="bIns" type="button">판단 · 차트</button>
 ${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="button" data-frb="${esc(f.id)}">${esc(f.button)}</button>`).join('\n')}
         <button class="btn" id="bTour" type="button">흐름 따라가기</button>
         <button class="btn" id="bUC" type="button">순서 · 앱</button>
@@ -951,6 +962,7 @@ function openPanel(k, t, html, wide) {
   $('#pB').querySelectorAll('[data-dm]').forEach(b => b.addEventListener('click', () => openData(b.dataset.dm)));
   $('#pB').querySelectorAll('[data-dmobj]').forEach(b => b.addEventListener('click', () => showDataObjs(b.dataset.dmobj)));
   $('#pB').querySelectorAll('[data-dflow]').forEach(b => b.addEventListener('click', () => openFlow(+b.dataset.dflow)));
+  $('#pB').querySelectorAll('[data-ins]').forEach(b => b.addEventListener('click', () => openInsight(b.dataset.ins)));
 }
 function closePanel() { panel.hidden = true; }
 $('#pX').addEventListener('click', () => { clearFocus(); closePanel(); });
@@ -971,6 +983,7 @@ function select(id, flyTo) {
   if (it.d) h += `<p>${esc(it.d)}</p>`;
   if (it.t === 'wp') h += `<p><b>언제</b> ${esc(it.when)} · <b>누가</b> ${esc(it.who)}</p>`;
   if (it.c) h += `<div><h3>코드 · 파일 위치</h3><code>${esc(it.c)}</code></div>`;
+  h += insSec(INS.filter(x => x.refs.has(id)));
   if (OBJ[id]) h += `<div><button class="go" type="button" data-obj="${id}">객체 지도에서 자세히 보기<small>${esc(OBJ[id].one)}</small></button></div>`;
   h += `<div><h3>들어 있는 창</h3><button class="go" type="button" data-fr="${it.f}">${esc(FR[it.f].title)}</button></div>`;
   if (out.length) h += `<div><h3>이것에서 나가는 연결</h3><ul>${out.map(([b, t]) => `<li><span class="verb">${RELS[t][0]} →</span>${goBtn(b)}</li>`).join('')}</ul></div>`;
@@ -998,6 +1011,7 @@ function openFrame(id) {
   let h = `<p>${esc(f.desc)}</p><p class="why"><b>이 크기인 까닭</b> ${esc(f.why)}</p>`;
   h += `<div class="cnt">${meter(f.c)}<span>${countText(f.c) || '상태가 없는 원칙 · 목표만 있다'}</span></div>`;
   if (f.recent.length) h += `<div><h3>최근 한 일</h3><ul class="recent">${f.recent.map(([d, t]) => `<li><time>${esc(d)}</time><span>${esc(t)}</span></li>`).join('')}</ul></div>`;
+  h += insSec(INS.filter(x => x.f === id));
   const fu = UC.filter(u => u.f === id);
   if (fu.length) h += `<div><h3>이 창 안의 순서</h3><ul>${fu.map(u => `<li><button class="go wide" type="button" data-uc="${u.id}" data-k="0">▶ ${esc(u.t)}<small>${u.steps.length}칸</small></button></li>`).join('')}</ul></div>`;
   if (FM && id === FM.id) h += `<div><button class="go" type="button" id="toList">유즈케이스 · 앱 목록 열기</button></div>`;
@@ -1135,6 +1149,7 @@ function openObj(id) {
   if (o.files.length) h += `<div><h3>파일</h3><ul class="files">${o.files.map(t => `<li><code>${esc(t)}</code></li>`).join('')}</ul></div>`;
   const shots = SCR.map((x, i) => [x, i]).filter(([x]) => x.els.includes(id) || OUC[id].some(({u}) => u.id === x.uc));
   if (shots.length) h += `<div><h3>이 객체가 움직이는 화면 · ${shots.length}</h3><div class="shots">${shots.map(([x, i]) => `<button type="button" data-scr="${i}" title="${esc(x.t)}"><img src="${(IMG[x.img] || x.img)}" alt="${esc(x.t)}" loading="lazy"><span>${i + 1}. ${esc(x.t)}</span></button>`).join('')}</div></div>`;
+  h += insSec(INS.filter(i => i.refs.has(id)));
   if (byId[id]) h += `<div><h3>보드의 상자</h3><button class="go" type="button" data-go="${id}">${esc(byId[id].n)}<small>${esc(FR[byId[id].f].title)}</small></button></div>`;
   openPanel(`객체 · ${o.pk.n}`, ON[id], h, true);
   const list = [...nb].map(x => rectOf(OBJ[x]));
@@ -1182,6 +1197,7 @@ function openData(id) {
   if (x.tests.length) h += `<div><h3>지켜보는 시험</h3><ul class="files">${x.tests.map(t => `<li><code>${esc(t)}</code></li>`).join('')}</ul></div>`;
   const same = s.ids.filter(k => k !== id);
   if (same.length) h += `<div><h3>같은 곳의 다른 데이터</h3><ul>${same.map(k => `<li><button class="go" type="button" data-dm="${k}">${esc(DMI[k].n)}</button></li>`).join('')}</ul></div>`;
+  h += insSec(INS.filter(i => i.refs.has(id)));
   openPanel(`데이터 · ${s.n}`, x.n, h, true);
   fly(camFor(dRect(x), 120));
 }
@@ -1217,6 +1233,86 @@ function openDataMap() {
   });
   openPanel(f.kicker, f.title, h, true);
   fly(camFor(fbox(f), 24));
+}
+/* ───────── 판단 · 차트 — 사람이나 AI가 코드를 보고 매긴 값을 그린다 (insights) ───────── */
+const insLab = k => byId[k] ? {n: byId[k].n, a: `data-go="${esc(k)}"`} : OBJ[k] ? {n: ON[k], a: `data-obj="${esc(k)}"`} : DMI[k] ? {n: DMI[k].n, a: `data-dm="${esc(k)}"`} : {n: String(k), a: ''};
+const insName = k => insLab(k).n;
+const insBtn = k => { const l = insLab(k); return l.a ? `<button class="go" type="button" ${l.a}>${esc(l.n)}</button>` : esc(l.n); };
+const insSec = list => list.length ? `<div><h3>판단 · 차트 ${list.length}</h3><ul>${list.map(x => `<li><button class="go wide" type="button" data-ins="${esc(x.id)}">${esc(x.t)}<small>${INSIGHTS[x.type]}</small></button></li>`).join('')}</ul></div>` : '';
+function insHeat(x) {
+  const sc = Object.assign({min: 1, max: 3, high: 'bad', labels: []}, x.scale), span = (sc.max - sc.min) || 1;
+  const bad = v => { const t = clamp((v - sc.min) / span, 0, 1); return sc.high === 'good' ? 1 - t : t; };
+  const note = {}; arr(x.notes).forEach(([r, c, t]) => { note[r + '\u0000' + c] = t; });
+  const vals = arr(x.values);
+  let h = `<div class="insw"><table class="hm"><thead><tr><th></th>${arr(x.cols).map(c => `<th scope="col">${esc(insName(c))}</th>`).join('')}</tr></thead><tbody>`;
+  arr(x.rows).forEach((r, i) => {
+    h += `<tr><th scope="row">${insBtn(r)}</th>` + arr(x.cols).map((c, j) => {
+      const v = (vals[i] || [])[j];
+      if (v === null || v === undefined || !Number.isFinite(+v)) return '<td class="na">—</td>';
+      const lb = sc.labels[Math.round(v - sc.min)] || '', nt = note[r + '\u0000' + c];
+      return `<td style="--t:${(bad(+v) * 100).toFixed(0)}%" title="${esc([insName(r), insName(c), v + (lb ? ' ' + lb : ''), nt].filter(Boolean).join(' · '))}"><b>${esc(v)}</b>${lb ? `<small>${esc(lb)}</small>` : ''}</td>`;
+    }).join('') + '</tr>';
+  });
+  h += '</tbody></table></div>';
+  if (arr(x.notes).length) h += `<div><h3>칸마다 붙은 근거</h3><ul class="dot">${x.notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`).join('')}</ul></div>`;
+  return h;
+}
+function insBar(x) {
+  const items = arr(x.items).map(([k, v]) => [k, +v || 0]), mx = +x.max || Math.max(1, ...items.map(i => i[1])), u = esc(x.unit || '');
+  return `<div class="insbar">${items.map(([k, v]) => `<div class="ib"><span class="il">${ST[k] ? `<b class="chip ${k}">${ST[k]}</b>` : insBtn(k)}</span><span class="it"><i class="${ST[k] ? k : ''}" style="width:${clamp(v / mx * 100, 0, 100).toFixed(1)}%"></i></span><b class="iv">${v}${u}</b></div>`).join('')}</div>`;
+}
+function insSankey(x) {
+  const links = arr(x.links).map(([a, b, v]) => [String(a), String(b), +v]).filter(l => l[2] > 0 && l[0] !== l[1]);
+  const names = []; links.forEach(([a, b]) => [a, b].forEach(k => { if (!names.includes(k)) names.push(k); }));
+  if (!names.length) return '<p class="note">그릴 흐름이 없다.</p>';
+  const u = x.unit || '', lay = Object.fromEntries(names.map(k => [k, 0]));
+  for (let n = 0; n < names.length; n++) { // 줄 나누기: 보내는 쪽보다 한 칸 오른쪽에. 돌고 도는 길이 있어도 멈춘다
+    let moved = false;
+    links.forEach(([a, b]) => { if (lay[b] < lay[a] + 1 && lay[a] + 1 < names.length) { lay[b] = lay[a] + 1; moved = true; } });
+    if (!moved) break;
+  }
+  const C = Math.max(...Object.values(lay)) + 1, cols = Array.from({length: C}, (_, c) => names.filter(k => lay[k] === c));
+  const tot = Object.fromEntries(names.map(k => [k, {i: 0, o: 0}]));
+  links.forEach(([a, b, v]) => { tot[a].o += v; tot[b].i += v; });
+  const val = k => Math.max(tot[k].i, tot[k].o);
+  const W = 560, NW = 12, LM = 120, RM = 120, GAP = 14, VH = Math.max(220, Math.max(...cols.map(c => c.length)) * 54);
+  const kk = .6 * Math.min(...cols.map(c => (VH - (c.length - 1) * GAP) / c.reduce((s, k) => s + val(k), 0)));
+  const hs = c => c.reduce((s, k) => s + Math.max(3, val(k) * kk), 0) + (c.length - 1) * GAP, top = Math.max(...cols.map(hs));
+  const nd = {};
+  cols.forEach((c, ci) => { let y = 8 + (top - hs(c)) / 2; c.forEach(k => { const h = Math.max(3, val(k) * kk); nd[k] = {x: LM + ci * (W - LM - RM - NW) / Math.max(1, C - 1), y, h}; y += h + GAP; }); });
+  const L = links.map(([a, b, v]) => ({a, b, v, w: v * kk}));
+  names.forEach(k => {
+    let o = 0; L.filter(l => l.a === k).sort((p, q) => nd[p.b].y - nd[q.b].y).forEach(l => { l.y0 = nd[k].y + o + l.w / 2; o += l.w; });
+    let n = 0; L.filter(l => l.b === k).sort((p, q) => nd[p.a].y - nd[q.a].y).forEach(l => { l.y1 = nd[k].y + n + l.w / 2; n += l.w; });
+  });
+  const H = Math.max(...Object.values(nd).map(n => n.y + n.h)) + 8;
+  const paths = L.map(l => { const x0 = nd[l.a].x + NW, x1 = nd[l.b].x, m = (x0 + x1) / 2; return `<path class="ins-l" d="M${x0.toFixed(1)} ${l.y0.toFixed(1)}C${m.toFixed(1)} ${l.y0.toFixed(1)} ${m.toFixed(1)} ${l.y1.toFixed(1)} ${x1.toFixed(1)} ${l.y1.toFixed(1)}" stroke-width="${l.w.toFixed(1)}"><title>${esc(insName(l.a))} → ${esc(insName(l.b))} · ${l.v}${esc(u)}</title></path>`; }).join('');
+  const nodes = names.map(k => {
+    const n = nd[k], lb = insLab(k), first = lay[k] === 0, t = lb.n.length > 14 ? lb.n.slice(0, 13) + '…' : lb.n;
+    return `<g class="ins-n"${lb.a ? ' ' + lb.a : ''}><rect x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${NW}" height="${n.h.toFixed(1)}" rx="2"><title>${esc(lb.n)} · ${val(k)}${esc(u)}</title></rect>` +
+      `<text x="${(first ? n.x - 6 : n.x + NW + 6).toFixed(1)}" y="${(n.y + n.h / 2).toFixed(1)}" dy=".35em" text-anchor="${first ? 'end' : 'start'}">${esc(t)}</text></g>`;
+  }).join('');
+  return `<svg class="sankey" viewBox="0 0 ${W} ${H.toFixed(0)}" role="img" aria-label="${esc(x.t)}">${paths}${nodes}</svg>` +
+    `<div><h3>흐름 목록</h3><ul>${links.map(([a, b, v]) => `<li>${insBtn(a)} → ${insBtn(b)} <b>${v}${esc(u)}</b></li>`).join('')}</ul></div>`;
+}
+function openInsight(id) {
+  stopTour(); clearFocus();
+  const x = INSI[id], f = FR[x.f];
+  let h = `<div class="tags"><span class="verb">${INSIGHTS[x.type]}</span>${f ? `<button class="go" type="button" data-fr="${esc(f.id)}">${esc(f.title)}</button>` : ''}</div>`;
+  if (x.d) h += `<p class="lead">${esc(x.d)}</p>`;
+  h += x.type === 'heatmap' ? insHeat(x) : x.type === 'bar' ? insBar(x) : insSankey(x);
+  if (arr(x.rubric).length) h += `<div><h3>값의 기준</h3><ul class="dot">${x.rubric.map(liT).join('')}</ul></div>`;
+  h += x.basis.length ? `<div><h3>근거 · ${x.basis.length}</h3><ul class="dot">${x.basis.map(liT).join('')}</ul></div>`
+    : `<div><h3>근거</h3><ul class="dot warn"><li>근거가 적혀 있지 않다 — 이 값은 코드로 확인하기 전에는 믿지 않는다.</li></ul></div>`;
+  if (x.of.length) h += `<div><h3>관련</h3><ul>${x.of.map(k => `<li>${insBtn(k)}</li>`).join('')}</ul></div>`;
+  openPanel(`판단 · ${INSIGHTS[x.type]}`, x.t, h, true);
+  if (f) fly(camFor(fbox(f), 28));
+}
+function openInsights() {
+  stopTour(); clearFocus();
+  const h = `<p class="note">코드를 보고 매긴 값이다. 값마다 근거가 붙고, 근거가 없으면 그렇게 표시한다.</p>` +
+    `<ul>${INS.map(x => `<li><button class="go wide" type="button" data-ins="${esc(x.id)}">${esc(x.t)}<small>${INSIGHTS[x.type]}</small></button></li>`).join('')}</ul>`;
+  openPanel('판단 · 차트', `값 ${INS.length}개`, h);
 }
 function dataOfObj(id) {
   const list = ODM[id];
@@ -1319,6 +1415,7 @@ $('#tSeq').addEventListener('click', () => {
 });
 $('#bObj').addEventListener('click', () => { $('#legend').hidden = true; openObjects(); });
 $('#bData').addEventListener('click', () => { $('#legend').hidden = true; openDataMap(); });
+$('#bIns').addEventListener('click', () => { $('#legend').hidden = true; openInsights(); });
 $('#bTour').addEventListener('click', () => { $('#legend').hidden = true; showStep(0); });
 document.querySelectorAll('[data-frb]').forEach(b => b.addEventListener('click', () => { $('#legend').hidden = true; openFrame(b.dataset.frb); }));
 $('#tNext').addEventListener('click', stepNext);
@@ -1368,11 +1465,11 @@ $('#lX').addEventListener('click', () => { $('#legend').hidden = true; });
 
 /* ───────── 시작 ───────── */
 // 쓰지 않는 기능의 단추와 읽는 법 칸은 숨긴다
-[['#bObj', FO], ['#bData', FD], ['#bTour', TOUR.length], ['#bUC', UC.length]].forEach(([s, on]) => { if (!on) $(s).hidden = true; });
+[['#bObj', FO], ['#bData', FD], ['#bIns', INS.length], ['#bTour', TOUR.length], ['#bUC', UC.length]].forEach(([s, on]) => { if (!on) $(s).hidden = true; });
 [['lgO', FO], ['lgD', FD], ['lgQ', UC.length]].forEach(([id, on]) => { if (!on) document.querySelectorAll(`[data-sec="${id}"]`).forEach(x => { x.hidden = true; }); });
 const first = FR[B.start] || FO || FRAMES.find(f => f.main) || null;
 if (first) { cam = camFor(fbox(first), 20); apply(); } else { apply(); fitAll(); }
 const mainF = FRAMES.find(f => f.main);
 if (innerWidth <= 720 && mainF) { cam = camFor(fbox(mainF), 12); apply(); }
-window.ArchiBoard = {version: VERSION, format: FORMAT, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id)};
+window.ArchiBoard = {version: VERSION, format: FORMAT, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id)};
 })();
