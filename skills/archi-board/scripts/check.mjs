@@ -29,11 +29,12 @@ const arr = v => (Array.isArray(v) ? v : []);
 const dup = (list, what) => { const s = new Set(); list.forEach(id => { if (s.has(id)) err(`${what} id가 겹친다: ${id}`); s.add(id); }); return s; };
 
 if (B.format && Math.floor(B.format) !== 1) err(`format ${B.format} — 이 점검은 형식 1용이다`);
-const LAYOUTS = ['rows', 'ring', 'time', 'objects', 'datamap', 'matrix', 'screens', 'cards'];
+const LAYOUTS = ['rows', 'ring', 'time', 'objects', 'datamap', 'matrix', 'screens', 'cards', 'view'];
 const frames = arr(B.frames), fid = dup(frames.map(f => f.id), '창');
 frames.forEach(f => {
   if (f.layout && !LAYOUTS.includes(f.layout)) err(`창 ${f.id}: 모르는 layout ${f.layout} (${LAYOUTS.join(' · ')})`);
   if (!f.title) warn(`창 ${f.id}: title이 없다`);
+  if (f.aud != null && !['view', 'build'].includes(f.aud)) err(`창 ${f.id}: aud는 'view'(처음 보는 사람) 또는 'build'(만드는 사람)`);
 });
 ['objects', 'datamap', 'matrix', 'ring', 'screens'].forEach(l => { if (frames.filter(f => f.layout === l).length > 1) err(`layout '${l}' 창은 하나만 둘 수 있다`); });
 const els = arr(B.elements).map(x => Array.isArray(x) ? { f: x[0], id: x[1], t: x[2], n: x[3], s: x[5], ...(x[7] || {}) } : x);
@@ -47,6 +48,31 @@ els.forEach(x => {
   const f = frames.find(f => f.id === x.f);
   if (f && f.layout === 'time' && (x.t === 'plateau' || x.t === 'wp') && x.col === undefined) err(`상자 ${x.id}: time 창의 plateau · wp에는 col이 있어야 한다`);
 });
+// 처음 보는 사람용 한 장 그림 (엔진 1.2) — 자리 칸 · 틀 안의 단계 · 쉬운 말
+const views = frames.filter(f => f.layout === 'view');
+if (!views.length && !frames.some(f => f.aud === 'view')) warn(`처음 보는 사람용 그림(layout 'view')이 없다 — 보드를 여는 사람이 객체 지도부터 보게 된다. references/audience.md`);
+const CODEY = /\/api\/|#\d+|\b[A-Z]{1,3}-\d+\b|\.(js|mjs|ts|tsx|py|go|rs|java|json|md|ya?ml)\b|\b[a-z]+_[a-z_]+\b|\w+\(\)|=>|[{}<>]/;
+views.forEach(f => {
+  const its = els.filter(x => x.f === f.id), kidOf = {};
+  if (its.length > 30) warn(`창 ${f.id}: 한 장 그림에 상자 ${its.length}개 — 30개를 넘으면 처음 보는 사람이 길을 잃는다. 그림을 둘로 나눈다`);
+  if (!f.desc) warn(`창 ${f.id}: desc(이 그림을 어떻게 읽나)가 비었다`);
+  its.forEach(x => {
+    if (arr(x.kids).length > 6) warn(`상자 ${x.id}: 틀 안 단계가 ${arr(x.kids).length}개 — 6개를 넘으면 이름이 잘린다. 묶어서 이름을 붙이고 자세한 차례는 다른 그림으로`);
+    arr(x.kids).forEach(k => {
+      const y = els.find(e => e.id === k);
+      if (!y) err(`상자 ${x.id}: kids의 ${k}가 상자에 없다`);
+      else if (y.f !== x.f) err(`상자 ${x.id}: kids의 ${k}는 같은 창(${x.f})에 있어야 한다`);
+      else if (kidOf[k]) err(`상자 ${k}: 두 틀(${kidOf[k]} · ${x.id})의 kids에 있다`);
+      else kidOf[k] = x.id;
+    });
+    ['row', 'col', 'span'].forEach(k => { if (x[k] != null && !(typeof x[k] === 'number' && x[k] >= (k === 'span' ? 1 : 0))) err(`상자 ${x.id}: ${k}는 ${k === 'span' ? '1' : '0'} 이상의 숫자`); });
+    if (f.cols && x.col != null && x.col + (x.span || 1) > f.cols) warn(`상자 ${x.id}: col ${x.col} + span ${x.span || 1}이 창의 cols ${f.cols}를 넘는다`);
+    if (CODEY.test(x.n || '')) warn(`상자 ${x.id}: 처음 보는 사람용 이름에 코드처럼 보이는 말이 있다 — "${x.n}" (주소 · 파일 · 번호는 d나 만드는 사람 쪽으로)`);
+    if ([...(x.n || '')].length > 22) warn(`상자 ${x.id}: 이름이 ${[...x.n].length}자 — 22자 안으로 줄이고 나머지는 sub나 d로`);
+    if (x.see && !eid.has(x.see) && !fid.has(x.see) && !(B.objectMap && (B.objectMap.objects || {})[x.see])) err(`상자 ${x.id}: see의 ${x.see}를 찾을 수 없다 (상자 · 창 · 객체 id)`);
+  });
+});
+els.filter(x => x.kids && !views.some(f => f.id === x.f)).forEach(x => warn(`상자 ${x.id}: kids는 layout 'view' 창에서만 그려진다`));
 frames.filter(f => f.layout === 'ring').forEach(f => [...arr(f.ring), ...arr(f.center)].forEach(id => { if (!eid.has(id)) err(`창 ${f.id}: ring/center의 ${id}가 상자에 없다`); }));
 arr(B.relations).forEach(r => {
   const [a, b, t] = Array.isArray(r) ? r : [r.from, r.to, r.type];

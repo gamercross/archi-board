@@ -1,4 +1,4 @@
-/*! archi-board engine v1.0.0 — MIT License */
+/*! archi-board engine v1.2.0 — MIT License */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
 /* 무한 보드 — 작업을 창(프레임)으로 늘어놓고, 창 크기는 중요도, 창 안은 ArchiMate 층별 캔버스. 멀리서는 창 이름만, 가까이 가면 안의 상자와 선. */
 :root{
@@ -93,6 +93,7 @@ svg.layer{overflow:visible;pointer-events:none}
 .el.sh-round{border-radius:14px}
 .el.sh-pill{border-radius:40px;padding-inline:20px}
 .el.sh-cut{border-radius:0 14px 0 14px}
+.el.sh-event{clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%,18px 50%);padding-left:26px;border-width:0}
 .el.st-todo,.el.st-cand{border-style:dashed;border-width:1.5px}
 .el.st-gone{opacity:.62}
 .el.st-gone .en{text-decoration:line-through;text-decoration-thickness:1px}
@@ -525,3 +526,31 @@ a.btn{color:var(--ink);text-decoration:none;display:inline-block}
 .panel .sclist .sn{font-size:12px;color:var(--mute)}
 a.btn{color:var(--ink);text-decoration:none;display:inline-block}
 @media (prefers-reduced-motion: reduce){.cd{transition:none}}
+
+/* ───────── 1.2 · 처음 보는 사람 / 만드는 사람 ───────── */
+.aud{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line2);border-radius:10px;background:var(--soft)}
+.aud .btn{border:0;background:none;padding:5px 12px;border-radius:7px}
+.aud .btn[aria-pressed="true"]{background:var(--sheet);color:var(--acc-ink);font-weight:700;box-shadow:0 1px 3px var(--shade)}
+.app[data-mode="view"] [data-aud="build"]{display:none!important}
+
+/* 한 장 그림 (layout 'view') — 층 띠 위에 큰 이름의 상자, 귀퉁이에 ArchiMate 표기 그림, 늘 보이는 꺾은선 */
+.fr.vf .fh .ft{font-size:30px}
+.fr.vf .fh .fm{max-width:48%;font-size:14px;text-align:right;line-height:1.35}
+.vband{position:absolute;left:12px;right:12px;border-radius:12px;background:color-mix(in srgb,var(--soft) 70%,transparent)}
+.vband.odd{background:color-mix(in srgb,var(--soft) 35%,transparent)}
+.vband span{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:124px;font-size:19px;font-weight:700;line-height:1.3;color:var(--ink2);text-wrap:balance;word-break:keep-all}
+.el.vw{justify-content:center;align-items:center;text-align:center;gap:5px;padding:14px 36px 12px;border-width:1.5px;word-break:keep-all;overflow-wrap:anywhere}
+.el.vw .vn{font-size:20px;font-weight:650;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-wrap:balance}
+.el.vw .vs{font-size:14.5px;color:var(--ink2);line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.el.vw .vic{position:absolute;top:9px;right:11px;width:22px;height:17px;fill:none;stroke:var(--ink2);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.el.vw .chip{position:absolute;left:10px;top:9px}
+.el.vw.sh-event{padding-left:30px;padding-right:34px}
+.el.vw.sh-event .vic{right:28px}
+.el.vw.vbox{justify-content:flex-start;padding-top:12px;background:color-mix(in srgb,var(--l-bus) 45%,var(--sheet))}
+.el.vw.vbox[data-l="app"]{background:color-mix(in srgb,var(--l-app) 45%,var(--sheet))}
+.el.vw.vbox[data-l="tec"]{background:color-mix(in srgb,var(--l-tec) 45%,var(--sheet))}
+.el.vw.vbox .vn{font-size:18px}
+.e.vw{opacity:.9;stroke-width:1.7}
+.board.focus .e.vw{opacity:.1}
+.board.focus .e.vw.on{opacity:1}
+@media (max-width:720px){.aud .btn{padding:5px 9px}}
