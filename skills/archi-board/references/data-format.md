@@ -11,7 +11,7 @@
 |---|---|---|
 | `format` | 예 | `1` — 엔진 `engine/v1/`과 짝 |
 | `title` · `sub` | 예 · 아니오 | 위 띠의 이름과 한 줄 설명 |
-| `start` | 아니오 | 처음 열 때 보여 줄 창 id. 없으면 객체 지도 → `main` 창 → 전체 |
+| `start` | 아니오 | 처음 열 때 보여 줄 창 id. 없으면 처음 보는 사람 쪽에서는 첫 `view` 창, 만드는 사람 쪽에서는 객체 지도 → `main` 창 → 전체 |
 | `frames` | 예 | 창 목록 |
 | `elements` | 예 | 창 안의 ArchiMate 상자 |
 | `relations` | 아니오 | 상자 사이 선 |
@@ -36,10 +36,38 @@
 ```
 
 - `weight` 1~5: 글자 크기와 중요도. `w`: 너비(px). 높이는 내용에 맞춰 엔진이 정한다.
-- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens` · `cards`.
+- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens` · `cards` · `view`(처음 보는 사람용 한 장 — 아래).
+- `aud`: `'view'` 처음 보는 사람 · `'build'` 만드는 사람. 없으면 `view` 레이아웃은 `'view'`, 나머지는 `'build'`. `view` 창이 하나라도 있으면 위 띠에 전환이 생기고, 처음 보는 사람 쪽에서는 `'view'` 창 · 그 창들끼리의 흐름 · 그 창만 비추는 따라가기만 보인다(엔진 1.2).
   `objects` · `datamap` · `matrix` · `ring` · `screens`는 보드에 **하나씩만**.
 - `main: true`인 창이 파란 테두리 메인 흐름이다(하나만 권함).
 - `button: '이름'`을 주면 위 띠에 그 창으로 가는 단추가 생긴다.
+
+## view — 처음 보는 사람용 한 장 (엔진 1.2)
+
+그림 한 장 = 질문 하나. 위에서 아래로 띠가 있고 띠 안에 상자를 열로 놓는다. 쓰는 법과 쉬운 말 규칙은 [audience.md](audience.md).
+
+```js
+frames: [{id: 'big', kicker: '처음 보는 사람에게', title: '메모 앱은 이렇게 돈다', layout: 'view', w: 1700, cols: 4,
+          rows: {3: '쓰는 차례'},          // 띠 이름 바꾸기(없으면 아래 기본 이름)
+          sub: '그림이 답하는 질문', desc: '어떻게 읽나'}],
+elements: [
+  {f: 'big', id: 'v_user', t: 'bactor', n: '바쁜 사람', sub: '이름 아래 한 줄'},              // 자리가 없으면 띠 가운데로
+  {f: 'big', id: 'v_idea', t: 'bevent', n: '생각이 떠오름', col: 0},                          // 시작 사건 — 갈매기 모양
+  {f: 'big', id: 'v_flow', t: 'bprocess', n: '메모 남기기', col: 1, span: 3, kids: ['v_w', 'v_s']},   // 틀: 안의 단계를 차례로 저절로 잇는다
+  {f: 'big', id: 'v_w', t: 'bprocess', n: '쓴다'}, {f: 'big', id: 'v_s', t: 'bprocess', n: '저장한다'},
+  {f: 'big', id: 'v_api', t: 'acomp', n: '메모 서버', col: 2, see: 'ac_api'}                  // see: 만드는 사람 쪽 자세히(객체 · 창 · 상자 id)
+]
+```
+
+| 칸 | 뜻 |
+|---|---|
+| `row` | 위에서 몇째 띠(소수 가능). 없으면 종류로: 동기 0 · 전략(능력 · 자원) 0.5 · 행위자 · 역할 1(누가 쓰나) · 업무 서비스 2(받는 도움) · 프로세스 · 사건 3(하는 일) · 프로그램 서비스 4 · 구성요소 · 접점 5(프로그램) · 데이터 · 업무 객체 6(남는 것) · 기술 서비스 · 산출물 7(바탕 기술) · 노드 · 시스템 소프트웨어 8(돌아가는 곳) · 이행 9(만드는 순서) |
+| `col` · `span` | 열 자리(0부터, 소수 가능)와 차지하는 열 수. 없으면 그 띠의 가운데에 차례로 — 한 띠 안에서는 모두 주거나 모두 비운다. 틀(`kids`)은 `span`이 없으면 남은 폭을 채운다. 창의 `cols`(없으면 4 이상)로 열 수를 정한다 |
+| `kids` | 이 상자를 틀로 만들고 안에 단계를 가로로 놓는다. `chain: false`면 단계 사이 선을 그리지 않는다. 단계는 같은 창의 상자여야 한다 |
+| `sub` · `see` | 이름 아래 한 줄 · 옆 칸의 "만드는 사람 쪽에서 자세히 보기" |
+
+- 선은 같은 창 안이면 **늘 보이는 꺾은선**으로 그린다. 틀과 그 안의 단계 사이에는 선을 그리지 않는다.
+- 상태는 `done`이면 표시가 없고, 나머지만 귀퉁이에 쉬운 말(일부 · 아직 · 후보 · 뺌)로 보인다. 처음 보는 사람 쪽 옆 칸에는 코드 위치(`c`)가 나오지 않는다.
 
 ## elements — 상자
 
@@ -65,7 +93,7 @@
 |---|---|
 | 동기 | `stakeholder` `driver` `assessment` `goal` `outcome` `principle` `constraint` |
 | 전략 | `capability` `resource` `course` |
-| 업무 | `bactor` `brole` `bprocess` `bservice` `bobject` `product` |
+| 업무 | `bactor` `brole` `bprocess` `bservice` `bevent`(1.2) `bobject` `product` |
 | 프로그램 | `acomp` `aiface` `aservice` `dobject` |
 | 기술 | `node` `syssw` `tservice` `artifact` |
 | 이행 | `plateau` `wp` |

@@ -3,9 +3,18 @@ window.BOARD = {
   format: 1,
   title: '메모 앱 보드',
   sub: '예시 · 메모를 쓰고 저장하고 찾는 작은 웹 앱',
-  start: 'objects',
+  start: 'big',   // 처음 보는 사람용 한 장 그림부터. '만드는 사람'으로 바꾸면 객체 지도부터
 
   frames: [
+    // 처음 보는 사람(사용자 · 평가자 · 새 팀원)용 — layout 'view'. 코드 이름 없이 쉬운 말, 한 장에 상자 25개 안쪽
+    {id: 'big', kicker: '처음 보는 사람에게', title: '메모 앱은 이렇게 돈다', weight: 5, w: 1700, layout: 'view', cols: 4,
+     sub: '누가 쓰고 · 무엇을 받고 · 어떤 차례로 · 무엇이 받쳐 주나',
+     desc: '위에서 아래로 읽는다. 맨 위가 쓰는 사람, 그 아래가 그 사람이 받는 도움, 가운데가 하는 일의 차례, 아래로 갈수록 그 일을 받쳐 주는 프로그램 · 데이터 · 기술이다.',
+     why: '처음 여는 사람이 30초 안에 "무엇이고 어떻게 도는지"를 말할 수 있게 하는 그림이라 가장 먼저 보인다.'},
+    {id: 'trip', kicker: '처음 보는 사람에게 · 차례', title: '3초 안에 남기기', weight: 4, w: 1700, layout: 'view', cols: 5,
+     sub: '생각이 떠오른 순간부터 저장될 때까지 한 번의 차례',
+     desc: '시작 사건(떠오른 생각)에서 단계 넷을 왼쪽에서 오른쪽으로 지나간다. 아래 줄은 그 단계를 돕는 프로그램의 일이다.',
+     why: '사람이 실제로 겪는 순서를 한 줄로 보여 주는 그림이다.'},
     {id: 'why', kicker: '동기', title: '왜 만드는가', weight: 2, w: 700,
      sub: '누가 무엇 때문에 곤란한가', desc: '떠오른 생각을 잃어버리는 사람이 3초 안에 메모를 남기게 한다.', why: '모든 창이 이 목표를 향한다.'},
     {id: 'loop', kicker: '메인 흐름', title: '메모 한 바퀴', weight: 5, w: 1040, layout: 'ring', main: true,
@@ -36,6 +45,27 @@ window.BOARD = {
 
   // {f: 창, id, t: 종류(TYPES), n: 이름, d: 설명, s: 상태(done · part · todo · cand · gone), c: 코드 위치}
   elements: [
+    // 한 장 그림 — row: 위에서 몇째 띠(없으면 종류로 정해진다), col · span: 열 자리와 폭, kids: 틀 안의 단계(차례대로 저절로 이어진다), sub: 이름 아래 한 줄, see: 만드는 사람 쪽 자세히
+    {f: 'big', id: 'v_user', t: 'bactor', n: '바쁜 사람', sub: '떠오른 생각을 자주 잊는다', d: '생각이 떠올라도 적을 곳을 찾다가 잊는다.'},
+    {f: 'big', id: 'v_keep', t: 'bservice', n: '바로 적어 두기', sub: '3초 안에', d: '앱을 열고 저장까지 3초.', col: 1},
+    {f: 'big', id: 'v_find', t: 'bservice', n: '다시 찾기', sub: '낱말 하나로', d: '낱말로 지난 메모를 찾는다.', col: 2},
+    {f: 'big', id: 'v_idea', t: 'bevent', n: '생각이 떠오름', col: 0},
+    {f: 'big', id: 'v_flow', t: 'bprocess', n: '메모 남기기', col: 1, span: 3, kids: ['v_w', 'v_s', 'v_f']},
+    {f: 'big', id: 'v_w', t: 'bprocess', n: '쓴다', d: '글을 적으면 바로 초안에 남는다.'},
+    {f: 'big', id: 'v_s', t: 'bprocess', n: '저장한다', d: '저장을 누르면 서버로 보낸다. 끊겼으면 다시 이어질 때 올린다.'},
+    {f: 'big', id: 'v_f', t: 'bprocess', n: '찾는다', d: '낱말로 지난 메모를 찾는다.', s: 'todo'},
+    {f: 'big', id: 'v_web', t: 'acomp', n: '메모 화면', sub: '쓰고 보는 곳', d: '브라우저에서 도는 화면.', col: 1, see: 'ac_web'},
+    {f: 'big', id: 'v_api', t: 'acomp', n: '메모 서버', sub: '저장 · 찾기를 받는다', d: '화면의 요청을 받아 메모를 남기고 꺼낸다.', col: 2, see: 'ac_api'},
+    {f: 'big', id: 'v_note', t: 'dobject', n: '메모', sub: '글 · 쓴 때', col: 2},
+    {f: 'big', id: 'v_db', t: 'node', n: '데이터베이스', sub: '메모를 오래 둔다', col: 2},
+    {f: 'trip', id: 't_go', t: 'bevent', n: '떠오른 생각', col: 0},
+    {f: 'trip', id: 't_run', t: 'bprocess', n: '3초 안에 남기기', col: 1, span: 4, kids: ['t_1', 't_2', 't_3', 't_4']},
+    {f: 'trip', id: 't_1', t: 'bprocess', n: '앱을 연다'},
+    {f: 'trip', id: 't_2', t: 'bprocess', n: '한 줄 적는다'},
+    {f: 'trip', id: 't_3', t: 'bprocess', n: '저장을 누른다'},
+    {f: 'trip', id: 't_4', t: 'bprocess', n: '서버에 남는다'},
+    {f: 'trip', id: 't_draft', t: 'aservice', n: '초안 보관', sub: '끊겨도 잃지 않는다', col: 2},
+    {f: 'trip', id: 't_save', t: 'aservice', n: '저장 받기', sub: '서버가 받아 남긴다', col: 4},
     {f: 'why', id: 'st_user', t: 'stakeholder', n: '바쁜 사람', d: '생각이 떠올라도 적을 곳을 찾다가 잊는다.'},
     {f: 'why', id: 'g_fast', t: 'goal', n: '3초 안에 남긴다', d: '앱을 열고 저장까지 3초.'},
     {f: 'why', id: 'pr_off', t: 'principle', n: '끊겨도 쓴다', d: '네트워크가 없어도 쓰고, 다시 이어지면 올린다.'},
@@ -56,6 +86,10 @@ window.BOARD = {
 
   // [보내는 쪽, 받는 쪽, 관계(RELS)]
   relations: [
+    ['v_user', 'v_flow', 'assignment'], ['v_keep', 'v_user', 'serving'], ['v_find', 'v_user', 'serving'],
+    ['v_s', 'v_keep', 'realization'], ['v_f', 'v_find', 'realization'], ['v_idea', 'v_flow', 'triggering'],
+    ['v_web', 'v_w', 'serving'], ['v_api', 'v_s', 'serving'], ['v_web', 'v_api', 'flow'], ['v_api', 'v_note', 'access'], ['v_db', 'v_api', 'serving'],
+    ['t_go', 't_run', 'triggering'], ['t_draft', 't_2', 'serving'], ['t_save', 't_4', 'serving'],
     ['g_fast', 'st_user', 'association'], ['pr_off', 'bp_sync', 'influence'],
     ['bp_write', 'bp_save', 'triggering'], ['bp_save', 'bp_sync', 'triggering'], ['bp_sync', 'bp_find', 'triggering'],
     ['ba_user', 'bp_write', 'assignment'], ['ac_web', 'bp_write', 'serving'], ['ac_api', 'bp_save', 'serving'],
@@ -67,6 +101,8 @@ window.BOARD = {
   flows: [['loop', 'parts', '부품이 일을 한다'], ['loop', 'why', '목표를 이룬다'], ['road', 'parts', '이 순서로 만든다'], ['objects', 'data', '부품이 쓰고 읽는 데이터']],
 
   tour: [
+    {t: '메모 앱 한 장', f: ['big'], ids: ['v_user', 'v_keep', 'v_find'], p: '맨 위의 바쁜 사람이 받는 도움은 둘 — 바로 적어 두기와 다시 찾기. 가운데 차례(쓴다 → 저장한다 → 찾는다)가 그 도움을 만든다.'},
+    {t: '3초 안에 남기는 차례', f: ['trip'], ids: ['t_go', 't_1', 't_2', 't_3', 't_4'], p: '생각이 떠오른 순간부터 서버에 남을 때까지 네 단계. 끊겨도 초안이 남는다.'},
     {t: '한 바퀴', f: ['loop'], ids: ['ba_user', 'bp_write', 'bp_save', 'bp_sync', 'bp_find'], p: '메모 하나는 쓰기 → 저장 → 동기화 → 찾기를 돈다.'},
     {t: '부품', f: ['parts'], ids: ['ac_web', 'ac_api', 'node_db'], p: '화면이 서버에 부탁하고, 서버가 데이터베이스에 쓴다.'},
     {t: '객체 지도', f: ['objects'], ids: [], p: '부품마다 카드 하나. 카드를 누르면 자세히 나온다.'}

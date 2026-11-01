@@ -1,9 +1,10 @@
-/*! archi-board engine v1.1.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
+/*! archi-board engine v1.2.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
+ * 1.2: 처음 보는 사람용 한 장 그림(layout 'view')과 '처음 보는 사람 / 만드는 사람' 전환.
  * 데이터는 window.BOARD (board-data.js)에서 읽는다. 형식: https://github.com/gamercross/archi-board/blob/main/skills/archi-board/references/data-format.md
  * MIT License */
 (() => {
 'use strict';
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 if (!window.BOARD) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:24px;font:16px system-ui">board-data.js를 board.js보다 먼저 불러 window.BOARD를 채워 주세요.</p>'); return; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /*MODEL-START*/
@@ -13,7 +14,7 @@ const TYPES = {
   goal:['목표','Goal','mot','cut'], outcome:['결과','Outcome','mot','cut'], principle:['원칙','Principle','mot','cut'], constraint:['제약','Constraint','mot','cut'],
   capability:['능력','Capability','str','round'], resource:['자원','Resource','str','square'], course:['행동 방침','Course of Action','str','round'],
   bactor:['업무 행위자','Business Actor','bus','square'], brole:['업무 역할','Business Role','bus','square'], bprocess:['업무 프로세스','Business Process','bus','round'],
-  bservice:['업무 서비스','Business Service','bus','pill'], bobject:['업무 객체','Business Object','bus','square'], product:['상품','Product','bus','square'],
+  bservice:['업무 서비스','Business Service','bus','pill'], bevent:['업무 사건','Business Event','bus','event'], bobject:['업무 객체','Business Object','bus','square'], product:['상품','Product','bus','square'],
   acomp:['프로그램 구성요소','Application Component','app','square'], aiface:['프로그램 접점','Application Interface','app','square'],
   aservice:['프로그램 서비스','Application Service','app','pill'], dobject:['데이터 객체','Data Object','app','square'],
   node:['노드','Node','tec','square'], syssw:['시스템 소프트웨어','System Software','tec','square'], tservice:['기술 서비스','Technology Service','tec','pill'],
@@ -36,6 +37,11 @@ const FORMAT = 1;
 if (B.format && Math.floor(B.format) !== FORMAT) console.warn(`[archi-board] 데이터 형식 ${B.format}은 이 엔진(v${FORMAT})과 다릅니다. engine/v${Math.floor(B.format)}/를 쓰세요.`);
 const arr = v => Array.isArray(v) ? v : [];
 const FRAMES = arr(B.frames).map(f => Object.assign({kicker: '', title: f.id, weight: 3, w: 900, layout: 'rows', sub: '', desc: '', why: '', recent: [], ring: [], center: []}, f));
+// 창마다 누구를 위한 것인가 — 'view' 처음 보는 사람(사용자 · 평가자 · 새 팀원), 'build' 만드는 사람. 한 장 그림은 기본이 view, 나머지는 build
+const AUD = f => (f && (f.aud === 'view' || f.aud === 'build')) ? f.aud : (f && f.layout === 'view' ? 'view' : 'build');
+const HASV = FRAMES.some(f => AUD(f) === 'view');
+let AUDM = 'build';
+if (HASV) { AUDM = 'view'; try { const m = localStorage.getItem('archi-board:aud:' + (B.title || '')); if (m === 'view' || m === 'build') AUDM = m; } catch (e) {} }
 const E = arr(B.elements).map(x => Array.isArray(x)
   ? (([f, id, t, n, d, s, c, extra]) => Object.assign({f, id, t, n, d: d || '', s: s || 'rule', c: c || ''}, extra || {}))(x)
   : Object.assign({d: '', s: 'rule', c: ''}, x));
@@ -127,17 +133,18 @@ const cardsOf = f => CARDS.filter(x => x.f === f.id);
 const cst = x => x.sl || ST[x.s] || '';
 const md = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 
-const SHELL = `<div class="app">
+const SHELL = `<div class="app" id="app" data-mode="${AUDM}">
   <header class="top">
     <div class="top-row">
       <div class="brand"><h1>${esc(B.title || 'archi-board')}</h1><p>${esc(B.sub || '')}</p></div>
       <div class="acts">
-        <button class="btn pri" id="bObj" type="button">객체 지도</button>
-        <button class="btn" id="bData" type="button">데이터 지도</button>
-        <button class="btn" id="bIns" type="button">판단 · 차트</button>
-${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="button" data-frb="${esc(f.id)}">${esc(f.button)}</button>`).join('\n')}
+${HASV ? `        <div class="aud" role="group" aria-label="누구를 위한 보기"><button class="btn" type="button" data-audm="view">처음 보는 사람</button><button class="btn" type="button" data-audm="build">만드는 사람</button></div>` : ''}
+        <button class="btn pri" id="bObj" type="button" data-aud="build">객체 지도</button>
+        <button class="btn" id="bData" type="button" data-aud="build">데이터 지도</button>
+        <button class="btn" id="bIns" type="button" data-aud="build">판단 · 차트</button>
+${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="button" data-frb="${esc(f.id)}" data-aud="${AUD(f)}">${esc(f.button)}</button>`).join('\n')}
         <button class="btn" id="bTour" type="button">흐름 따라가기</button>
-        <button class="btn" id="bUC" type="button">순서 · 앱</button>
+        <button class="btn" id="bUC" type="button" data-aud="build">순서 · 앱</button>
         <button class="btn" id="bFit" type="button">전체 보기</button>
         <button class="btn" id="bLegend" type="button">읽는 법</button>
       </div>
@@ -273,9 +280,47 @@ function layoutData(f) {
   f.dl = {fx, fy, fw, bw, bh, bg, sx: fx, sy, cw, cg, pp, hh, ch, gap, sh};
   return sy + sh + G;
 }
+// 한 장 그림 (layout 'view') — 그림 1처럼 위에서 아래로 층 띠, 띠 안에 상자를 열(col)로 놓는다. kids가 있는 상자는 틀이 되어 안의 단계를 가로 사슬로 잇는다(그림 2)
+const VW = {lab: 150, gx: 36, gy: 78, bh: 104, ch: 84, cHead: 52, cPad: 22, cGap: 64};
+const VROW = {mot: 0, str: 0.5, imp: 9, bactor: 1, brole: 1, stakeholder: 1, bservice: 2, bprocess: 3, bevent: 3, bfunction: 3, aservice: 4, acomp: 5, aiface: 5, dobject: 6, bobject: 6, tservice: 7, node: 8, syssw: 8, artifact: 7};
+const vRowOf = x => x.row != null ? +x.row : (VROW[x.t] ?? VROW[TYPES[x.t][2]] ?? 4);
+const VLAB = r => ({0: '왜', 0.5: '할 수 있게 되는 것', 9: '만드는 순서', 1: '누가 쓰나', 2: '받는 도움', 3: '하는 일', 4: '프로그램이 하는 일', 5: '프로그램', 6: '남는 것', 7: '바탕 기술', 8: '돌아가는 곳'})[r] || '';
+function layoutView(f) {
+  const kidOf = {};
+  f.items.forEach(p => arr(p.kids).forEach(k => { if (byId[k] && byId[k].f === f.id) kidOf[k] = p.id; }));
+  const top = f.items.filter(x => !kidOf[x.id]);
+  // 틀(kids)은 span이 없으면 그 띠의 남은 폭을 채운다 — 단계 수가 열 수를 정하지 않게
+  const fixed = x => x.span ? +x.span : arr(x.kids).length ? 0 : 1;
+  const cols = f.cols || Math.max(4, ...top.map(x => (x.col != null ? +x.col : 0) + Math.max(1, fixed(x))));
+  const spanIn = (x, row) => x.span ? +x.span : !arr(x.kids).length ? 1 : x.col != null ? Math.max(1, cols - +x.col) : Math.max(1, cols - row.filter(y => y !== x).reduce((a, y) => a + Math.max(1, fixed(y)), 0));
+  const x0 = PAD + VW.lab, cw = (f.w - x0 - PAD - (cols - 1) * VW.gx) / cols;
+  const rowsN = [...new Set(top.map(vRowOf))].sort((a, b) => a - b);
+  let y = HEAD + 44; f.vrows = [];
+  rowsN.forEach((r, ri) => {
+    const inRow = top.filter(x => vRowOf(x) === r);
+    const span = x => spanIn(x, inRow);
+    let c0 = (cols - inRow.filter(x => x.col == null).reduce((a, x) => a + span(x), 0)) / 2;
+    inRow.forEach(x => { if (x.col != null) x.vcol = +x.col; else { x.vcol = c0; c0 += span(x); } });
+    const rh = inRow.some(x => arr(x.kids).length) ? VW.cHead + VW.ch + VW.cPad : VW.bh;
+    inRow.forEach(x => {
+      const ks = arr(x.kids).map(k => byId[k]).filter(k => k && kidOf[k.id] === x.id), sp = span(x);
+      const w = sp * cw + (sp - 1) * VW.gx, lx = x0 + x.vcol * (cw + VW.gx), h = ks.length ? rh : VW.bh;
+      place(x, lx, y + (rh - h) / 2, w, h);
+      if (!ks.length) return;
+      x.vbox = true;
+      const kw = (w - 2 * VW.cPad - (ks.length - 1) * VW.cGap) / ks.length;
+      ks.forEach((k, i) => { place(k, lx + VW.cPad + i * (kw + VW.cGap), y + VW.cHead, kw, VW.ch); k.vin = x.id; });
+      if (x.chain !== false) ks.slice(1).forEach((k, i) => { if (!R.some(([a, b]) => a === ks[i].id && b === k.id)) R.push([ks[i].id, k.id, 'triggering']); });
+    });
+    f.vrows.push({r, i: ri, y: y - 20, h: rh + 40, label: (f.rows && f.rows[r]) || VLAB(r), ids: inRow.flatMap(x => [x.id, ...arr(x.kids).filter(k => kidOf[k] === x.id)])});
+    y += rh + VW.gy;
+  });
+  return y - VW.gy + 34;
+}
 function layout(f) {
   let bottom;
-  if (f.layout === 'ring') {
+  if (f.layout === 'view') bottom = layoutView(f);
+  else if (f.layout === 'ring') {
     const RW = EW + 24, ry = 230, cx = f.w / 2, rx = f.w / 2 - PAD - RW / 2 - 8, cy = HEAD + 40 + ry + EH / 2;
     f.ring.forEach((id, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / f.ring.length; place(byId[id], cx + rx * Math.cos(a) - RW / 2, cy + ry * Math.sin(a) - EH / 2, RW, EH); });
     f.center.forEach((id, i) => place(byId[id], cx - RW / 2, cy - EH - 7 + i * (EH + 14), RW, EH));
@@ -318,8 +363,11 @@ function layout(f) {
 (function arrange() {
   const seen = new Set();
   const cols = (arr(B.arrange).length ? B.arrange : [[]]).map(c => arr(c).map(r => (Array.isArray(r) ? r : [r]).filter(id => FR[id] && !seen.has(id) && seen.add(id))).filter(r => r.length));
+  const restV = FRAMES.filter(f => !seen.has(f.id) && AUD(f) === 'view').map(f => f.id);
+  restV.forEach(id => seen.add(id));
   const rest = FRAMES.filter(f => !seen.has(f.id)).map(f => f.id);
   for (let i = 0; i < rest.length; i += 3) cols[0].push(rest.slice(i, i + 3));
+  if (restV.length) cols.unshift(restV.map(id => [id]));
   let x0 = 0;
   cols.forEach(col => {
     let y = 0, wmax = 0;
@@ -360,35 +408,59 @@ function countText(c) { return ['done','part','todo','cand','gone'].filter(k => 
 FRAMES.forEach(f => {
   f.c = counts(f.layout === 'datamap' ? DM : f.layout === 'cards' ? cardsOf(f) : f.items);
   const d = document.createElement('section');
-  d.className = `fr w${f.weight}` + (f.main ? ' main' : '');
+  d.className = `fr w${f.weight}` + (f.main ? ' main' : '') + (f.layout === 'view' ? ' vf' : '');
+  d.dataset.aud = AUD(f);
   d.style.cssText = `left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px`;
-  d.innerHTML = `<button class="fh" type="button"><span class="fk">${esc(f.kicker)}</span><span class="ft">${esc(f.title)}</span><span class="fm">${countText(f.c)} ${meter(f.c)}</span></button>` +
-    f.bands.map(b => `<div class="band" data-l="${b.lk}" style="top:${b.y}px;height:${b.h}px"><span>${LK[b.lk]}</span></div>`).join('');
+  const vm = f.layout !== 'view';
+  d.innerHTML = `<button class="fh" type="button"><span class="fk">${esc(f.kicker)}</span><span class="ft">${esc(f.title)}</span>${vm ? `<span class="fm">${countText(f.c)} ${meter(f.c)}</span>` : f.sub ? `<span class="fm">${esc(f.sub)}</span>` : ''}</button>` +
+    f.bands.map(b => `<div class="band" data-l="${b.lk}" style="top:${b.y}px;height:${b.h}px"><span>${LK[b.lk]}</span></div>`).join('') +
+    arr(f.vrows).map(b => `<div class="vband${b.i % 2 ? ' odd' : ''}" style="top:${b.y}px;height:${b.h}px"><span>${esc(b.label)}</span></div>`).join('');
   d.querySelector('.fh').addEventListener('click', () => { if (!moved) openFrame(f.id); });
   $('#frames').append(d); f.dom = d;
 
   const s = document.createElement('button');
-  s.type = 'button'; s.className = `sum w${f.weight}` + (f.main ? ' main' : '') + (f.layout === 'objects' || f.layout === 'datamap' ? ' objs' : '');
+  s.type = 'button'; s.className = `sum w${f.weight}` + (f.main ? ' main' : '') + (f.layout === 'objects' || f.layout === 'datamap' || f.layout === 'view' ? ' objs' : '');
+  s.dataset.aud = AUD(f);
   s.style.cssText = `left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;--z:${Math.min(2.2, Math.max(1, Math.min(f.w / 800, f.h / 900))).toFixed(2)}`;
-  s.innerHTML = `<span class="sk">${esc(f.kicker)}</span><span class="st">${esc(f.title)}</span>` + (f.h > 420 ? `<span class="ss">${esc(f.sub)}</span>` : '') + meter(f.c) + `<span class="sc">${countText(f.c)}</span>`;
+  s.innerHTML = `<span class="sk">${esc(f.kicker)}</span><span class="st">${esc(f.title)}</span>` + (f.h > 420 ? `<span class="ss">${esc(f.sub)}</span>` : '') + (vm ? meter(f.c) + `<span class="sc">${countText(f.c)}</span>` : '');
   s.addEventListener('click', () => { if (!moved) openFrame(f.id); });
   $('#sums').append(s);
 
   const ch = document.createElement('button');
-  ch.type = 'button'; ch.className = 'chipf' + (f.main ? ' main' : '');
-  ch.innerHTML = `${esc(f.title)} ${meter(f.c)}`;
+  ch.type = 'button'; ch.className = 'chipf' + (f.main ? ' main' : ''); ch.dataset.aud = AUD(f);
+  ch.innerHTML = `${esc(f.title)} ${vm ? meter(f.c) : ''}`;
   ch.addEventListener('click', () => openFrame(f.id));
   $('#chips').append(ch);
 });
 
-E.forEach(it => {
+// ArchiMate 표기 그림 — 상자 오른쪽 위의 작은 그림(행위자 · 서비스 · 프로세스 · 사건 · 구성요소 · 객체 · 노드 …)
+const ICON = {
+  bactor: '<circle cx="11" cy="3.2" r="2.2"/><path d="M11 5.4v5.4M7 7.6h8M11 10.8l-3.4 4M11 10.8l3.4 4"/>', stakeholder: '<rect x="2" y="3" width="18" height="10" rx="5"/><path d="M6 3v10"/>',
+  brole: '<rect x="4" y="4" width="14" height="9" rx="4.5"/><ellipse cx="18" cy="8.5" rx="2.4" ry="4.5"/>',
+  bservice: '<rect x="2" y="4" width="18" height="9" rx="4.5"/>', aservice: '<rect x="2" y="4" width="18" height="9" rx="4.5"/>', tservice: '<rect x="2" y="4" width="18" height="9" rx="4.5"/>',
+  bprocess: '<path d="M2 6h11V2.5l7 6-7 6V11H2z"/>', bevent: '<path d="M2 3h13l4 5.5-4 5.5H2l4-5.5z"/>',
+  acomp: '<rect x="6" y="2" width="14" height="13" rx="1"/><rect x="3" y="4.5" width="6" height="2.6"/><rect x="3" y="9.5" width="6" height="2.6"/>',
+  aiface: '<circle cx="15" cy="8.5" r="4"/><path d="M2 8.5h9"/>',
+  dobject: '<rect x="3" y="2.5" width="16" height="12" rx="1"/><path d="M3 6.5h16"/>', bobject: '<rect x="3" y="2.5" width="16" height="12" rx="1"/><path d="M3 6.5h16"/>',
+  node: '<path d="M3 6.5h13v8.5H3zM3 6.5l3-3.5h13l-3 3.5M19 3v8.5l-3 3.5"/>', syssw: '<circle cx="10" cy="9" r="5.5"/><path d="M12.5 4.3A5.5 5.5 0 0 1 18 9.5"/>',
+  artifact: '<path d="M5 2h8l4 4v9H5zM13 2v4h4"/>', goal: '<circle cx="11" cy="8.5" r="6"/><circle cx="11" cy="8.5" r="3"/><circle cx="11" cy="8.5" r=".6"/>',
+  outcome: '<circle cx="10" cy="9" r="5.5"/><circle cx="10" cy="9" r="2.4"/><path d="M10 9l8-6M15 3h3v3"/>', principle: '<rect x="5" y="2" width="12" height="13" rx="1"/><path d="M11 5v5M11 12.5v.4"/>',
+  driver: '<circle cx="11" cy="8.5" r="5"/><path d="M11 1.5v14M4 8.5h14M6 3.5l10 10M16 3.5l-10 10"/>', constraint: '<path d="M6 3h14l-4 11H2z"/><path d="M8 3l-4 11"/>',
+  assessment: '<circle cx="9" cy="7.5" r="4.5"/><path d="M12.4 10.9l5 4.6"/>', capability: '<path d="M3 15h5v-4h5V7h5v8H3"/>', wp: '<rect x="2" y="4" width="18" height="9" rx="4.5"/><path d="M13 2l3 2-3 2"/>'
+};
+const isView = it => FR[it.f] && FR[it.f].layout === 'view';
+const VST = {part: '일부', todo: '아직', cand: '후보', gone: '뺌'};
+[...E].sort((a, b) => (b.vbox ? 1 : 0) - (a.vbox ? 1 : 0)).forEach(it => {
   const [ko, , lk, sh] = TYPES[it.t];
   const b = document.createElement('button');
   b.type = 'button';
-  b.className = `el sh-${sh} st-${it.s}`;
+  b.className = `el sh-${sh} st-${it.s}` + (isView(it) ? ' vw' + (it.vbox ? ' vbox' : '') : '');
   b.dataset.l = it.t === 'plateau' ? 'pla' : lk;
+  b.dataset.aud = AUD(FR[it.f]);
   b.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px`;
-  b.innerHTML = `<span class="et"><i>${ko}</i>${ST[it.s] ? `<b class="chip ${it.s}">${ST[it.s]}</b>` : ''}</span><span class="en">${esc(it.n)}</span>` +
+  if (isView(it)) b.innerHTML = (ICON[it.t] ? `<svg class="vic" viewBox="0 0 22 17" aria-hidden="true">${ICON[it.t]}</svg>` : '') + (VST[it.s] ? `<b class="chip ${it.s}">${VST[it.s]}</b>` : '') +
+    `<span class="vn">${esc(it.n)}</span>` + (it.sub ? `<span class="vs">${esc(it.sub)}</span>` : '');
+  else b.innerHTML = `<span class="et"><i>${ko}</i>${ST[it.s] ? `<b class="chip ${it.s}">${ST[it.s]}</b>` : ''}</span><span class="en">${esc(it.n)}</span>` +
     (it.t === 'wp' ? `<span class="ew">${esc(it.when)} · ${esc(it.who)}</span>` : '');
   b.addEventListener('click', () => { if (!moved) select(it.id, false); });
   $('#els').append(b); it.dom = b;
@@ -429,7 +501,7 @@ UC.forEach(u => {
   });
   const dot = reduce ? '' : `<circle class="sdot" r="5.5"><animateMotion dur="${(u.steps.length * 1.3).toFixed(1)}s" repeatCount="indefinite" path="${all}"/></circle>`;
   const d = document.createElement('div');
-  d.className = 'seq';
+  d.className = 'seq'; d.dataset.aud = AUD(FR[u.f]);
   d.style.cssText = `left:${u.x}px;top:${u.y}px;width:${u.w}px;height:${u.h}px`;
   d.innerHTML = `<svg width="${u.w}" height="${u.h}" aria-hidden="true">${sv}${dot}</svg>` + h + labels;
   d.querySelector('[data-play]').addEventListener('click', () => { if (!moved) playUC(u.id, 0); });
@@ -441,7 +513,7 @@ UC.forEach(u => {
 // 앱 화면 카드
 if (FSCR) SCR.forEach((x, i) => {
   const d = document.createElement('article');
-  d.className = 'scr';
+  d.className = 'scr'; d.dataset.aud = AUD(FSCR);
   d.style.cssText = `left:${x.x}px;top:${x.y}px;width:${x.w}px;height:${x.h}px`;
   d.innerHTML = `<button class="shot" type="button" style="height:${x.ih}px" aria-label="${esc(x.t)} 크게 보기"><img src="${(IMG[x.img] || x.img)}" alt="${esc(x.t)}" loading="lazy" decoding="async"></button>` +
     `<div class="sb"><div class="st1"><em>${i + 1}</em><b>${esc(x.t)}</b></div><span class="url">${esc(x.url)}</span>` +
@@ -467,7 +539,7 @@ const cardSec = c => {
 const cardName = id => { const y = CI[id]; return `${y.no ? y.no + ' ' : ''}${y.n}`; };
 CARDS.forEach(x => {
   const f = FR[x.f], d = document.createElement('article');
-  d.className = 'cd' + (x.img ? ' pic' : '') + (f.notes ? ' nt' : '');
+  d.className = 'cd' + (x.img ? ' pic' : '') + (f.notes ? ' nt' : ''); d.dataset.aud = AUD(f);
   d.style.cssText = `left:${x.x}px;top:${x.y}px;width:${x.w}px;height:${x.h}px`;
   const tags = x.refs.map(r => `<span class="rq">${esc(r)}</span>`).join('') +
     x.els.filter(id => byId[id]).map(id => `<button class="go" type="button" data-e="${id}">${esc(byId[id].n)}</button>`).join('') +
@@ -581,7 +653,7 @@ const head = t => String(t).split(' — ')[0];
   PKG.forEach(p => {
     p.x = f.x + p.lx; p.y = f.y + p.ly;
     const d = document.createElement('div');
-    d.className = 'pkg'; d.dataset.l = p.l;
+    d.className = 'pkg'; d.dataset.l = p.l; d.dataset.aud = AUD(FO);
     d.style.cssText = `left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px`;
     d.innerHTML = `<h4>${esc(p.n)}</h4><p>${esc(p.d)}</p>`;
     layer.append(d); p.dom = d;
@@ -616,7 +688,7 @@ const head = t => String(t).split(' — ')[0];
     lab += `<g class="oel" data-i="${i}"><rect x="${mx - tw / 2}" y="${my - 15}" width="${tw}" height="30" rx="15"/><text x="${mx}" y="${my + 5}" text-anchor="middle">${esc(txt)}</text></g>`;
   });
   const g = document.createElementNS(NS, 'svg');
-  g.setAttribute('class', 'oedges'); g.setAttribute('aria-hidden', 'true');
+  g.setAttribute('class', 'oedges'); g.setAttribute('aria-hidden', 'true'); g.dataset.aud = AUD(FO);
   g.setAttribute('width', f.x + f.w); g.setAttribute('height', f.y + f.h);
   g.innerHTML = sv + lab;
   layer.append(g);
@@ -626,7 +698,7 @@ const head = t => String(t).split(' — ')[0];
   OIDS.forEach(id => {
     const o = OBJ[id], st = byId[id] ? byId[id].s : 'done', ucs = OUC[id];
     const d = document.createElement('article');
-    d.className = 'ob'; d.dataset.l = o.pk.l; d.dataset.o = id;
+    d.className = 'ob'; d.dataset.l = o.pk.l; d.dataset.o = id; d.dataset.aud = AUD(FO);
     d.style.cssText = `left:${o.x}px;top:${o.y}px;width:${o.w}px;height:${o.h}px`;
     d.innerHTML = `<button class="oh" type="button" data-open><i>«${esc(OST[id])}»</i><b>${esc(ON[id])}</b>${ST[st] ? `<b class="chip ${st}">${ST[st]}</b>` : ''}</button>` +
       `<div class="obb"><p class="one">${esc(o.one)}</p>` +
@@ -653,7 +725,7 @@ const uniq = a => a.filter((v, i) => a.indexOf(v) === i);
 (function dataMap() {
   if (!FD) return;
   const f = FD, L = f.dl, box = document.createElement('div');
-  box.className = 'dmap';
+  box.className = 'dmap'; box.dataset.aud = AUD(FD);
   box.style.cssText = `left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px`;
   let h = `<div class="dfh" style="left:${L.fx}px;top:${L.fy}px;width:${L.fw}px"><b>한 줄 흐름</b><span>Claude Code의 알림 하나가 들어와 판정이 남기까지 — 칸을 누르면 그 칸이 쓰고 읽는 데이터가 켜진다</span></div>`;
   DFLOW.forEach((s, i) => {
@@ -692,7 +764,7 @@ const uniq = a => a.filter((v, i) => a.indexOf(v) === i);
 (function matrix() {
   if (!FM) return;
   const f = FM, M = f.mx, d = document.createElement('div');
-  d.className = 'mx';
+  d.className = 'mx'; d.dataset.aud = AUD(FM);
   d.style.cssText = `left:${f.x + M.x}px;top:${f.y + M.y}px;width:${M.w}px;height:${M.h}px;grid-template-columns:190px repeat(${UC.length},1fr);grid-template-rows:64px repeat(${MXR.length},36px)`;
   let h = '<div></div>' + UC.map(u => `<button class="mh" type="button" data-uc="${u.id}" data-k="0" title="${esc(u.t)} · ${esc(FR[u.f].title)}">${esc(u.s)}</button>`).join('');
   MXR.forEach(el => {
@@ -740,8 +812,28 @@ if (FRING) {
 const lp = FRING.ringG;
 svg += `<path id="ringpath" class="ringp" d="M${FRING.x + lp.cx} ${FRING.y + lp.cy - lp.ry}A${lp.rx} ${lp.ry} 0 1 1 ${FRING.x + lp.cx} ${FRING.y + lp.cy + lp.ry}A${lp.rx} ${lp.ry} 0 1 1 ${FRING.x + lp.cx} ${FRING.y + lp.cy - lp.ry}"/>`;
 }
+// 한 장 그림의 꺾은선: 같은 띠면 옆으로, 다른 띠면 아래위로. 겹치는 폭이 있으면 곧은 세로선
+function vPath(A, Bx) {
+  const ov = Math.min(A.x + A.w, Bx.x + Bx.w) - Math.max(A.x, Bx.x), ovy = Math.min(A.y + A.h, Bx.y + Bx.h) - Math.max(A.y, Bx.y);
+  if (ovy > 12) {
+    const left = A.x < Bx.x, y = Math.max(A.y, Bx.y) + ovy / 2;
+    return `M${left ? A.x + A.w : A.x} ${y}H${left ? Bx.x : Bx.x + Bx.w}`;
+  }
+  const down = A.y < Bx.y, y1 = down ? A.y + A.h : A.y, y2 = down ? Bx.y : Bx.y + Bx.h;
+  if (ov > 30) { const x = Math.max(A.x, Bx.x) + ov / 2; return `M${x} ${y1}V${y2}`; }
+  // 겹치지 않으면 서로를 향한 쪽 끝에서 나가고 들어온다 — 이웃한 꺾은선이 한 줄로 겹치지 않게
+  const x1 = clamp(Bx.x + Bx.w / 2, A.x + 18, A.x + A.w - 18), x2 = clamp(A.x + A.w / 2, Bx.x + 18, Bx.x + Bx.w - 18), my = (y1 + y2) / 2;
+  return `M${x1} ${y1}V${my}H${x2}V${y2}`;
+}
+const audE = (A, Bx) => AUD(FR[A.f]) === 'build' || AUD(FR[Bx.f]) === 'build' ? 'build' : 'view';
 R.forEach(([a, b, t], i) => {
   const A = byId[a], B = byId[b], cross = A.f !== B.f, st = ES[t];
+  if (!cross && isView(A) && (A.vin === b || B.vin === a)) { svg += `<path class="e x" data-i="${i}" data-aud="${audE(A, B)}" d="M0 0"/>`; return; }
+  if (!cross && isView(A)) {
+    svg += `<path class="e vw" data-i="${i}" data-aud="${audE(A, B)}" data-s="${st.s || ''}" data-e="${st.e || ''}" d="${vPath(A, B)}"` +
+      (st.d ? ` stroke-dasharray="${st.d}"` : '') + (st.s ? ` marker-start="url(#m-${st.s})"` : '') + (st.e ? ` marker-end="url(#m-${st.e})"` : '') + '/>';
+    return;
+  }
   let [x1, y1] = anchor(A, B), [x2, y2] = anchor(B, A);
   if (pairs.has(b + '>' + a)) { const L = Math.hypot(x2 - x1, y2 - y1) || 1, ox = -(y2 - y1) / L * 8, oy = (x2 - x1) / L * 8; x1 += ox; y1 += oy; x2 += ox; y2 += oy; }
   let d;
@@ -749,7 +841,7 @@ R.forEach(([a, b, t], i) => {
     const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
     d = Math.abs(y2 - y1) > Math.abs(x2 - x1) ? `M${x1} ${y1}C${x1} ${my} ${x2} ${my} ${x2} ${y2}` : `M${x1} ${y1}C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
   } else d = `M${x1} ${y1}L${x2} ${y2}`;
-  svg += `<path class="e ${cross ? 'x' : 'in'}" data-i="${i}" data-s="${st.s || ''}" data-e="${st.e || ''}" d="${d}"` +
+  svg += `<path class="e ${cross ? 'x' : 'in'}" data-i="${i}" data-aud="${audE(A, B)}" data-s="${st.s || ''}" data-e="${st.e || ''}" d="${d}"` +
     (st.d ? ` stroke-dasharray="${st.d}"` : '') + (st.s ? ` marker-start="url(#m-${st.s})"` : '') + (st.e ? ` marker-end="url(#m-${st.e})"` : '') + '/>';
 });
 if (FRING && !reduce) svg += `<circle class="runner" r="11"><animateMotion dur="10s" repeatCount="indefinite" rotate="auto"><mpath href="#ringpath"/></animateMotion></circle>`;
@@ -762,7 +854,7 @@ const EDGE = [...edgesSvg.querySelectorAll('path.e')];
 let fs = `<defs><marker id="fa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--acc)"/></marker></defs>`;
 const fbox = f => ({x: f.x, y: f.y, w: f.w, h: f.h});
 FLOWS.forEach(([fa, fb, label, lift]) => {
-  const A = fbox(FR[fa]), B = fbox(FR[fb]);
+  const A = fbox(FR[fa]), B = fbox(FR[fb]), fa2 = AUD(FR[fa]) === 'view' && AUD(FR[fb]) === 'view' ? 'view' : 'build';
   let p0, p1, p2, p3;
   if (lift) {
     const x1 = A.x + A.w / 2, x2 = B.x + B.w / 2, top = Math.min(A.y, B.y) - lift;
@@ -774,11 +866,12 @@ FLOWS.forEach(([fa, fb, label, lift]) => {
     const L = Math.hypot(p3[0] - p2[0], p3[1] - p2[1]) || 1; p3 = [p3[0] - (p3[0] - p2[0]) / L * 8, p3[1] - (p3[1] - p2[1]) / L * 8];
   }
   const d = `M${p0[0]} ${p0[1]}C${p1[0]} ${p1[1]} ${p2[0]} ${p2[1]} ${p3[0]} ${p3[1]}`;
-  fs += `<path class="flow-t" d="${d}"/><path class="flow" d="${d}" marker-end="url(#fa)"/>`;
+  fs += `<g data-aud="${fa2}"><path class="flow-t" d="${d}"/><path class="flow" d="${d}" marker-end="url(#fa)"/>`;
   if (label) {
     const mx = (p0[0] + 3 * p1[0] + 3 * p2[0] + p3[0]) / 8, my = (p0[1] + 3 * p1[1] + 3 * p2[1] + p3[1]) / 8, w = [...label].length * 32 + 56;
     fs += `<g class="fl"><rect x="${mx - w / 2}" y="${my - 30}" width="${w}" height="60" rx="30"/><text x="${mx}" y="${my + 12}" text-anchor="middle">${esc(label)}</text></g>`;
   }
+  fs += '</g>';
 });
 const flowsSvg = $('#flows');
 flowsSvg.setAttribute('width', WORLD.w); flowsSvg.setAttribute('height', WORLD.h);
@@ -787,7 +880,9 @@ flowsSvg.innerHTML = fs;
 // 작은 지도
 const mini = $('#miniSvg');
 mini.setAttribute('viewBox', `-60 -260 ${WORLD.w + 120} ${WORLD.h + 320}`);
-mini.innerHTML = FRAMES.map(f => `<rect class="mf${f.main ? ' main' : ''}" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="40"/>`).join('') + '<rect class="mv" id="mv" rx="30"/>';
+mini.innerHTML = FRAMES.map(f => `<rect class="mf${f.main ? ' main' : ''}" data-aud="${AUD(f)}" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="40"/>`).join('') + '<rect class="mv" id="mv" rx="30"/>';
+const shown = () => FRAMES.filter(f => !HASV || AUDM === 'build' || AUD(f) === 'view');
+function miniFit() { const u = union(shown().map(fbox)); mini.setAttribute('viewBox', `${u.x - 60} ${u.y - 260} ${u.w + 120} ${u.h + 320}`); }
 
 /* ───────── 카메라 ───────── */
 // 멀리 보기 기준은 둘뿐이다: FAR(창 이름 · 객체 큰 이름으로 바뀜), VFAR(객체 지도도 창 이름으로 바뀜).
@@ -850,7 +945,7 @@ function zoomAt(px, py, f) {
   const k = clamp(cam.k * f, KMIN, KMAX), wx = (px - cam.x) / cam.k, wy = (py - cam.y) / cam.k;
   cam = {k, x: px - wx * k, y: py - wy * k}; apply();
 }
-const fitAll = () => fly(camFor({x: -40, y: -200, w: WORLD.w + 80, h: WORLD.h + 240}, 16));
+const fitAll = () => { const u = union(shown().map(fbox)); fly(camFor({x: u.x - 40, y: u.y - 200, w: u.w + 80, h: u.h + 240}, 16)); };
 
 /* ───────── 끌기 · 확대 ───────── */
 const pts = new Map();
@@ -982,7 +1077,9 @@ function select(id, flyTo) {
   if (ST[it.s]) h += `<div><b class="chip ${it.s}">${ST[it.s]}</b></div>`;
   if (it.d) h += `<p>${esc(it.d)}</p>`;
   if (it.t === 'wp') h += `<p><b>언제</b> ${esc(it.when)} · <b>누가</b> ${esc(it.who)}</p>`;
-  if (it.c) h += `<div><h3>코드 · 파일 위치</h3><code>${esc(it.c)}</code></div>`;
+  if (it.c && !(HASV && AUDM === 'view')) h += `<div><h3>코드 · 파일 위치</h3><code>${esc(it.c)}</code></div>`;
+  if (it.vin && byId[it.vin]) h += `<div><h3>이 단계가 들어 있는 일</h3>${goBtn(it.vin)}</div>`;
+  if (it.see) h += `<div><button class="go" type="button" ${OBJ[it.see] ? `data-obj="${esc(it.see)}"` : FR[it.see] ? `data-fr="${esc(it.see)}"` : `data-go="${esc(it.see)}"`}>만드는 사람 쪽에서 자세히 보기<small>${esc(OBJ[it.see] ? ON[it.see] : FR[it.see] ? FR[it.see].title : byId[it.see] ? byId[it.see].n : it.see)}</small></button></div>`;
   h += insSec(INS.filter(x => x.refs.has(id)));
   if (OBJ[id]) h += `<div><button class="go" type="button" data-obj="${id}">객체 지도에서 자세히 보기<small>${esc(OBJ[id].one)}</small></button></div>`;
   h += `<div><h3>들어 있는 창</h3><button class="go" type="button" data-fr="${it.f}">${esc(FR[it.f].title)}</button></div>`;
@@ -995,7 +1092,7 @@ function select(id, flyTo) {
   const rel = UC.filter(u => u.rel.includes(id));
   if (rel.length) h += `<div><h3>이 일을 실제로 돌리는 순서</h3><ul>${rel.map(u => `<li><button class="go wide" type="button" data-uc="${u.id}" data-k="0">▶ ${esc(u.t)}<small>${esc(FR[u.f].title)}</small></button></li>`).join('')}</ul></div>`;
   if (inn.length) h += `<div><h3>이것으로 들어오는 연결</h3><ul>${inn.map(([a, t]) => `<li>${goBtn(a)}<span class="verb">→ ${RELS[t][0]}</span></li>`).join('')}</ul></div>`;
-  openPanel(`${ko} · ${en} · ${LK[lk]} 층`, it.n, h);
+  openPanel(isView(it) && AUDM === 'view' ? (FR[it.f].vrows.find(r => r.ids.includes(id)) || {}).label || ko : `${ko} · ${en} · ${LK[lk]} 층`, it.n, h);
   if (flyTo || cam.k < FAR) {
     const nb = [...ids].map(x => byId[x]);
     const sameFrame = nb.filter(x => x.f === it.f);
@@ -1019,7 +1116,8 @@ function openFrame(id) {
   R.forEach(([a, b]) => { const fa = byId[a].f, fb = byId[b].f; if (fa === id && fb !== id) outF.add(fb); if (fb === id && fa !== id) inF.add(fa); });
   const linked = [...new Set([...outF, ...inF])];
   if (linked.length) h += `<div><h3>이어진 창</h3><ul>${linked.map(x => `<li><button class="go" type="button" data-fr="${x}">${esc(FR[x].title)}</button></li>`).join('')}</ul></div>`;
-  for (const [lk, ko] of LAYERS) {
+  if (f.layout === 'view') arr(f.vrows).forEach(r => { h += `<div><h3>${esc(r.label)}</h3><ul>${r.ids.map(id => `<li>${goBtn(id).replace(/<small>.*?<\/small>/, '')}${VST[byId[id].s] ? `<b class="chip ${byId[id].s}">${VST[byId[id].s]}</b>` : ''}</li>`).join('')}</ul></div>`; });
+  else for (const [lk, ko] of LAYERS) {
     const its = f.items.filter(x => TYPES[x.t][2] === lk);
     if (its.length) h += `<div><h3>${ko} 층 · ${its.length}</h3><ul>${its.map(x => `<li>${goBtn(x.id).replace(/<small>.*?<\/small>/, '')}${ST[x.s] ? `<b class="chip ${x.s}">${ST[x.s]}</b>` : ''}</li>`).join('')}</ul></div>`;
   }
@@ -1393,7 +1491,9 @@ function objStep(i) {
 }
 
 $('#bUC').addEventListener('click', () => { $('#legend').hidden = true; openList(); });
+const TL = () => HASV && AUDM === 'view' ? TOUR.filter(s => s.f.every(id => AUD(FR[id]) === 'view')) : TOUR;
 function showStep(i) {
+  const TOUR = TL(); if (!TOUR.length) return;
   endUC(); endObj(); mode = 'tour'; $('#tSeq').hidden = true;
   ti = (i + TOUR.length) % TOUR.length;
   const s = TOUR[ti], ids = new Set(s.ids), ei = new Set();
@@ -1466,10 +1566,38 @@ $('#lX').addEventListener('click', () => { $('#legend').hidden = true; });
 /* ───────── 시작 ───────── */
 // 쓰지 않는 기능의 단추와 읽는 법 칸은 숨긴다
 [['#bObj', FO], ['#bData', FD], ['#bIns', INS.length], ['#bTour', TOUR.length], ['#bUC', UC.length]].forEach(([s, on]) => { if (!on) $(s).hidden = true; });
+['lgO', 'lgD', 'lgQ'].forEach(id => document.querySelectorAll(`[data-sec="${id}"]`).forEach(x => { x.dataset.aud = 'build'; }));
 [['lgO', FO], ['lgD', FD], ['lgQ', UC.length]].forEach(([id, on]) => { if (!on) document.querySelectorAll(`[data-sec="${id}"]`).forEach(x => { x.hidden = true; }); });
-const first = FR[B.start] || FO || FRAMES.find(f => f.main) || null;
+function startFrame() {
+  if (HASV && AUDM === 'view') return FR[B.start] && AUD(FR[B.start]) === 'view' ? FR[B.start] : FRAMES.find(f => AUD(f) === 'view');
+  return (FR[B.start] && AUD(FR[B.start]) === 'build' ? FR[B.start] : null) || FO || FRAMES.find(f => f.main) || FR[B.start] || null;
+}
+function setMode(m, quiet) {
+  if (!HASV || (m !== 'view' && m !== 'build')) return;
+  AUDM = m; $('#app').dataset.mode = m;
+  document.querySelectorAll('[data-audm]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.audm === m)));
+  try { localStorage.setItem('archi-board:aud:' + (B.title || ''), m); } catch (e) {}
+  $('#bTour').hidden = !TL().length;
+  miniFit();
+  if (quiet) return;
+  stopTour(); clearFocus(); closePanel(); $('#legend').hidden = true;
+  const f = startFrame(); if (f) fly(camFor(fbox(f), 20)); else fitAll();
+}
+// 보는 사람 쪽에서 만드는 사람용 창 · 상자를 열려고 하면 그쪽으로 넘어간다
+const need = f => { if (HASV && AUDM === 'view' && f && AUD(f) === 'build') setMode('build', true); };
+{ const o = openFrame; openFrame = id => { need(FR[id]); return o(id); }; }
+{ const o = select; select = (id, fl) => { need(byId[id] && FR[byId[id].f]); return o(id, fl); }; }
+{ const o = openObj; openObj = id => { need(FO); return o(id); }; }
+{ const o = openObjects; openObjects = () => { need(FO); return o(); }; }
+{ const o = openData; openData = id => { need(FD); return o(id); }; }
+{ const o = openDataMap; openDataMap = () => { need(FD); return o(); }; }
+{ const o = playUC; playUC = (id, k) => { need(UCI[id] && FR[UCI[id].f]); return o(id, k); }; }
+{ const o = showCard; showCard = id => { need(CI[id] && FR[CI[id].f]); return o(id); }; }
+document.querySelectorAll('[data-audm]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.audm)));
+if (HASV) setMode(AUDM, true);
+const first = startFrame();
 if (first) { cam = camFor(fbox(first), 20); apply(); } else { apply(); fitAll(); }
 const mainF = FRAMES.find(f => f.main);
-if (innerWidth <= 720 && mainF) { cam = camFor(fbox(mainF), 12); apply(); }
-window.ArchiBoard = {version: VERSION, format: FORMAT, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id)};
+if (innerWidth <= 720 && mainF && !(HASV && AUDM === 'view')) { cam = camFor(fbox(mainF), 12); apply(); }
+window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id)};
 })();
