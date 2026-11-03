@@ -29,7 +29,7 @@ const arr = v => (Array.isArray(v) ? v : []);
 const dup = (list, what) => { const s = new Set(); list.forEach(id => { if (s.has(id)) err(`${what} id가 겹친다: ${id}`); s.add(id); }); return s; };
 
 if (B.format && Math.floor(B.format) !== 1) err(`format ${B.format} — 이 점검은 형식 1용이다`);
-const LAYOUTS = ['rows', 'ring', 'time', 'objects', 'datamap', 'matrix', 'screens', 'cards', 'view'];
+const LAYOUTS = ['rows', 'ring', 'time', 'objects', 'datamap', 'matrix', 'screens', 'cards', 'view', 'insight'];
 const frames = arr(B.frames), fid = dup(frames.map(f => f.id), '창');
 frames.forEach(f => {
   if (f.layout && !LAYOUTS.includes(f.layout)) err(`창 ${f.id}: 모르는 layout ${f.layout} (${LAYOUTS.join(' · ')})`);
@@ -189,6 +189,12 @@ arr(B.insights).forEach(x => {
     const seen = {}, cyc = n => { if (seen[n] === 1) return true; if (seen[n] === 2) return false; seen[n] = 1; const c = (next[n] || []).some(cyc); seen[n] = 2; return c; };
     if (Object.keys(next).some(cyc)) err(`${w}: links에 돌고 도는 길이 있다 — 흐름도는 한 방향이어야 한다`);
   }
+});
+// 판단 차트 창(layout 'insight') — 그릴 차트 id가 insights에 있어야 한다
+frames.filter(f => f.layout === 'insight').forEach(f => {
+  const ids = arr(f.insights);
+  if (!ids.length && !arr(B.insights).length) err(`창 ${f.id}: layout 'insight'인데 그릴 insights가 하나도 없다`);
+  ids.forEach(id => { if (!insId.has(id)) err(`창 ${f.id}: insights의 ${id}가 B.insights에 없다`); });
 });
 arr(B.screens).forEach((x, i) => { arr(x.els).forEach(id => { if (!eid.has(id)) err(`화면 ${i + 1}: 없는 상자 ${id}`); }); if (x.uc && !uid.has(x.uc)) err(`화면 ${i + 1}: 없는 유즈케이스 ${x.uc}`); });
 const cid = dup(arr(B.cards).map(x => x.id), '카드');
