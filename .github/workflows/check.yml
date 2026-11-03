@@ -13,6 +13,8 @@ jobs:
         run: |
           node skills/archi-board/scripts/check.mjs examples/memo/board-data.js
           node skills/archi-board/scripts/check.mjs docs/board/board-data.js
+      - name: 쇼케이스 한 파일(index.html)이 원본과 같은지
+        run: node tools/build-showcase.mjs --check
       - name: 묶기 스크립트
         run: node skills/archi-board/scripts/inline.mjs examples/memo /tmp/memo.single.html
       - name: 꺼내기 → 다시 묶기가 같은 파일인지
