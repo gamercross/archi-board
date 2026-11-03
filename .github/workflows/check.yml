@@ -9,8 +9,10 @@ jobs:
         with: { node-version: 22 }
       - name: 엔진 문법
         run: node --check engine/v1/board.js
-      - name: 예시 데이터 점검
-        run: node skills/archi-board/scripts/check.mjs examples/memo/board-data.js
+      - name: 예시 및 스킬 아키텍처 데이터 점검
+        run: |
+          node skills/archi-board/scripts/check.mjs examples/memo/board-data.js
+          node skills/archi-board/scripts/check.mjs docs/board/board-data.js
       - name: 묶기 스크립트
         run: node skills/archi-board/scripts/inline.mjs examples/memo /tmp/memo.single.html
       - name: 꺼내기 → 다시 묶기가 같은 파일인지

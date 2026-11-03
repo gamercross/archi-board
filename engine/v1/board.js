@@ -1,5 +1,6 @@
 /*! archi-board engine v1.3.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
  * 1.2: 처음 보는 사람용 한 장 그림(layout 'view')과 '처음 보는 사람 / 만드는 사람' 전환.
+ * 1.3: 유저 스토리(story)와 첫 화면 플로팅 투어 배너 · 발표(슬라이드) 모드 · 조작 코치마크.
  * 데이터는 window.BOARD (board-data.js)에서 읽는다. 형식: https://github.com/gamercross/archi-board/blob/main/skills/archi-board/references/data-format.md
  * MIT License */
 (() => {
@@ -145,6 +146,7 @@ ${HASV ? `        <div class="aud" role="group" aria-label="누구를 위한 보
 ${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="button" data-frb="${esc(f.id)}" data-aud="${AUD(f)}">${esc(f.button)}</button>`).join('\n')}
         <button class="btn" id="bTour" type="button">흐름 따라가기</button>
         <button class="btn" id="bUC" type="button" data-aud="build">순서 · 앱</button>
+        <button class="btn" id="bPres" type="button">발표 모드</button>
         <button class="btn" id="bFit" type="button">전체 보기</button>
         <button class="btn" id="bLegend" type="button">읽는 법</button>
       </div>
@@ -161,7 +163,18 @@ ${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="butto
       <svg class="layer flows" id="flows" aria-hidden="true"></svg>
     </div>
     <div class="mini" id="mini" title="누르면 그 자리로 갑니다"><svg id="miniSvg"></svg></div>
-    <div class="hint">끌어서 이동 · Ctrl/⌘ + 휠 또는 두 손가락으로 확대</div>
+    <div class="hint" id="hint">끌어서 이동 · Ctrl/⌘ + 휠 확대 · 상자를 누르면 상세 설명</div>
+    <div class="tcta" id="tourCta" hidden>
+      <span>처음 보시나요? 핵심 흐름부터 차례대로 짚어 드립니다</span>
+      <button class="btn pri" type="button" id="bCtaTour">▶ 30초 흐름 따라가기</button>
+      <button class="x" type="button" id="bCtaX" aria-label="안내 배너 닫기">✕</button>
+    </div>
+    <nav class="pres" id="presBar" hidden aria-label="발표 모드 제어">
+      <button class="btn" type="button" id="pPrev">← 이전 창</button>
+      <div class="pt"><small id="pNum"></small><b id="pTitle"></b></div>
+      <button class="btn pri" type="button" id="pNext">다음 창 →</button>
+      <button class="btn" type="button" id="pExit">발표 끝내기 (Esc)</button>
+    </nav>
     <div class="zoom">
       <button type="button" id="zOut" aria-label="축소">−</button>
       <output id="zLv">100%</output>
@@ -918,7 +931,7 @@ function viewBox() {
   const wide = innerWidth > 720;
   const pw = !$('#panel').hidden && wide ? $('#panel').offsetWidth + 24 : 0;
   const ph = !$('#panel').hidden && !wide ? $('#panel').offsetHeight + 16 : 0;
-  const th = !$('#tour').hidden ? $('#tour').offsetHeight + 24 : 0;
+  const th = !$('#tour').hidden ? $('#tour').offsetHeight + 24 : !$('#presBar').hidden ? $('#presBar').offsetHeight + 24 : 0;
   return {w: board.clientWidth - pw, h: board.clientHeight - Math.max(ph, th)};
 }
 function camFor(r, pad) {
@@ -952,7 +965,7 @@ const pts = new Map();
 let moved = false, start = null, pinch = null;
 const pinchOf = () => { const [a, b] = [...pts.values()]; return {d: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2}; };
 board.addEventListener('pointerdown', ev => {
-  if (ev.target.closest('.panel,.tour,.legend,.zoom,.mini')) return;
+  if (ev.target.closest('.panel,.tour,.legend,.zoom,.mini,.tcta,.pres')) return;
   if (ev.pointerType === 'mouse' && ev.button !== 0) return;
   pts.set(ev.pointerId, {x: ev.clientX, y: ev.clientY});
   cancelAnimationFrame(anim);
@@ -1008,7 +1021,13 @@ addEventListener('keydown', ev => {
   if (ev.key === '+' || ev.key === '=') zoomAt(c.x, c.y, 1.25);
   else if (ev.key === '-') zoomAt(c.x, c.y, 0.8);
   else if (ev.key === '0') fitAll();
-  else if (ev.key === 'Escape') { if (!lb.hidden) lb.hidden = true; else if (!$('#legend').hidden) $('#legend').hidden = true; else if (!$('#tour').hidden) stopTour(); else { clearFocus(); closePanel(); } }
+  else if (ev.key === 'Escape') { if (!lb.hidden) lb.hidden = true; else if (!$('#legend').hidden) $('#legend').hidden = true; else if (!$('#presBar').hidden) stopPres(); else if (!$('#tour').hidden) stopTour(); else { clearFocus(); endStory(); closePanel(); } }
+  else if (!$('#presBar').hidden && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) {
+    ev.preventDefault(); presStep(ev.key === 'ArrowRight' ? 1 : -1);
+  }
+  else if (ust && !$('#panel').hidden && (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight')) {
+    ev.preventDefault(); openUStory(ust.u.id, ust.i + (ev.key === 'ArrowRight' ? 1 : -1));
+  }
   else if (ev.key.startsWith('Arrow') && ev.target === document.body) {
     const s = 90; cam.x += ev.key === 'ArrowLeft' ? s : ev.key === 'ArrowRight' ? -s : 0; cam.y += ev.key === 'ArrowUp' ? s : ev.key === 'ArrowDown' ? -s : 0; apply();
   }
@@ -1588,13 +1607,16 @@ function objStep(i) {
 
 $('#bUC').addEventListener('click', () => { $('#legend').hidden = true; openList(); });
 const TL = () => HASV && AUDM === 'view' ? TOUR.filter(s => s.f.every(id => AUD(FR[id]) === 'view')) : TOUR;
+let ctaOff = false, presIdx = 0;
+const syncCta = () => { $('#tourCta').hidden = ctaOff || !TL().length || !tour.hidden || !$('#presBar').hidden; };
 function showStep(i) {
   const TOUR = TL(); if (!TOUR.length) return;
-  endUC(); endObj(); mode = 'tour'; $('#tSeq').hidden = true;
+  ctaOff = true; stopPres();
+  endUC(); endObj(); endStory(); mode = 'tour'; $('#tSeq').hidden = true;
   ti = (i + TOUR.length) % TOUR.length;
   const s = TOUR[ti], ids = new Set(s.ids), ei = new Set();
   R.forEach(([a, b], k) => { if (ids.has(a) && ids.has(b)) ei.add(k); });
-  closePanel(); tour.hidden = false;
+  closePanel(); tour.hidden = false; syncCta();
   $('#tN').textContent = `${ti + 1} / ${TOUR.length}`;
   $('#tD').innerHTML = TOUR.map((_, k) => `<i class="${k === ti ? 'on' : ''}"></i>`).join('');
   $('#tT').textContent = s.t; $('#tP').textContent = s.p;
@@ -1602,17 +1624,43 @@ function showStep(i) {
   focusOn(ids, ei, true);
   fly(camFor(union(s.f.map(id => fbox(FR[id]))), 30));
 }
-function stopTour() { clearInterval(timer); timer = 0; $('#tPlay').textContent = '자동으로 넘기기'; if (!tour.hidden) { tour.hidden = true; clearFocus(); } endUC(); endObj(); endStory(); $('#tSeq').hidden = true; mode = 'tour'; }
+function stopTour() { clearInterval(timer); timer = 0; $('#tPlay').textContent = '자동으로 넘기기'; if (!tour.hidden) { tour.hidden = true; clearFocus(); } endUC(); endObj(); endStory(); $('#tSeq').hidden = true; mode = 'tour'; syncCta(); }
+function presShow(i) {
+  const list = shown(); if (!list.length) return;
+  presIdx = (i + list.length) % list.length;
+  const f = list[presIdx];
+  clearFocus(); endStory(); closePanel(); f.dom.classList.add('on');
+  $('#pNum').textContent = `발표 모드 · ${presIdx + 1} / ${list.length}`;
+  $('#pTitle').textContent = f.title;
+  fly(camFor(fbox(f), 28));
+}
+function startPres() {
+  stopTour(); closePanel(); $('#legend').hidden = true;
+  $('#app').dataset.pres = '1'; $('#presBar').hidden = false; syncCta();
+  presShow(0);
+}
+function stopPres() {
+  if ($('#presBar').hidden) return;
+  delete $('#app').dataset.pres; $('#presBar').hidden = true; clearFocus(); syncCta();
+}
+const presStep = d => presShow(presIdx + d);
 const stepNext = () => mode === 'obj' && oc ? objStep(oc.i + 1) : mode === 'uc' && cur ? ucStep(cur.k + 1) : showStep(ti + 1);
 const stepPrev = () => mode === 'obj' && oc ? objStep(oc.i - 1) : mode === 'uc' && cur ? ucStep(cur.k - 1) : showStep(ti - 1);
 $('#tSeq').addEventListener('click', () => {
   if (mode === 'obj' && oc) { const {u, k} = oc.list[oc.i]; playUC(u.id, k); }
   else if (mode === 'uc' && cur) playObj(cur.u.id, cur.k);
 });
-$('#bObj').addEventListener('click', () => { $('#legend').hidden = true; openObjects(); });
-$('#bData').addEventListener('click', () => { $('#legend').hidden = true; openDataMap(); });
-$('#bIns').addEventListener('click', () => { $('#legend').hidden = true; openInsights(); });
+$('#bObj').addEventListener('click', () => { $('#legend').hidden = true; stopPres(); openObjects(); });
+$('#bData').addEventListener('click', () => { $('#legend').hidden = true; stopPres(); openDataMap(); });
+$('#bIns').addEventListener('click', () => { $('#legend').hidden = true; stopPres(); openInsights(); });
 $('#bTour').addEventListener('click', () => { $('#legend').hidden = true; showStep(0); });
+$('#bCtaTour').addEventListener('click', () => { $('#legend').hidden = true; showStep(0); });
+$('#bCtaX').addEventListener('click', () => { ctaOff = true; syncCta(); });
+$('#bPres').addEventListener('click', () => { if ($('#presBar').hidden) startPres(); else stopPres(); });
+$('#pPrev').addEventListener('click', () => presStep(-1));
+$('#pNext').addEventListener('click', () => presStep(1));
+$('#pExit').addEventListener('click', stopPres);
+setTimeout(() => { const h = $('#hint'); if (h) h.classList.add('dim'); }, 3500);
 document.querySelectorAll('[data-frb]').forEach(b => b.addEventListener('click', () => { $('#legend').hidden = true; openFrame(b.dataset.frb); }));
 $('#tNext').addEventListener('click', stepNext);
 $('#tPrev').addEventListener('click', stepPrev);
@@ -1674,9 +1722,9 @@ function setMode(m, quiet) {
   document.querySelectorAll('[data-audm]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.audm === m)));
   try { localStorage.setItem('archi-board:aud:' + (B.title || ''), m); } catch (e) {}
   $('#bTour').hidden = !TL().length;
-  miniFit();
+  miniFit(); syncCta();
   if (quiet) return;
-  stopTour(); clearFocus(); closePanel(); $('#legend').hidden = true;
+  stopPres(); stopTour(); clearFocus(); closePanel(); $('#legend').hidden = true;
   const f = startFrame(); if (f) fly(camFor(fbox(f), 20)); else fitAll();
 }
 // 보는 사람 쪽에서 만드는 사람용 창 · 상자를 열려고 하면 그쪽으로 넘어간다
@@ -1691,9 +1739,10 @@ const need = f => { if (HASV && AUDM === 'view' && f && AUD(f) === 'build') setM
 { const o = showCard; showCard = id => { need(CI[id] && FR[CI[id].f]); return o(id); }; }
 document.querySelectorAll('[data-audm]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.audm)));
 if (HASV) setMode(AUDM, true);
+syncCta();
 const first = startFrame();
 if (first) { cam = camFor(fbox(first), 20); apply(); } else { apply(); fitAll(); }
 const mainF = FRAMES.find(f => f.main);
 if (innerWidth <= 720 && mainF && !(HASV && AUDM === 'view')) { cam = camFor(fbox(mainF), 12); apply(); }
-window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id), openStory: (id, i) => UCI[id] && openUStory(id, i)};
+window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id), openStory: (id, i) => UCI[id] && openUStory(id, i), startPres, stopPres};
 })();

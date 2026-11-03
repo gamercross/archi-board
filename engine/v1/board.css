@@ -1,4 +1,4 @@
-/*! archi-board engine v1.2.0 — MIT License */
+/*! archi-board engine v1.3.0 — MIT License */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
 /* 무한 보드 — 작업을 창(프레임)으로 늘어놓고, 창 크기는 중요도, 창 안은 ArchiMate 층별 캔버스. 멀리서는 창 이름만, 가까이 가면 안의 상자와 선. */
 :root{
@@ -162,7 +162,22 @@ svg.layer{overflow:visible;pointer-events:none}
 .mini .mf{fill:var(--soft);stroke:var(--line2);stroke-width:14}
 .mini .mf.main{fill:var(--acc-soft);stroke:var(--acc);stroke-width:24}
 .mini .mv{fill:var(--track);stroke:var(--acc);stroke-width:20}
-.hint{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(max(14px,env(safe-area-inset-bottom,0px)) + 50px);font-size:11.5px;color:var(--mute);z-index:3;text-align:right}
+.hint{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(max(14px,env(safe-area-inset-bottom,0px)) + 50px);font-size:11.5px;color:var(--ink2);background:color-mix(in srgb,var(--sheet) 92%,transparent);border:1px solid var(--line);border-radius:999px;padding:4px 11px;z-index:3;text-align:right;box-shadow:0 4px 14px -8px var(--shade);transition:opacity .4s}
+.hint.dim{opacity:.55}
+.hint:hover{opacity:1}
+
+/* 첫 화면 투어 배너 & 발표(슬라이드) 모드 */
+.tcta{position:absolute;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:3;display:flex;align-items:center;gap:10px;
+  background:var(--sheet);border:1.5px solid var(--acc);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 14px 34px -14px var(--shade);font-size:13px;font-weight:500;white-space:nowrap;max-width:calc(100% - 32px)}
+.tcta span{overflow:hidden;text-overflow:ellipsis}
+.tcta .x{border:0;background:var(--soft);border-radius:999px;width:26px;height:26px;cursor:pointer;font-size:13px;flex:none}
+.tcta .x:hover{background:var(--line)}
+.pres{position:absolute;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:4;display:flex;align-items:center;gap:10px;
+  background:var(--sheet);border:1.5px solid var(--acc);border-radius:14px;padding:8px 12px;box-shadow:0 20px 50px -20px var(--shade);max-width:calc(100% - 32px)}
+.pres .pt{display:flex;flex-direction:column;align-items:center;padding:0 10px;min-width:160px;max-width:360px;text-align:center}
+.pres .pt small{font-size:11px;font-weight:700;color:var(--acc-ink);font-variant-numeric:tabular-nums}
+.pres .pt b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.app[data-pres="1"] .chips,.app[data-pres="1"] .mini,.app[data-pres="1"] .hint,.app[data-pres="1"] .tcta{display:none!important}
 
 /* 옆 칸 */
 .panel{position:absolute;top:12px;right:max(12px,env(safe-area-inset-right,0px));bottom:12px;width:380px;max-width:calc(100% - 24px);background:var(--sheet);

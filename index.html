@@ -3,11 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>archi-board 예시</title>
+<title>archi-board 쇼케이스 · 아키텍처 & 방법론 보드</title>
 <link rel="stylesheet" href="engine/v1/board.css">
+<style>
+  body { display: flex; flex-direction: column; margin: 0; }
+  .app { flex: 1; min-height: 0; height: auto; }
+  .sc-bar {
+    order: -1; flex: none; z-index: 6;
+    background: var(--acc-soft); border-bottom: 1px solid var(--acc);
+    padding: 7px max(16px, env(safe-area-inset-left, 0px));
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--ink);
+  }
+  .sc-left, .sc-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sc-badge {
+    background: var(--acc); color: #fff; font-weight: 700; font-size: 11px;
+    padding: 2px 8px; border-radius: 999px; letter-spacing: .02em;
+  }
+  .sc-steps { color: var(--ink2); font-weight: 500; }
+  .sc-steps b { color: var(--acc-ink); }
+  .sc-tabs { display: inline-flex; gap: 2px; background: var(--sheet); padding: 2px; border-radius: 8px; border: 1px solid var(--line2); }
+  .sc-tab {
+    border: 0; background: none; padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; cursor: pointer; color: var(--ink2); text-decoration: none;
+  }
+  .sc-tab.on { background: var(--acc); color: #fff; }
+  .sc-copy {
+    border: 1px solid var(--acc); background: var(--sheet); color: var(--acc-ink);
+    border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: var(--f-mono);
+  }
+  .sc-copy:hover { background: var(--soft); }
+  .sc-x {
+    border: 0; background: none; color: var(--mute); width: 24px; height: 24px;
+    border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .sc-x:hover { background: var(--sheet); color: var(--ink); }
+  @media (max-width: 720px) { .sc-steps { display: none; } }
+</style>
 </head>
 <body>
-<script src="examples/memo/board-data.js"></script>
-<script src="engine/v1/board.js"></script>
+<aside class="sc-bar" id="scBar" aria-label="스킬 쇼케이스 및 설치 안내">
+  <div class="sc-left">
+    <span class="sc-badge">Claude Code 스킬</span>
+    <span class="sc-steps"><b>① 두 줄 설치</b> → <b>② "아키텍처 보드 만들어줘"</b> → <b>③ 앞뒷면 무한 보드 완성</b></span>
+    <nav class="sc-tabs" aria-label="예시 보드 선택">
+      <a class="sc-tab" id="tabSelf" href="?board=self">스킬 아키텍처 · BPMN 보드</a>
+      <a class="sc-tab" id="tabMemo" href="?board=memo">작은 메모 앱 예시</a>
+    </nav>
+  </div>
+  <div class="sc-right">
+    <button class="sc-copy" type="button" id="scCopy" title="/plugin marketplace add gamercross/archi-board&#10;/plugin install archi-board@archi-board">📋 설치 명령어 두 줄 복사</button>
+    <button class="sc-x" type="button" id="scClose" aria-label="쇼케이스 안내 닫기">✕</button>
+  </div>
+</aside>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search).get('board') || 'self';
+  const isMemo = q === 'memo';
+  document.getElementById(isMemo ? 'tabMemo' : 'tabSelf').classList.add('on');
+  document.getElementById('scCopy').addEventListener('click', async function () {
+    const cmd = '/plugin marketplace add gamercross/archi-board\n/plugin install archi-board@archi-board';
+    try { await navigator.clipboard.writeText(cmd); this.textContent = '✓ 설치 명령어 복사됨!'; }
+    catch (_) { prompt('Claude Code에서 아래 두 줄을 실행하세요:', cmd); }
+    setTimeout(() => { this.textContent = '📋 설치 명령어 두 줄 복사'; }, 2200);
+  });
+  document.getElementById('scClose').addEventListener('click', () => {
+    document.getElementById('scBar').hidden = true;
+    dispatchEvent(new Event('resize'));
+  });
+  const s = document.createElement('script');
+  s.src = isMemo ? 'examples/memo/board-data.js' : 'docs/board/board-data.js';
+  s.onload = () => {
+    const e = document.createElement('script');
+    e.src = 'engine/v1/board.js';
+    document.body.appendChild(e);
+  };
+  document.body.appendChild(s);
+})();
+</script>
 </body>
 </html>
