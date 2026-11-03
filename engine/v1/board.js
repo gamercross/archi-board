@@ -1514,7 +1514,7 @@ function insHeat(x, bare) {
   const bad = v => { const t = clamp((v - sc.min) / span, 0, 1); return sc.high === 'good' ? 1 - t : t; };
   const note = {}; arr(x.notes).forEach(([r, c, t]) => { note[r + '\u0000' + c] = t; });
   const vals = arr(x.values);
-  let h = `<div class="insw"><table class="hm"><thead><tr><th></th>${arr(x.cols).map(c => `<th scope="col">${esc(insName(c))}</th>`).join('')}</tr></thead><tbody>`;
+  let h = `<div><div class="insw"><table class="hm"><thead><tr><th></th>${arr(x.cols).map(c => `<th scope="col">${esc(insName(c))}</th>`).join('')}</tr></thead><tbody>`;
   arr(x.rows).forEach((r, i) => {
     h += `<tr><th scope="row">${insBtn(r)}</th>` + arr(x.cols).map((c, j) => {
       const v = (vals[i] || [])[j];
@@ -1523,7 +1523,7 @@ function insHeat(x, bare) {
       return `<td style="--t:${(bad(+v) * 100).toFixed(0)}%" title="${esc([insName(r), insName(c), v + (lb ? ' ' + lb : ''), nt].filter(Boolean).join(' · '))}"><b>${esc(v)}</b>${lb ? `<small>${esc(lb)}</small>` : ''}</td>`;
     }).join('') + '</tr>';
   });
-  h += '</tbody></table></div>';
+  h += '</tbody></table></div></div>'; // 바깥 div: 그리드 칸이 표 높이만큼 잡히게(안쪽만 두면 칸이 눌려 표가 잘린다)
   if (!bare && arr(x.notes).length) h += `<div><h3>칸마다 붙은 근거</h3>${fold(x.notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`), 3, 'dot')}</div>`;
   return h;
 }
