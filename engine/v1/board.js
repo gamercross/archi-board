@@ -354,12 +354,13 @@ function insMake(x) { // 값을 만든 순서 — 데이터에서 읽어 맞는�
     st('그린다', INSIGHTS[x.type], ok ? 'ok' : 'warn') + '</ol>';
 }
 function insBlock(x) {
-  const li = t => `<li>${esc(t)}</li>`, notes = arr(x.notes);
+  const li = t => `<li><span class="cl" title="${esc(t)}">${esc(t)}</span></li>`, notes = arr(x.notes);
+  const cap = (items, n = 3) => (items.length > n ? items.slice(0, n).concat(`<li class="more">외 ${items.length - n}개 — "패널에서 크게 보기"에서</li>`) : items).join(''); // 보드 위에는 3개까지, 나머지는 패널에서
   let k = 0;
   const col = (h, body) => `<section><i>${++k}</i><h4>${h}</h4>${body}</section>`;
-  const side = (arr(x.rubric).length ? col('값의 기준', `<ul>${x.rubric.map(li).join('')}</ul>`) : '') +
-    (notes.length ? col('칸마다 붙은 근거', `<ul>${notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`).join('')}</ul>`) : '') +
-    col('근거 · 코드 위치', x.basis.length ? `<ul>${x.basis.map(li).join('')}</ul>` : '<p class="warn">근거가 적혀 있지 않다 — 코드로 확인하기 전에는 믿지 않는다.</p>');
+  const side = (arr(x.rubric).length ? col('값의 기준', `<ul>${cap(x.rubric.map(li))}</ul>`) : '') +
+    (notes.length ? col('칸마다 붙은 근거', `<ul>${cap(notes.map(([r, c, t]) => `<li><span class="cl" title="${esc(t)}"><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</span></li>`))}</ul>`) : '') +
+    col('근거 · 코드 위치', x.basis.length ? `<ul>${cap(x.basis.map(li))}</ul>` : '<p class="warn">근거가 적혀 있지 않다 — 코드로 확인하기 전에는 믿지 않는다.</p>');
   const chart = x.type === 'heatmap' ? insHeat(x, true) : x.type === 'bar' ? insBar(x) : insSankey(x);
   return `<article class="ifb"><header><b>${esc(x.t)}</b><span class="verb">${INSIGHTS[x.type]}</span><button class="go" type="button" data-ins="${esc(x.id)}">패널에서 크게 보기</button>${x.d ? `<p>${esc(x.d)}</p>` : ''}</header>` +
     `<div class="ifg"><div class="ifc">${chart}</div><div class="ifn">${side}</div></div>${insMake(x)}</article>`;
@@ -983,7 +984,7 @@ function viewBox() {
   const wide = innerWidth > 720;
   const pw = !$('#panel').hidden && wide ? $('#panel').offsetWidth + 24 : 0;
   const ph = !$('#panel').hidden && !wide ? $('#panel').offsetHeight + 16 : 0;
-  const th = !$('#tour').hidden ? $('#tour').offsetHeight + 24 : !$('#presBar').hidden ? $('#presBar').offsetHeight + 24 : 0;
+  const th = !$('#tour').hidden ? $('#tour').offsetHeight + 24 : !$('#presBar').hidden ? $('#presBar').offsetHeight + 24 : !$('#tourCta').hidden ? $('#tourCta').offsetHeight + 28 : 0; // 아래에 뜨는 안내 배너도 가리지 않게
   return {w: board.clientWidth - pw, h: board.clientHeight - Math.max(ph, th)};
 }
 function camFor(r, pad) {
@@ -1188,10 +1189,10 @@ function openFrame(id) {
   R.forEach(([a, b]) => { const fa = byId[a].f, fb = byId[b].f; if (fa === id && fb !== id) outF.add(fb); if (fb === id && fa !== id) inF.add(fa); });
   const linked = [...new Set([...outF, ...inF])];
   if (linked.length) h += `<div><h3>이어진 창</h3><ul>${linked.map(x => `<li><button class="go" type="button" data-fr="${x}">${esc(FR[x].title)}</button></li>`).join('')}</ul></div>`;
-  if (f.layout === 'view') arr(f.vrows).forEach(r => { h += `<div><h3>${esc(r.label)}</h3><ul>${r.ids.map(id => `<li>${goBtn(id).replace(/<small>.*?<\/small>/, '')}${VST[byId[id].s] ? `<b class="chip ${byId[id].s}">${VST[byId[id].s]}</b>` : ''}</li>`).join('')}</ul></div>`; });
+  if (f.layout === 'view') arr(f.vrows).forEach(r => { h += `<div><h3>${esc(r.label)}</h3>${fold(r.ids.map(id => `<li>${goBtn(id).replace(/<small>.*?<\/small>/, '')}${VST[byId[id].s] ? `<b class="chip ${byId[id].s}">${VST[byId[id].s]}</b>` : ''}</li>`), 8)}</div>`; });
   else for (const [lk, ko] of LAYERS) {
     const its = f.items.filter(x => TYPES[x.t][2] === lk);
-    if (its.length) h += `<div><h3>${ko} 층 · ${its.length}</h3><ul>${its.map(x => `<li>${goBtn(x.id).replace(/<small>.*?<\/small>/, '')}${ST[x.s] ? `<b class="chip ${x.s}">${ST[x.s]}</b>` : ''}</li>`).join('')}</ul></div>`;
+    if (its.length) h += `<div><h3>${ko} 층 · ${its.length}</h3>${fold(its.map(x => `<li>${goBtn(x.id).replace(/<small>.*?<\/small>/, '')}${ST[x.s] ? `<b class="chip ${x.s}">${ST[x.s]}</b>` : ''}</li>`), 8)}</div>`;
   }
   if (f.layout === 'cards') h += cardPanel(f);
   openPanel(f.kicker, f.title, h);
@@ -1274,6 +1275,11 @@ function openList() {
 /* ───────── 객체 지도: 자세히 보기 · 따라가기 ───────── */
 const objBtn = id => `<button class="go" type="button" data-obj="${id}">${esc(ON[id])}<small>${esc(OST[id])}</small></button>`;
 const liT = t => `<li>${esc(t)}</li>`;
+// 긴 목록은 처음 n개만 보이고 나머지는 "더 보기"로 접는다 — 한 번에 읽을 글을 줄인다
+function fold(items, n = 5, cls = '') {
+  const c = cls ? ` class="${cls}"` : '';
+  return `<ul${c}>${items.slice(0, n).join('')}</ul>` + (items.length > n ? `<details class="fold"><summary>나머지 ${items.length - n}개 보기</summary><ul${c}>${items.slice(n).join('')}</ul></details>` : '');
+}
 const apiLi = t => { const [a, ...b] = String(t).split(' — '); return `<li><code>${esc(a)}</code>${b.length ? ` ${esc(b.join(' — '))}` : ''}</li>`; };
 function objLinks(id) {
   const out = OE.filter(e => e.a === id), inn = OE.filter(e => e.b === id);
@@ -1294,28 +1300,30 @@ function openObj(id) {
   h += `<p class="lead">${esc(o.one)}</p><p>${esc(o.what)}</p><p class="why"><b>왜 따로 있나</b> ${esc(o.why)}</p>`;
   if (o.how.length) h += `<div><h3>안에서 도는 순서</h3><ol>${o.how.map(liT).join('')}</ol></div>`;
   if (o.parts) h += `<div><h3>이 화면 안의 부분 · ${o.parts.length}</h3><ul class="parts">${o.parts.map(p => `<li><b>${esc(p.n)}</b> ${esc(p.d)} <code>${esc(p.fn)}</code></li>`).join('')}</ul></div>`;
-  if (o.holds.length) h += `<div><h3>가진 것 · 기억하는 것</h3><ul class="dot">${o.holds.map(liT).join('')}</ul></div>`;
-  if (o.api.length) h += `<div><h3>받는 입구 · ${o.api.length}</h3><ul class="dot api">${o.api.map(apiLi).join('')}</ul></div>`;
-  if (o.calls.length) h += `<div><h3>부르는 것</h3><ul class="dot">${o.calls.map(liT).join('')}</ul></div>`;
+  if (o.holds.length) h += `<div><h3>가진 것 · 기억하는 것</h3>${fold(o.holds.map(liT), 5, 'dot')}</div>`;
+  if (o.api.length) h += `<div><h3>받는 입구 · ${o.api.length}</h3>${fold(o.api.map(apiLi), 5, 'dot api')}</div>`;
+  if (o.calls.length) h += `<div><h3>부르는 것</h3>${fold(o.calls.map(liT), 5, 'dot')}</div>`;
   h += dataOfObj(id);
   h += objLinks(id);
   const ucs = OUC[id];
   if (ucs.length) {
     h += `<div><h3>유즈케이스에서 맡는 일 · ${ucs.length}</h3><p class="note">파란 세로 줄이 이 객체, 파란 화살표가 이 객체가 보내거나 받는 칸이다.</p></div>`;
-    ucs.forEach(({u, c}) => {
-      h += `<div class="ucb"><div class="ucbh"><b>${esc(u.t)}</b><small>${dirText(c)}</small></div>${miniSeq(u, id, 480, Math.max(64, u.steps.length * 9 + 14), 'mseq big')}` +
+    ucs.forEach(({u, c}, ui) => {
+      const head = `<b>${esc(u.t)}</b><small>${dirText(c)}</small>`; // 첫 번째만 펼치고 나머지는 접어서 한 번에 읽을 글을 줄인다
+      const body = `${miniSeq(u, id, 480, Math.max(64, u.steps.length * 9 + 14), 'mseq big')}` +
         `<ul>${u.steps.map((x, k) => {
           const A = c.keys.has(x.a), B = c.keys.has(x.b);
           if (!A && !B) return '';
           const v = A && B ? '⟳ 안에서' : A ? `→ ${ON[L2O(x.b)]}` : `← ${ON[L2O(x.a)]}`;
           return `<li><button class="go wide" type="button" data-objuc="${u.id}:${k}"><span class="verb">${k + 1} · ${esc(v)}</span>${x.alt ? `<span class="alt">${esc(x.alt)}</span>` : ''}${esc(x.t)}</button></li>`;
         }).join('')}</ul>` +
-        `<div class="row"><button class="btn pri" type="button" data-ustory="${u.id}:-1">▶ 이야기로</button><button class="btn" type="button" data-objuc="${u.id}:${c.first}">객체 지도에서 따라가기</button><button class="btn" type="button" data-uc="${u.id}" data-k="${c.first}">순서도에서</button><button class="btn" type="button" data-ucx="${u.id}">유즈케이스 설명</button></div></div>`;
+        `<div class="row"><button class="btn pri" type="button" data-ustory="${u.id}:-1">▶ 이야기로</button><button class="btn" type="button" data-objuc="${u.id}:${c.first}">객체 지도에서 따라가기</button><button class="btn" type="button" data-uc="${u.id}" data-k="${c.first}">순서도에서</button><button class="btn" type="button" data-ucx="${u.id}">유즈케이스 설명</button></div>`;
+      h += ui === 0 ? `<div class="ucb"><div class="ucbh">${head}</div>${body}</div>` : `<details class="fold ucb"><summary>${head}</summary>${body}</details>`;
     });
   }
-  if (o.fails.length) h += `<div><h3>실패하거나 막을 때</h3><ul class="dot warn">${o.fails.map(liT).join('')}</ul></div>`;
-  if (o.rules.length) h += `<div><h3>꼭 지키는 약속</h3><ul class="dot">${o.rules.map(liT).join('')}</ul></div>`;
-  if (o.change.length) h += `<div><h3>고칠 때 볼 것</h3><ul class="dot">${o.change.map(liT).join('')}</ul></div>`;
+  if (o.fails.length) h += `<div><h3>실패하거나 막을 때</h3>${fold(o.fails.map(liT), 5, 'dot warn')}</div>`;
+  if (o.rules.length) h += `<div><h3>꼭 지키는 약속</h3>${fold(o.rules.map(liT), 5, 'dot')}</div>`;
+  if (o.change.length) h += `<div><h3>고칠 때 볼 것</h3>${fold(o.change.map(liT), 5, 'dot')}</div>`;
   if (o.files.length) h += `<div><h3>파일</h3><ul class="files">${o.files.map(t => `<li><code>${esc(t)}</code></li>`).join('')}</ul></div>`;
   const shots = SCR.map((x, i) => [x, i]).filter(([x]) => x.els.includes(id) || OUC[id].some(({u}) => u.id === x.uc));
   if (shots.length) h += `<div><h3>이 객체가 움직이는 화면 · ${shots.length}</h3><div class="shots">${shots.map(([x, i]) => `<button type="button" data-scr="${i}" title="${esc(x.t)}"><img src="${(IMG[x.img] || x.img)}" alt="${esc(x.t)}" loading="lazy"><span>${i + 1}. ${esc(x.t)}</span></button>`).join('')}</div></div>`;
@@ -1414,7 +1422,7 @@ function openUStory(id, i) {
     h += `<div class="ustp" aria-hidden="true">${s.scenes.map((_, k) => `<i class="${k < i ? 'done' : k === i ? 'on' : ''}"></i>`).join('')}</div>`;
     h += `<div class="row">${ustBtn(id, i - 1, i ? '← 이전' : '← 처음')}${ustBtn(id, i + 1, i < n - 1 ? `다음 · ${esc(s.scenes[i + 1].title)} →` : '끝 →', 'btn pri')}</div>`;
     if (i < n - 1) h += `<div class="row">${ustBtn(id, n, '끝까지 건너뛰기 →')}</div>`;
-    h += `<div><h3>장면 목록</h3><ol class="ustl">${s.scenes.map((c, k) => `<li class="${k < i ? 'done' : k === i ? 'cur' : ''}"><button type="button" data-ustory="${esc(id)}:${k}"><em>${k < i ? '✓' : k + 1}</em><span>${esc(c.title)}</span></button></li>`).join('')}</ol></div>`;
+    h += `<details class="fold"><summary>장면 목록 · ${n}</summary><ol class="ustl">${s.scenes.map((c, k) => `<li class="${k < i ? 'done' : k === i ? 'cur' : ''}"><button type="button" data-ustory="${esc(id)}:${k}"><em>${k < i ? '✓' : k + 1}</em><span>${esc(c.title)}</span></button></li>`).join('')}</ol></details>`;
     h += tools;
     ustHL(u, sc.steps, lo, true);
     const y = u.y + SQ.head + SQ.lane + lo * SQ.row;
@@ -1516,7 +1524,7 @@ function insHeat(x, bare) {
     }).join('') + '</tr>';
   });
   h += '</tbody></table></div>';
-  if (!bare && arr(x.notes).length) h += `<div><h3>칸마다 붙은 근거</h3><ul class="dot">${x.notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`).join('')}</ul></div>`;
+  if (!bare && arr(x.notes).length) h += `<div><h3>칸마다 붙은 근거</h3>${fold(x.notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`), 3, 'dot')}</div>`;
   return h;
 }
 function insBar(x) {
@@ -1547,15 +1555,20 @@ function insSankey(x) {
     let o = 0; L.filter(l => l.a === k).sort((p, q) => nd[p.b].y - nd[q.b].y).forEach(l => { l.y0 = nd[k].y + o + l.w / 2; o += l.w; });
     let n = 0; L.filter(l => l.b === k).sort((p, q) => nd[p.a].y - nd[q.a].y).forEach(l => { l.y1 = nd[k].y + n + l.w / 2; n += l.w; });
   });
-  const H = Math.max(...Object.values(nd).map(n => n.y + n.h)) + 8;
+  // 글자 자리: 같은 열의 이름은 위아래로 15px 이상 벌리고, 길면 열 간격에 맞게 줄인다(전체 이름은 아래 흐름 목록과 마우스를 올린 설명에 있다)
+  const sp = (W - LM - RM - NW) / Math.max(1, C - 1), ly = {}, ew = t => [...t].reduce((a, ch) => a + (ch.charCodeAt(0) > 0x2E80 ? 11.5 : 6.4), 0);
+  cols.forEach(c => { const ys = c.map(k => nd[k].y + nd[k].h / 2); for (let i = 1; i < ys.length; i++) ys[i] = Math.max(ys[i], ys[i - 1] + 15); c.forEach((k, i) => { ly[k] = ys[i]; }); });
+  const H = Math.max(...Object.values(nd).map(n => n.y + n.h), ...Object.values(ly).map(y => y + 8)) + 8;
   const paths = L.map(l => { const x0 = nd[l.a].x + NW, x1 = nd[l.b].x, m = (x0 + x1) / 2; return `<path class="ins-l" d="M${x0.toFixed(1)} ${l.y0.toFixed(1)}C${m.toFixed(1)} ${l.y0.toFixed(1)} ${m.toFixed(1)} ${l.y1.toFixed(1)} ${x1.toFixed(1)} ${l.y1.toFixed(1)}" stroke-width="${l.w.toFixed(1)}"><title>${esc(insName(l.a))} → ${esc(insName(l.b))} · ${l.v}${esc(u)}</title></path>`; }).join('');
   const nodes = names.map(k => {
-    const n = nd[k], lb = insLab(k), first = lay[k] === 0, t = lb.n.length > 14 ? lb.n.slice(0, 13) + '…' : lb.n;
+    const n = nd[k], lb = insLab(k), first = lay[k] === 0, room = first ? LM - 12 : lay[k] === C - 1 ? RM - 12 : sp - 24;
+    let t = lb.n.replace(/^\[[^\]]*\]\s*/, '') || lb.n; // 앞의 [3계층 기능] 같은 꼬리표는 같은 열에 모두 있어 알아볼 수 없으니 빼고 본문부터 보인다
+    if (ew(t) > room) { while (t.length > 2 && ew(t + '…') > room) t = t.slice(0, -1); t += '…'; }
     return `<g class="ins-n"${lb.a ? ' ' + lb.a : ''}><rect x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${NW}" height="${n.h.toFixed(1)}" rx="2"><title>${esc(lb.n)} · ${val(k)}${esc(u)}</title></rect>` +
-      `<text x="${(first ? n.x - 6 : n.x + NW + 6).toFixed(1)}" y="${(n.y + n.h / 2).toFixed(1)}" dy=".35em" text-anchor="${first ? 'end' : 'start'}">${esc(t)}</text></g>`;
+      `<text x="${(first ? n.x - 6 : n.x + NW + 6).toFixed(1)}" y="${ly[k].toFixed(1)}" dy=".35em" text-anchor="${first ? 'end' : 'start'}">${esc(t)}</text></g>`;
   }).join('');
-  return `<svg class="sankey" viewBox="0 0 ${W} ${H.toFixed(0)}" role="img" aria-label="${esc(x.t)}">${paths}${nodes}</svg>` +
-    `<div><h3>흐름 목록</h3><ul>${links.map(([a, b, v]) => `<li>${insBtn(a)} → ${insBtn(b)} <b>${v}${esc(u)}</b></li>`).join('')}</ul></div>`;
+  return `<div class="skw"><svg class="sankey" viewBox="0 0 ${W} ${H.toFixed(0)}" role="img" aria-label="${esc(x.t)}">${paths}${nodes}</svg></div>` + // div로 감싸야 그리드 칸이 SVG 높이만큼 잡힌다
+    `<div><h3>흐름 목록 · ${links.length}</h3>${fold(links.map(([a, b, v]) => `<li>${insBtn(a)} → ${insBtn(b)} <b>${v}${esc(u)}</b></li>`), 6)}</div>`;
 }
 function openInsight(id) {
   stopTour(); clearFocus();
@@ -1564,8 +1577,8 @@ function openInsight(id) {
   if (x.d) h += `<p class="lead">${esc(x.d)}</p>`;
   h += x.type === 'heatmap' ? insHeat(x) : x.type === 'bar' ? insBar(x) : insSankey(x);
   h += `<div><h3>이 값을 만든 순서</h3>${insMake(x)}</div>`;
-  if (arr(x.rubric).length) h += `<div><h3>값의 기준</h3><ul class="dot">${x.rubric.map(liT).join('')}</ul></div>`;
-  h += x.basis.length ? `<div><h3>근거 · ${x.basis.length}</h3><ul class="dot">${x.basis.map(liT).join('')}</ul></div>`
+  if (arr(x.rubric).length) h += `<div><h3>값의 기준</h3>${fold(x.rubric.map(liT), 4, 'dot')}</div>`;
+  h += x.basis.length ? `<div><h3>근거 · ${x.basis.length}</h3>${fold(x.basis.map(liT), 4, 'dot')}</div>`
     : `<div><h3>근거</h3><ul class="dot warn"><li>근거가 적혀 있지 않다 — 이 값은 코드로 확인하기 전에는 믿지 않는다.</li></ul></div>`;
   if (x.of.length) h += `<div><h3>관련</h3><ul>${x.of.map(k => `<li>${insBtn(k)}</li>`).join('')}</ul></div>`;
   openPanel(`판단 · ${INSIGHTS[x.type]}`, x.t, h, true);
@@ -1589,10 +1602,10 @@ function openObjects() {
   stopTour(); clearFocus();
   const f = FO, n = JOURNEY.reduce((a, id) => a + UCI[id].steps.length, 0);
   f.dom.classList.add('on');
-  let h = `<p>${esc(f.desc)}</p><p class="why"><b>읽는 법</b> 카드 하나가 객체 하나다. 카드 안의 작은 그림은 그 객체가 나오는 순서도이고, 파란 줄이 그 객체다. 카드 사이 선은 순서도에서 한쪽이 다른 쪽에게 보내는 화살표를 모아 센 것이라, 굵을수록 자주 오간다. 점선은 순서도에는 없지만 코드에서 이어지는 길이다.</p>`;
+  let h = `<p>${esc(f.desc)}</p><details class="fold"><summary>읽는 법</summary><p class="why">카드 하나가 객체 하나다. 카드 안의 작은 그림은 그 객체가 나오는 순서도이고, 파란 줄이 그 객체다. 카드 사이 선은 순서도에서 한쪽이 다른 쪽에게 보내는 화살표를 모아 센 것이라, 굵을수록 자주 오간다. 점선은 순서도에는 없지만 코드에서 이어지는 길이다.</p></details>`;
   h += `<div class="row"><button class="btn pri" type="button" data-journey>▶ 전체 여정 따라가기 · ${n}칸</button></div>`;
-  h += `<div><h3>여정 순서 · 유즈케이스 ${UC.length}</h3><ul>${[...JOURNEY.map(id => UCI[id]), ...UC.filter(u => !u.prop && !JOURNEY.includes(u.id))].map(u => `<li><button class="go wide" type="button" data-ucx="${u.id}">${JOURNEY.includes(u.id) ? `<span class="verb">${JOURNEY.indexOf(u.id) + 1}</span>` : '<span class="verb">따로</span>'}${esc(u.t)}<small>${u.steps.length}칸 · 객체 ${new Set(u.lanes.map(L2O)).size}</small></button></li>`).join('')}</ul></div>`;
-  PKG.forEach(p => { h += `<div><h3>${esc(p.n)} · ${p.ids.length}</h3><p class="note">${esc(p.d)}</p><ul>${p.ids.map(id => `<li>${objBtn(id)}<small class="eln">${esc(OBJ[id].one)}</small></li>`).join('')}</ul></div>`; });
+  h += `<div><h3>여정 순서 · 유즈케이스 ${UC.length}</h3>${fold([...JOURNEY.map(id => UCI[id]), ...UC.filter(u => !u.prop && !JOURNEY.includes(u.id))].map(u => `<li><button class="go wide" type="button" data-ucx="${u.id}">${JOURNEY.includes(u.id) ? `<span class="verb">${JOURNEY.indexOf(u.id) + 1}</span>` : '<span class="verb">따로</span>'}${esc(u.t)}<small>${u.steps.length}칸 · 객체 ${new Set(u.lanes.map(L2O)).size}</small></button></li>`), 6)}</div>`;
+  PKG.forEach(p => { h += `<div><h3>${esc(p.n)} · ${p.ids.length}</h3><p class="note">${esc(p.d)}</p>${fold(p.ids.map(id => `<li>${objBtn(id)}<small class="eln">${esc(OBJ[id].one)}</small></li>`), 6)}</div>`; });
   openPanel(f.kicker, f.title, h, true);
   fly(camFor(fbox(f), 24));
 }

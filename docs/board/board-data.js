@@ -1213,8 +1213,8 @@ window.BOARD = {
       id: 'ins_ux_gap',
       f: 'arch_4tier',
       type: 'heatmap',
-      t: '4계층 부품별 UI/UX · 검증 완성도 평가',
-      d: '쇼케이스 온보딩(index.html)과 엔진 v1.3(플로팅 투어 배너 · 발표 모드 · 코치마크) 반영 후 각 부품의 위험/미비도를 다시 평가했다.',
+      t: '4계층 부품별 UI/UX · 검증 완성도',
+      d: '쇼케이스와 엔진 v1.3 반영 후 각 부품의 미비도를 다시 평가했다.',
       rows: ['ac_shell', 'ac_canvas', 'ac_panel', 'ac_skill', 'ac_check', 'ac_bundle', 'ac_engine', 'node_cdn'],
       cols: ['첫인상·온보딩', '비전공자 가독성', '검증·자동화'],
       values: [
@@ -1229,42 +1229,42 @@ window.BOARD = {
       ],
       scale: {min: 1, max: 3, labels: ['충분함(1)', '보강 권장(2)', '우선 개선(3)'], high: 'bad'},
       rubric: [
-        '1 — 충분함: 코드와 문서에 기능이 구현되어 있고 자동 검증(check.mjs/CI)까지 갖춰져 있다',
-        '2 — 보강 권장: 기본 기능은 작동하나 비개발자·외부인을 위한 UX 장치가 일부 부족하다',
-        '3 — 우선 개선: 외부 방문자 온보딩이나 핵심 검증 장치가 빠져 있다'
+        '1 — 충분함: 기능이 구현되고 자동 검증까지 갖췄다',
+        '2 — 보강 권장: 기본 기능은 되지만 외부인용 UX가 일부 부족하다',
+        '3 — 우선 개선: 외부 온보딩이나 핵심 검증이 빠져 있다'
       ],
       notes: [
-        ['ac_shell', '첫인상·온보딩', 'index.html에 쇼케이스 바(.sc-bar), 예시 전환 탭(?board=self|memo), 원클릭 설치 복사(#scCopy) 구현 완료'],
-        ['ac_panel', '첫인상·온보딩', 'engine/v1/board.js에 첫 화면 하단 플로팅 투어 배너(#tourCta)와 발표 슬라이드 모드(#presBar) 구현 완료'],
-        ['ac_check', '검증·자동화', 'check.mjs가 CODEY 정규식과 상자·글자 수 제한까지 브라우저 없이 자동 검사하고 있다']
+        ['ac_shell', '첫인상·온보딩', '쇼케이스 바 · 예시 전환 탭 · 설치 복사 구현'],
+        ['ac_panel', '첫인상·온보딩', '플로팅 투어 배너 · 발표 모드 구현'],
+        ['ac_check', '검증·자동화', '쉬운 말 · 상자 수 제한을 브라우저 없이 점검']
       ],
       basis: [
-        'index.html — 쇼케이스 헤더(.sc-bar), 설치 명령어 클립보드 복사, 예시 보드 전환 탭 구현 확인',
-        'engine/v1/board.js (v1.3.0) & board.css — #tourCta 플로팅 배너, #presBar 발표 모드, #hint 코치마크 구현 확인',
-        'skills/archi-board/scripts/check.mjs (52~74줄) — 앞면(view) 쉬운 말 및 상자 수 자동 경고 로직 확인'
+        'index.html — 쇼케이스 바 · 복사 단추 · 예시 탭',
+        'engine/v1/board.js — #tourCta 배너 · #presBar 발표 모드 · #hint',
+        'scripts/check.mjs — 앞면(view) 쉬운 말 · 상자 수 경고'
       ]
     },
     {
       id: 'ins_status',
       f: 'roadmap',
       type: 'bar',
-      t: '아키텍처 보드 구성요소 구현 상태 분포',
+      t: '보드 구성요소 구현 상태',
       unit: '개',
-      d: '이 보드에 정의된 상태 있는 상자(elements) 38개 모두 실제 코드(index.html, engine/v1/board.js, board.css)에 반영되어 완료(있음) 상태다.',
+      d: '상태가 있는 상자 38개가 모두 구현(있음)이다.',
       items: [
         ['done', 38]
       ],
       basis: [
-        'elements 배열에서 상태(s)가 지정된 상자 38개를 직접 센 값 — 기존 v1.2 코어 24개 + 신규 구현된 UI/UX 항목 14개 모두 done'
+        'elements의 s 값을 센 것 — 코어 24개 + UI/UX 14개, 모두 done'
       ]
     },
     {
       id: 'ins_flow',
       f: 'objects',
       type: 'sankey',
-      t: '4계층 간 BPMN 유즈케이스 요청 흐름량',
+      t: '4계층 간 요청 흐름량',
       unit: '칸',
-      d: '4가지 핵심 유즈케이스(생성·탐색·번들·배포)에서 주체와 부품 사이에 오가는 요청 화살표(응답 제외)와 데이터 기록 흐름.',
+      d: '4가지 유즈케이스의 요청 화살표(응답 제외) 수.',
       links: [
         ['ba_builder', 'ba_agent', 3],
         ['ba_builder', 'node_cdn', 1],
@@ -1282,8 +1282,8 @@ window.BOARD = {
         ['ac_engine', 'd_bdata', 2]
       ],
       basis: [
-        'usecases(uc_create · uc_explore · uc_bundle · uc_evolve)의 steps 중 응답(r: true)을 제외한 요청 칸을 집계',
-        '단방향 비순환(DAG) 흐름으로 유저층 → UI/기능 → 인프라 → 데이터(d_bdata)로 이어지는 경로를 표현'
+        'usecases 4개의 steps 중 응답(r)이 아닌 칸을 센 것',
+        '한 방향(비순환): 유저층 → UI · 기능 → 인프라 → 데이터'
       ]
     }
   ],
