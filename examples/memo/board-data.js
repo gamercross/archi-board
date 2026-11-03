@@ -121,14 +121,41 @@ window.BOARD = {
       ['db', 'api', '새 id', '', {r: true}],
       ['api', 'web', '저장됨', '201', {r: true}],
       ['web', 'user', '목록 맨 위에 보인다', '', {r: true}]
-    ]},
+    ],
+    // 유저 스토리 — 사용자가 보는 것(sees)에는 근거(basis)를 단다. 없는 칸은 비워 두면 그 장면에서 빠진다.
+    story: {
+      who: 'st_user', goal: 'g_fast', why: '적을 곳을 찾다가 잊는다',
+      summary: '바쁜 사람이 글을 쓰고 저장을 누르면, 초안이 먼저 남고, 서버가 데이터베이스에 한 줄을 넣고, 저장됨이 돌아와 목록 맨 위에 보인다.',
+      scenes: [
+        {steps: [0], title: '글을 적고 저장을 누른다', sees: '입력칸에 글, 저장 단추', basis: ['web/app.js — 입력칸과 저장 단추']},
+        {steps: [1], title: '초안을 이 브라우저에 먼저 남긴다', sees: '화면은 그대로', basis: ['web/app.js — localStorage memo:draft']},
+        {steps: [2], title: '메모를 서버로 보낸다', sees: '아직 화면에 변화가 없다. 글은 이미 초안에 남아 있다', basis: ['web/app.js — POST /api/notes']},
+        {steps: [3], title: '데이터베이스에 한 줄 넣는다'},
+        {steps: [4], title: '새 id가 돌아온다'},
+        {steps: [5], title: '저장됐다고 답한다', sees: '저장됨 표시', basis: ['web/app.js — 응답 201을 받으면']},
+        {steps: [6], title: '목록 맨 위에 보인다', sees: '방금 쓴 메모가 맨 위에', basis: ['web/app.js — 목록 그리기']}
+      ],
+      branches: [
+        {at: 2, when: '로그인이 없으면', then: '401', end: '서버가 안 받아서 초안이 남는다'},
+        {at: 2, when: '글이 너무 길면', then: '413', end: '서버가 안 받아서 초안이 남는다'}
+      ]
+    }},
     {id: 'find', f: 'parts', s: '찾기', t: '지난 메모를 찾는다', d: '낱말 하나로.', lanes: ['user', 'web', 'api', 'db'], steps: [
       ['user', 'web', '낱말을 적는다'],
       ['web', 'api', '찾아 달라고 한다', 'GET /api/notes?q='],
       ['api', 'db', '글에 낱말이 든 메모', 'SELECT … LIKE'],
       ['db', 'api', '메모 목록', '', {r: true}],
       ['api', 'web', '최대 50개', '', {r: true}]
-    ]}
+    ],
+    story: {
+      who: 'st_user', want: '낱말 하나로 지난 메모를 찾고 싶다', why: '적어 둔 메모를 다시 꺼내려고',
+      scenes: [
+        {steps: [0], title: '낱말을 적는다', sees: '찾기 칸에 낱말', basis: ['web/app.js — 찾기 칸']},
+        {steps: [1, 2], title: '서버가 글에 낱말이 든 메모를 찾는다'},
+        {steps: [3, 4], title: '메모 목록이 돌아온다', sees: '목록에 최대 50개', basis: ['server/api.js — 50개까지']}
+      ],
+      branches: [{at: 2, when: '아무것도 없으면', then: '"없어요"를 보인다'}]
+    }}
   ],
 
   objectMap: {

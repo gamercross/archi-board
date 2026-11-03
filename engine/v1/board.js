@@ -1,10 +1,10 @@
-/*! archi-board engine v1.2.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
+/*! archi-board engine v1.3.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
  * 1.2: 처음 보는 사람용 한 장 그림(layout 'view')과 '처음 보는 사람 / 만드는 사람' 전환.
  * 데이터는 window.BOARD (board-data.js)에서 읽는다. 형식: https://github.com/gamercross/archi-board/blob/main/skills/archi-board/references/data-format.md
  * MIT License */
 (() => {
 'use strict';
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 if (!window.BOARD) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:24px;font:16px system-ui">board-data.js를 board.js보다 먼저 불러 window.BOARD를 채워 주세요.</p>'); return; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /*MODEL-START*/
@@ -473,7 +473,7 @@ UC.forEach(u => {
   const n = u.lanes.length, lw = u.w / n, cx = i => lw * (i + .5), li = {};
   u.lanes.forEach((k, i) => { li[k] = i; });
   const yAt = k => SQ.head + SQ.lane + k * SQ.row + SQ.row - 12;
-  let h = `<div class="sqh"><div class="sqt"><small>유즈케이스 · ${u.steps.length}칸</small><b>${esc(u.t)}</b><span>${esc(u.d)}</span></div><button class="btn pri" type="button" data-play>▶ 따라가기</button></div>`;
+  let h = `<div class="sqh"><div class="sqt"><small>유즈케이스 · ${u.steps.length}칸</small><b>${esc(u.t)}</b><span>${esc(u.d)}</span></div><button class="btn pri" type="button" data-play>▶ 이야기로 따라가기</button></div>`;
   let sv = '', all = '';
   const top = SQ.head + SQ.lane;
   u.lanes.forEach((k, i) => {
@@ -504,7 +504,7 @@ UC.forEach(u => {
   d.className = 'seq'; d.dataset.aud = AUD(FR[u.f]);
   d.style.cssText = `left:${u.x}px;top:${u.y}px;width:${u.w}px;height:${u.h}px`;
   d.innerHTML = `<svg width="${u.w}" height="${u.h}" aria-hidden="true">${sv}${dot}</svg>` + h + labels;
-  d.querySelector('[data-play]').addEventListener('click', () => { if (!moved) playUC(u.id, 0); });
+  d.querySelector('[data-play]').addEventListener('click', () => { if (!moved) openUStory(u.id); });
   d.querySelectorAll('.lh').forEach(b => b.addEventListener('click', () => { if (moved) return; const o = b.dataset.o; if (OBJ[o]) openObj(o); else openApp(b.dataset.el); }));
   $('#seqs').append(d);
   u.dom = d; u.arrows = [...d.querySelectorAll('.sa')]; u.labels = [...d.querySelectorAll('.sl')]; u.heads = [...d.querySelectorAll('.lh')];
@@ -705,12 +705,12 @@ const head = t => String(t).split(' — ')[0];
       (o.api.length ? `<h5>받는 일 · ${o.api.length}</h5><ul class="oapi">${o.api.slice(0, 4).map(t => `<li>${esc(head(t))}</li>`).join('')}</ul>` : '') +
       (o.holds.length ? `<h5>가진 것</h5><p class="ohold">${esc(o.holds[0])}</p>` : '') +
       `<h5>나오는 순서도 · ${ucs.length}</h5>` +
-      (ucs.length ? `<div class="thumbs">${ucs.map(({u, c}) => `<button class="th" type="button" data-objuc="${u.id}:${c.first}" title="${esc(u.t)} · ${dirText(c)} — 누르면 객체 지도 위에서 따라간다">${miniSeq(u, id, 124, 70)}<span>${esc(u.s)}</span></button>`).join('')}</div>` : '<p class="ohold">순서도에는 나오지 않는다. 선은 코드에서 이어지는 길이다.</p>') +
+      (ucs.length ? `<div class="thumbs">${ucs.map(({u, c}) => `<button class="th" type="button" data-objuc="${u.id}:${c.first}" title="${esc(u.t)} · ${dirText(c)} — 누르면 이 순서의 이야기가 열린다">${miniSeq(u, id, 124, 70)}<span>${esc(u.s)}</span></button>`).join('')}</div>` : '<p class="ohold">순서도에는 나오지 않는다. 선은 코드에서 이어지는 길이다.</p>') +
       `</div><div class="obig"><i>«${esc(OST[id])}»</i><b>${esc(ON[id])}</b><p>${esc(o.one)}</p><small>순서도 ${ucs.length} · 받는 일 ${o.api.length}</small></div><div class="ofile">${esc((o.files || []).slice(0, 3).join(' · '))}</div>`;
     d.addEventListener('click', ev => {
       if (moved) return;
       const t = ev.target.closest('[data-objuc]');
-      if (t) { const [u, k] = t.dataset.objuc.split(':'); playObj(u, +k); return; }
+      if (t) { openUStory(t.dataset.objuc.split(':')[0]); return; }
       openObj(id);
     });
     layer.append(d); o.dom = d;
@@ -1057,10 +1057,11 @@ function openPanel(k, t, html, wide) {
   $('#pB').querySelectorAll('[data-dm]').forEach(b => b.addEventListener('click', () => openData(b.dataset.dm)));
   $('#pB').querySelectorAll('[data-dmobj]').forEach(b => b.addEventListener('click', () => showDataObjs(b.dataset.dmobj)));
   $('#pB').querySelectorAll('[data-dflow]').forEach(b => b.addEventListener('click', () => openFlow(+b.dataset.dflow)));
+  $('#pB').querySelectorAll('[data-ustory]').forEach(b => b.addEventListener('click', () => { const [u, i] = b.dataset.ustory.split(':'); openUStory(u, i === undefined ? -1 : +i); }));
   $('#pB').querySelectorAll('[data-ins]').forEach(b => b.addEventListener('click', () => openInsight(b.dataset.ins)));
 }
 function closePanel() { panel.hidden = true; }
-$('#pX').addEventListener('click', () => { clearFocus(); closePanel(); });
+$('#pX').addEventListener('click', () => { clearFocus(); endStory(); closePanel(); });
 
 const goBtn = id => { const x = byId[id]; return `<button class="go" type="button" data-go="${x.id}">${esc(x.n)}<small>${esc(FR[x.f].title)}</small></button>`; };
 function select(id, flyTo) {
@@ -1140,7 +1141,7 @@ function endUC() {
   cur = null;
 }
 function playUC(id, k) {
-  endObj();
+  endObj(); endStory();
   const u = UCI[id];
   clearInterval(timer); timer = 0; $('#tPlay').textContent = '자동으로 넘기기';
   if (cur && cur.u !== u) endUC();
@@ -1238,7 +1239,7 @@ function openObj(id) {
           const v = A && B ? '⟳ 안에서' : A ? `→ ${ON[L2O(x.b)]}` : `← ${ON[L2O(x.a)]}`;
           return `<li><button class="go wide" type="button" data-objuc="${u.id}:${k}"><span class="verb">${k + 1} · ${esc(v)}</span>${x.alt ? `<span class="alt">${esc(x.alt)}</span>` : ''}${esc(x.t)}</button></li>`;
         }).join('')}</ul>` +
-        `<div class="row"><button class="btn pri" type="button" data-objuc="${u.id}:${c.first}">▶ 객체 지도에서 따라가기</button><button class="btn" type="button" data-uc="${u.id}" data-k="${c.first}">순서도에서</button><button class="btn" type="button" data-ucx="${u.id}">유즈케이스 설명</button></div></div>`;
+        `<div class="row"><button class="btn pri" type="button" data-ustory="${u.id}:-1">▶ 이야기로</button><button class="btn" type="button" data-objuc="${u.id}:${c.first}">객체 지도에서 따라가기</button><button class="btn" type="button" data-uc="${u.id}" data-k="${c.first}">순서도에서</button><button class="btn" type="button" data-ucx="${u.id}">유즈케이스 설명</button></div></div>`;
     });
   }
   if (o.fails.length) h += `<div><h3>실패하거나 막을 때</h3><ul class="dot warn">${o.fails.map(liT).join('')}</ul></div>`;
@@ -1258,7 +1259,7 @@ function openUCInfo(id) {
   const u = UCI[id], x = UCX[id] || {}, objs = [...new Set(u.lanes.map(L2O))];
   let h = `<p class="lead">${esc(u.d)}</p>`;
   h += `<div class="ucx"><div><h3>언제 시작하나</h3><p>${esc(x.when || '')}</p></div><div><h3>끝나면 남는 것</h3><p>${esc(x.end || '')}</p></div><div><h3>안 될 때</h3><p>${esc(x.fail || '')}</p></div></div>`;
-  h += `<div class="row"><button class="btn pri" type="button" data-objuc="${id}:0">▶ 객체 지도에서 따라가기</button><button class="btn" type="button" data-uc="${id}" data-k="0">순서도에서 따라가기</button></div>`;
+  h += `<div class="row"><button class="btn pri" type="button" data-ustory="${id}:-1">▶ 이야기로 따라가기</button><button class="btn" type="button" data-objuc="${id}:0">객체 지도에서 따라가기</button><button class="btn" type="button" data-uc="${id}" data-k="0">순서도에서 따라가기</button></div>`;
   h += `<div><h3>나오는 객체 · ${objs.length}</h3><ul>${objs.map(o => `<li>${objBtn(o)}<small class="eln">${dirText(involveO(u, o))}</small></li>`).join('')}</ul></div>`;
   h += `<div><h3>칸 · ${u.steps.length}</h3><ol class="steps">${u.steps.map((s, k) => `<li><button class="go wide" type="button" data-objuc="${id}:${k}"><span class="verb">${esc(s.a === s.b ? ON[L2O(s.a)] + ' 안에서' : ON[L2O(s.a)] + ' → ' + ON[L2O(s.b)])}${s.r ? ' (답)' : ''}</span>${s.alt ? `<span class="alt">${esc(s.alt)}</span>` : ''}${esc(s.t)}${s.c ? ` <code>${esc(s.c)}</code>` : ''}</button></li>`).join('')}</ol></div>`;
   const shots = SCR.map((s, i) => [s, i]).filter(([s]) => s.uc === id);
@@ -1270,6 +1271,101 @@ function openUCInfo(id) {
   const used = new Set(u.steps.filter(s => !s.r).map(s => L2O(s.a) + '>' + L2O(s.b)));
   OE.forEach(e => { const on = used.has(e.a + '>' + e.b); e.dom.classList.toggle('on', on); e.lab.classList.toggle('on', on); });
   fly(camFor(union(objs.map(o => rectOf(OBJ[o]))), 50));
+}
+
+/* ───────── 유저 스토리 — 유즈케이스를 이야기로 따라간다 ───────── */
+// usecase.story = {who, goal, why, want, summary, scenes: [{steps: [칸 번호], title, sees, basis}], branches: [{at, when, then, end}]} — 모두 선택.
+// 없으면 칸 하나가 장면 하나가 된다(제목 = 하는 일, 안에서 = 줄 이름 · 코드).
+let ust = null; // {u, i}: 열려 있는 이야기와 장면(-1 = 처음, 장면 수 = 끝)
+function storyOf(u) {
+  if (u._st) return u._st;
+  const s = u.story || {}, one = v => v === undefined ? [] : [].concat(v);
+  let scenes = arr(s.scenes).map(x => Object.assign({title: '', sees: ''}, x, {steps: one(x.steps).filter(i => u.steps[i]), basis: one(x.basis)})).filter(x => x.steps.length);
+  if (!scenes.length) scenes = u.steps.map((st, i) => ({steps: [i], title: st.t, sees: '', basis: []}));
+  scenes.forEach(sc => { if (!sc.title) sc.title = sc.steps.map(i => u.steps[i].t).join(' · '); });
+  return (u._st = {who: s.who ? byId[s.who] : null, goal: s.goal ? byId[s.goal] : null, why: s.why || '', want: s.want || '', summary: s.summary || '',
+    branches: arr(s.branches).map(b => Object.assign({at: 0, when: '', then: '', end: ''}, b)), scenes});
+}
+const laneN = k => LN[k] ? LN[k][0] : k;
+function sceneChain(u, sc) {
+  const names = [];
+  sc.steps.forEach(i => { const x = u.steps[i]; [x.a, x.b].forEach(k => { const n = laneN(k); if (names[names.length - 1] !== n) names.push(n); }); });
+  return names.length === 1 ? names[0] + ' 안에서' : names.join(' → ');
+}
+function endStory() {
+  if (!ust) return;
+  const u = ust.u; ust = null;
+  u.dom.classList.remove('play', 'stepping');
+  u.arrows.forEach(p => { p.classList.remove('cur', 'past'); p.setAttribute('marker-end', `url(#m-${p.dataset.m})`); });
+  u.labels.forEach(l => l.classList.remove('cur', 'past'));
+  u.heads.forEach(x => x.classList.remove('cur'));
+}
+// 순서도에 지금 칸(cs)은 굵게, 그 앞은 실선, 뒤는 흐리게
+function ustHL(u, cs, past, focus) {
+  u.dom.classList.add('play', 'stepping');
+  u.arrows.forEach((p, i) => { const c = cs.includes(i); p.classList.toggle('cur', c); p.classList.toggle('past', i < past && !c); p.setAttribute('marker-end', `url(#m-${p.dataset.m}${c ? '-h' : ''})`); });
+  u.labels.forEach((l, i) => { const c = cs.includes(i); l.classList.toggle('cur', c); l.classList.toggle('past', i < past && !c); });
+  const lanes = new Set(cs.flatMap(i => [u.steps[i].a, u.steps[i].b]));
+  u.heads.forEach((hd, k) => hd.classList.toggle('cur', lanes.has(u.lanes[k])));
+  if (focus) focusOn(new Set([...lanes].filter(k => LN[k]).map(k => LN[k][1])), new Set(), false);
+}
+const ustBtn = (id, i, t, cls) => `<button class="${cls || 'btn'}" type="button" data-ustory="${esc(id)}:${i}">${t}</button>`;
+const ustBlock = (h, body) => `<div class="ustb"><h3>${h}</h3>${body}</div>`;
+function openUStory(id, i) {
+  stopTour(); clearFocus();
+  if (HASV && AUDM !== 'build') setMode('build', true); // 순서도는 만드는 사람 쪽에 있다
+  const u = UCI[id], s = storyOf(u), n = s.scenes.length, x = UCX[id] || {};
+  i = i === undefined ? -1 : Math.max(-1, Math.min(n, i));
+  ust = {u, i};
+  const objs = [...new Set(u.lanes.map(L2O))], first = Math.min(...u.steps.map((_, k) => k));
+  const goObj = u.prop ? '' : `<button class="btn" type="button" data-objuc="${esc(id)}:${first}">객체 지도에서 보기</button>`;
+  const tools = `<div class="row"><button class="btn" type="button" data-uc="${esc(id)}" data-k="0">순서도만 보기</button>${goObj}</div>`;
+  let kicker, title, h = '', cam, camPad = 30;
+  if (i < 0) {
+    kicker = `유저 스토리 · ${n}장면`; title = u.t;
+    if (u.d) h += `<p class="lead">${esc(u.d)}</p>`;
+    const who = s.who, goal = s.goal, want = s.want || (goal ? goal.n + (goal.d ? ' · ' + goal.d : '') : ''), why = s.why || (who ? who.d : '');
+    if (who) h += `<div class="ust-who"><span class="ust-av">${esc(who.n.slice(0, 1))}</span><div><b>${esc(who.n)}</b><small>${esc(TYPES[who.t] ? TYPES[who.t][0] : '')}</small></div></div>`;
+    if (who || want || why) h += `<div class="ust-tri">${who ? `<div><small>누가</small><span>${esc(who.n)}</span></div>` : ''}${want ? `<div><small>무엇을</small><span><b>${esc(want)}</b></span></div>` : ''}${why ? `<div><small>왜</small><span>${esc(why)}</span></div>` : ''}</div>`;
+    h += `<div><h3>장면 · ${n}</h3><ol class="ustr">${s.scenes.map((sc, k) => `<li><button type="button" data-ustory="${esc(id)}:${k}"><em>${k + 1}</em><span>${esc(sc.title)}</span></button></li>`).join('')}</ol></div>`;
+    h += `<div class="row">${ustBtn(id, 0, '▶ 이야기로 따라가기', 'btn pri')}</div>` + tools;
+    if (x.when || x.end || x.fail) h += `<div class="ucx">${x.when ? `<div><h3>언제 시작하나</h3><p>${esc(x.when)}</p></div>` : ''}${x.end ? `<div><h3>끝나면 남는 것</h3><p>${esc(x.end)}</p></div>` : ''}${x.fail ? `<div><h3>안 될 때</h3><p>${esc(x.fail)}</p></div>` : ''}</div>`;
+    ustHL(u, [], 0, false); u.dom.classList.remove('play', 'stepping');
+    cam = {x: u.x - 20, y: u.y - 20, w: u.w + 40, h: Math.min(u.h + 40, 720)};
+  } else if (i < n) {
+    const sc = s.scenes[i], lo = Math.min(...sc.steps), lanes = [...new Set(sc.steps.flatMap(k => [u.steps[k].a, u.steps[k].b]))];
+    kicker = `장면 ${i + 1} / ${n} · ${sceneChain(u, sc)}`; title = sc.title;
+    if (sc.sees) h += ustBlock('사용자가 보는 것', `<p>${esc(sc.sees)}</p>` + (sc.basis.length ? `<ul class="dot ustbs">${sc.basis.map(liT).join('')}</ul>` : ''));
+    h += ustBlock('안에서 일어나는 일', `<ul class="ustin">${sc.steps.map(k => { const st = u.steps[k]; return `<li><span class="verb">${esc(st.a === st.b ? laneN(st.a) + ' 안에서' : laneN(st.a) + ' → ' + laneN(st.b))}${st.r ? ' (답)' : ''}</span>${st.alt ? `<span class="alt">${esc(st.alt)}</span>` : ''}${esc(st.t)}${st.c ? ` <code>${esc(st.c)}</code>` : ''}</li>`; }).join('')}</ul>` +
+      `<div class="ustch">${[...new Set(lanes.map(L2O))].map(o => OBJ[o] ? `<button class="go" type="button" data-obj="${esc(o)}">${esc(ON[o])}</button>` : `<span class="dob p">${esc(o)}</span>`).join('')}</div>`);
+    const br = s.branches.filter(b => b.at === i);
+    if (br.length) h += ustBlock('이 장면에서 안 되면', `<ul class="ustbr">${br.map(b => `<li><b>${esc(b.when)}</b>${b.then ? ` → ${esc(b.then)}` : ''}${b.end ? ` <span class="note">${esc(b.end)}</span>` : ''}</li>`).join('')}</ul>`);
+    h += `<div class="ustp" aria-hidden="true">${s.scenes.map((_, k) => `<i class="${k < i ? 'done' : k === i ? 'on' : ''}"></i>`).join('')}</div>`;
+    h += `<div class="row">${ustBtn(id, i - 1, i ? '← 이전' : '← 처음')}${ustBtn(id, i + 1, i < n - 1 ? `다음 · ${esc(s.scenes[i + 1].title)} →` : '끝 →', 'btn pri')}</div>`;
+    if (i < n - 1) h += `<div class="row">${ustBtn(id, n, '끝까지 건너뛰기 →')}</div>`;
+    h += `<div><h3>장면 목록</h3><ol class="ustl">${s.scenes.map((c, k) => `<li class="${k < i ? 'done' : k === i ? 'cur' : ''}"><button type="button" data-ustory="${esc(id)}:${k}"><em>${k < i ? '✓' : k + 1}</em><span>${esc(c.title)}</span></button></li>`).join('')}</ol></div>`;
+    h += tools;
+    ustHL(u, sc.steps, lo, true);
+    const y = u.y + SQ.head + SQ.lane + lo * SQ.row;
+    cam = {x: u.x - 20, y: Math.max(u.y - 20, y - 230), w: u.w + 40, h: 470}; camPad = 18;
+  } else {
+    kicker = `장면 ${n} / ${n} · 끝`; title = '이야기가 끝났다';
+    if (s.summary) h += `<p class="lead">${esc(s.summary)}</p>`;
+    if (x.end) h += ustBlock('끝나면 남는 것', `<p>${esc(x.end)}</p>`);
+    if (x.fail) h += ustBlock('안 될 때', `<p>${esc(x.fail)}</p>`);
+    if (s.branches.length) h += ustBlock('갈래', `<ul class="ustbr">${s.branches.map(b => `<li><span class="verb">${b.at + 1}번 장면</span><b>${esc(b.when)}</b>${b.then ? ` → ${esc(b.then)}` : ''}${b.end ? ` <span class="note">${esc(b.end)}</span>` : ''}</li>`).join('')}</ul>`);
+    const dms = DM.filter(d => ['w', 'r', 'v'].some(k => arr(d[k]).some(([o]) => o && objs.includes(o))));
+    h += ustBlock('이 이야기가 닿은 곳', `<div class="ustch">${objs.map(o => OBJ[o] ? `<button class="go" type="button" data-obj="${esc(o)}">${esc(ON[o])}</button>` : `<span class="dob p">${esc(o)}</span>`).join('')}</div>` +
+      (dms.length ? `<h3>쓰고 읽은 데이터</h3><div class="ustch">${dms.map(d => `<button class="go" type="button" data-dm="${esc(d.id)}">${esc(d.n)}<small>${esc(DSI[d.st] ? DSI[d.st].n : '')}</small></button>`).join('')}</div>` : ''));
+    const nx = UC[UC.indexOf(u) + 1];
+    h += `<div class="ustp" aria-hidden="true">${s.scenes.map(() => '<i class="done"></i>').join('')}</div>`;
+    h += `<div class="row">${ustBtn(id, -1, '처음부터 다시')}${ustBtn(id, n - 1, '← 이전')}</div>` + tools;
+    if (nx) h += `<div class="row">${ustBtn(nx.id, -1, `다음 이야기 · ${esc(nx.s)} →`, 'btn pri')}</div>`;
+    ustHL(u, [], u.steps.length + 1, false);
+    cam = {x: u.x - 20, y: u.y - 20, w: u.w + 40, h: Math.min(u.h + 40, 720)};
+  }
+  openPanel(kicker, title, h, true);
+  fly(camFor(cam, camPad)); // 패널을 연 뒤에 재야 패널 폭만큼 비켜서 보인다
 }
 
 /* ───────── 데이터 지도 ───────── */
@@ -1442,7 +1538,7 @@ function endObj() {
 }
 function startObj(list, i, label) {
   clearInterval(timer); timer = 0; $('#tPlay').textContent = '자동으로 넘기기';
-  endUC(); endObj(); clearFocus();
+  endUC(); endObj(); endStory(); clearFocus();
   closePanel();
   mode = 'obj'; oc = {list, i: 0, label, dot: null};
   objStep(i || 0);
@@ -1506,7 +1602,7 @@ function showStep(i) {
   focusOn(ids, ei, true);
   fly(camFor(union(s.f.map(id => fbox(FR[id]))), 30));
 }
-function stopTour() { clearInterval(timer); timer = 0; $('#tPlay').textContent = '자동으로 넘기기'; if (!tour.hidden) { tour.hidden = true; clearFocus(); } endUC(); endObj(); $('#tSeq').hidden = true; mode = 'tour'; }
+function stopTour() { clearInterval(timer); timer = 0; $('#tPlay').textContent = '자동으로 넘기기'; if (!tour.hidden) { tour.hidden = true; clearFocus(); } endUC(); endObj(); endStory(); $('#tSeq').hidden = true; mode = 'tour'; }
 const stepNext = () => mode === 'obj' && oc ? objStep(oc.i + 1) : mode === 'uc' && cur ? ucStep(cur.k + 1) : showStep(ti + 1);
 const stepPrev = () => mode === 'obj' && oc ? objStep(oc.i - 1) : mode === 'uc' && cur ? ucStep(cur.k - 1) : showStep(ti - 1);
 $('#tSeq').addEventListener('click', () => {
@@ -1599,5 +1695,5 @@ const first = startFrame();
 if (first) { cam = camFor(fbox(first), 20); apply(); } else { apply(); fitAll(); }
 const mainF = FRAMES.find(f => f.main);
 if (innerWidth <= 720 && mainF && !(HASV && AUDM === 'view')) { cam = camFor(fbox(mainF), 12); apply(); }
-window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id)};
+window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id), openStory: (id, i) => UCI[id] && openUStory(id, i)};
 })();

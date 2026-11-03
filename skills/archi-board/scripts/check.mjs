@@ -98,6 +98,31 @@ arr(B.usecases).forEach(u => {
     if (!t) err(`유즈케이스 ${u.id} ${i + 1}칸: 하는 일이 비었다`);
   });
 });
+// 유저 스토리 — usecase.story의 칸 번호 · 상자 id · 장면 순서
+arr(B.usecases).forEach(u => {
+  const st = u.story;
+  if (!st) return;
+  const w = `유즈케이스 ${u.id}의 story`, n = arr(u.steps).length;
+  ['who', 'goal'].forEach(k => { if (st[k] && !eid.has(st[k])) err(`${w}: ${k}의 ${st[k]}가 상자에 없다`); });
+  const scenes = arr(st.scenes), seen = [];
+  scenes.forEach((sc, k) => {
+    const ss = sc.steps === undefined ? [] : [].concat(sc.steps);
+    if (!ss.length) err(`${w}: 장면 ${k + 1}에 steps(칸 번호)가 없다`);
+    ss.forEach(i => {
+      if (!Number.isInteger(i) || i < 0 || i >= n) err(`${w}: 장면 ${k + 1}의 칸 번호 ${i}가 0~${n - 1} 밖이다`);
+      else if (seen.includes(i)) err(`${w}: 칸 ${i}가 두 장면에 들어 있다`);
+      else if (seen.length && i < seen[seen.length - 1]) err(`${w}: 장면 ${k + 1}의 칸 ${i}가 앞 장면보다 앞선다 — 장면은 칸 순서대로`);
+      else seen.push(i);
+    });
+    if (!sc.title) warn(`${w}: 장면 ${k + 1}에 title이 없다 — 칸의 "하는 일"을 쓴다`);
+    if (sc.sees && ![].concat(sc.basis || []).filter(Boolean).length) warn(`${w}: 장면 ${k + 1}에 sees는 있는데 basis(근거)가 없다 — 화면 코드나 사진 위치를 적는다`);
+  });
+  if (scenes.length && seen.length < n) warn(`${w}: 칸 ${n - seen.length}개가 어느 장면에도 없어 이야기에서 빠진다`);
+  arr(st.branches).forEach((b, k) => {
+    if (!Number.isInteger(b.at) || b.at < 0 || b.at >= Math.max(scenes.length, n)) err(`${w}: 갈래 ${k + 1}의 at(장면 번호)이 범위 밖이다`);
+    if (!b.when) err(`${w}: 갈래 ${k + 1}에 when(언제)이 없다`);
+  });
+});
 const OM = B.objectMap;
 const objs = OM ? OM.objects || {} : {};
 if (OM) {
