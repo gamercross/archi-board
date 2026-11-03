@@ -17,7 +17,7 @@
   }
   .sc-left, .sc-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .sc-badge {
-    background: var(--acc); color: #fff; font-weight: 700; font-size: 11px;
+    background: var(--acc); color: #fff; font-weight: 700; font-size: 12px;
     padding: 2px 8px; border-radius: 999px; letter-spacing: .02em;
   }
   .sc-steps { color: var(--ink2); font-weight: 500; }
@@ -25,13 +25,13 @@
   .sc-tabs { display: inline-flex; gap: 2px; background: var(--sheet); padding: 2px; border-radius: 8px; border: 1px solid var(--line2); }
   .sc-tab {
     border: 0; background: none; padding: 4px 10px; border-radius: 6px;
-    font-size: 12px; font-weight: 600; cursor: pointer; color: var(--ink2); text-decoration: none;
+    font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink2); text-decoration: none;
   }
   .sc-tab.on { background: var(--acc); color: #fff; }
   .sc-copy {
     border: 1px solid var(--acc); background: var(--sheet); color: var(--acc-ink);
-    border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: var(--f-mono);
+    border-radius: 7px; padding: 4px 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: var(--f-ui); /* 한글이 고정폭 글꼴에서 벌어지지 않게 */
   }
   .sc-copy:hover { background: var(--soft); }
   .sc-x {
@@ -39,6 +39,9 @@
     border-radius: 6px; cursor: pointer; font-size: 13px;
   }
   .sc-x:hover { background: var(--sheet); color: var(--ink); }
+  /* 글자 대비 4.5:1 — 밝은 파랑 바탕(어두운 테마)에는 어두운 글자를 쓴다 */
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sc-badge, :root:not([data-theme="light"]) .sc-tab.on { color: #0C0F14; } }
+  :root[data-theme="dark"] .sc-badge, :root[data-theme="dark"] .sc-tab.on { color: #0C0F14; }
   @media (max-width: 720px) { .sc-steps { display: none; } }
 </style>
 </head>

@@ -8,7 +8,7 @@
 'use strict';
 const VERSION = '1.4.0';
 if (!window.BOARD) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:24px;font:16px system-ui">board-data.js를 board.js보다 먼저 불러 window.BOARD를 채워 주세요.</p>'); return; }
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s).replace(/ · /g, '\u00A0· ').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // ' · ' 앞을 붙여 가운뎃점이 줄 첫머리에 오지 않게
 /*MODEL-START*/
 /* ───────── 모델 ───────── */
 const TYPES = {
@@ -27,7 +27,7 @@ const LK = Object.fromEntries(LAYERS.map(l => [l[0], l[1]])); LK.seq = '순서';
 const RELS = {
   realization:['실현한다','Realization'], serving:['지원한다','Serving'], assignment:['맡는다','Assignment'], access:['읽고 쓴다','Access'],
   flow:['넘겨준다','Flow'], triggering:['다음으로 이어진다','Triggering'], influence:['영향을 준다','Influence'],
-  composition:['으로 이루어진다','Composition'], aggregation:['을 묶는다','Aggregation'], association:['와 관련된다','Association']
+  composition:['품는다','Composition'], aggregation:['묶는다','Aggregation'], association:['관련된다','Association']
 };
 const ST = {done:'있음', part:'일부', todo:'없음', cand:'후보', gone:'뺌'};
 const INSIGHTS = {heatmap:'열지도', bar:'막대', sankey:'흐름도'};
@@ -141,7 +141,7 @@ const SHELL = `<div class="app" id="app" data-mode="${AUDM}">
       <div class="brand"><h1>${esc(B.title || 'archi-board')}</h1><p>${esc(B.sub || '')}</p></div>
       <div class="acts">
 ${HASV ? `        <div class="aud" role="group" aria-label="누구를 위한 보기"><button class="btn" type="button" data-audm="view">처음 보는 사람</button><button class="btn" type="button" data-audm="build">만드는 사람</button></div>` : ''}
-        <button class="btn pri" id="bObj" type="button" data-aud="build">객체 지도</button>
+        <button class="btn" id="bObj" type="button" data-aud="build">객체 지도</button>
         <button class="btn" id="bData" type="button" data-aud="build">데이터 지도</button>
         <button class="btn" id="bIns" type="button" data-aud="build">판단 · 차트</button>
 ${FRAMES.filter(f => f.button).map(f => `        <button class="btn" type="button" data-frb="${esc(f.id)}" data-aud="${AUD(f)}">${esc(f.button)}</button>`).join('\n')}
@@ -487,7 +487,7 @@ FRAMES.forEach(f => {
   const s = document.createElement('button');
   s.type = 'button'; s.className = `sum w${f.weight}` + (f.main ? ' main' : '') + (f.layout === 'objects' || f.layout === 'datamap' || f.layout === 'view' ? ' objs' : '');
   s.dataset.aud = AUD(f);
-  s.style.cssText = `left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;--z:${Math.min(2.2, Math.max(1, Math.min(f.w / 800, f.h / 900))).toFixed(2)}`;
+  s.style.cssText = `left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;--z:${Math.min(1.4, Math.max(1, Math.min(f.w / 1000, f.h / 1100))).toFixed(2)}`;
   s.innerHTML = `<span class="sk">${esc(f.kicker)}</span><span class="st">${esc(f.title)}</span>` + (f.h > 420 ? `<span class="ss">${esc(f.sub)}</span>` : '') + (vm ? meter(f.c) + `<span class="sc">${countText(f.c)}</span>` : '');
   s.addEventListener('click', () => { if (!moved) openFrame(f.id); });
   $('#sums').append(s);
@@ -985,7 +985,8 @@ function viewBox() {
   const pw = !$('#panel').hidden && wide ? $('#panel').offsetWidth + 24 : 0;
   const ph = !$('#panel').hidden && !wide ? $('#panel').offsetHeight + 16 : 0;
   const th = !$('#tour').hidden ? $('#tour').offsetHeight + 24 : !$('#presBar').hidden ? $('#presBar').offsetHeight + 24 : !$('#tourCta').hidden ? $('#tourCta').offsetHeight + 28 : 0; // 아래에 뜨는 안내 배너도 가리지 않게
-  return {w: board.clientWidth - pw, h: board.clientHeight - Math.max(ph, th)};
+  const mh = innerWidth > 720 && $('#mini') && !$('#mini').hidden ? 76 : 0; // 왼쪽 아래 미니맵 · 오른쪽 아래 확대 단추가 내용을 가리지 않게
+  return {w: board.clientWidth - pw, h: board.clientHeight - Math.max(ph, th, mh)};
 }
 function camFor(r, pad) {
   const v = viewBox(); pad = pad == null ? 36 : pad;
@@ -1179,7 +1180,7 @@ function openFrame(id) {
   const f = FR[id];
   clearFocus(); f.dom.classList.add('on');
   let h = `<p>${esc(f.desc)}</p><p class="why"><b>이 크기인 까닭</b> ${esc(f.why)}</p>`;
-  h += `<div class="cnt">${meter(f.c)}<span>${countText(f.c) || '상태가 없는 원칙 · 목표만 있다'}</span></div>`;
+  h += `<div class="cnt">${meter(f.c)}<span>${countText(f.c) || (f.items.length && f.items.every(x => TYPES[x.t][2] === 'mot') ? '상태가 없는 원칙 · 목표만 있다' : '상태를 적은 상자가 없다')}</span></div>`;
   if (f.recent.length) h += `<div><h3>최근 한 일</h3><ul class="recent">${f.recent.map(([d, t]) => `<li><time>${esc(d)}</time><span>${esc(t)}</span></li>`).join('')}</ul></div>`;
   h += insSec(f.layout === 'insight' ? (arr(f.insights).length ? arr(f.insights).map(i => INSI[i]).filter(Boolean) : INS) : INS.filter(x => x.f === id));
   const fu = UC.filter(u => u.f === id);
@@ -1582,7 +1583,7 @@ function openInsight(id) {
     : `<div><h3>근거</h3><ul class="dot warn"><li>근거가 적혀 있지 않다 — 이 값은 코드로 확인하기 전에는 믿지 않는다.</li></ul></div>`;
   if (x.of.length) h += `<div><h3>관련</h3><ul>${x.of.map(k => `<li>${insBtn(k)}</li>`).join('')}</ul></div>`;
   openPanel(`판단 · ${INSIGHTS[x.type]}`, x.t, h, true);
-  if (f) fly(camFor(fbox(f), 28));
+  if (f && !(HASV && AUDM === 'view' && AUD(f) === 'build')) fly(camFor(fbox(f), 28)); // 보는 사람 쪽에서 숨은 창으로 날아가 빈 화면에 머물지 않게
 }
 function openInsights() {
   stopTour(); clearFocus();
@@ -1793,6 +1794,10 @@ function setMode(m, quiet) {
 // 보는 사람 쪽에서 만드는 사람용 창 · 상자를 열려고 하면 그쪽으로 넘어간다
 const need = f => { if (HASV && AUDM === 'view' && f && AUD(f) === 'build') setMode('build', true); };
 { const o = openFrame; openFrame = id => { need(FR[id]); return o(id); }; }
+{ const o = openObj; openObj = id => { need(FO); return o(id); }; }
+{ const o = openData; openData = id => { need(FD); return o(id); }; }
+{ const o = openObjects; openObjects = () => { need(FO); return o(); }; }
+{ const o = openDataMap; openDataMap = () => { need(FD); return o(); }; }
 { const o = select; select = (id, fl) => { need(byId[id] && FR[byId[id].f]); return o(id, fl); }; }
 { const o = openObj; openObj = id => { need(FO); return o(id); }; }
 { const o = openObjects; openObjects = () => { need(FO); return o(); }; }
@@ -1805,6 +1810,8 @@ if (HASV) setMode(AUDM, true);
 syncCta();
 const first = startFrame();
 if (first) { cam = camFor(fbox(first), 20); apply(); } else { apply(); fitAll(); }
+const edgeFade = el => { const f = () => el.classList.toggle('scr', el.scrollWidth - el.clientWidth - el.scrollLeft > 4); el.addEventListener('scroll', f, {passive: true}); addEventListener('resize', f); f(); setTimeout(f, 400); };
+document.querySelectorAll('.acts,.chips').forEach(edgeFade);
 const mainF = FRAMES.find(f => f.main);
 if (innerWidth <= 720 && mainF && !(HASV && AUDM === 'view')) { cam = camFor(fbox(mainF), 12); apply(); }
 window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id), openStory: (id, i) => UCI[id] && openUStory(id, i), startPres, stopPres};
