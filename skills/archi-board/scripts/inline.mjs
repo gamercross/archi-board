@@ -4,13 +4,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inlineImages } from './lib-inline-images.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dir = process.argv[2];
 if (!dir) { console.error('쓰는 법: node inline.mjs <보드 폴더> [나갈 파일]'); process.exit(2); }
 const out = process.argv[3] || path.join(dir, 'board.single.html');
 const eng = path.resolve(here, '../../../engine/v1');
 const read = f => fs.readFileSync(f, 'utf8');
-const data = read(path.join(dir, 'board-data.js'));
+const {data, n: imgN} = inlineImages(read(path.join(dir, 'board-data.js')), dir); // 폴더 안 사진은 data: 주소로 — 파일 하나만 옮겨도 사진이 보이게
 const title = (data.match(/["']?title["']?\s*:\s*['"]([^'"]+)['"]/) || [])[1] || 'archi-board';  // JS 칸 이름 · JSON 둘 다
 const guard = s => s.replace(/<\/script/gi, '<\\/script');
 // 폴더에 head.html(unpack.mjs가 남긴 머리 주석)이 있으면 <title> 아래에 그대로 붙인다
@@ -37,4 +38,4 @@ ${guard(read(path.join(eng, 'board.js')))}
 </html>
 `;
 fs.writeFileSync(out, html);
-console.log(`묶음: ${out} (${(html.length / 1024).toFixed(0)}KB) — 엔진이 새로 나오면 다시 묶는다`);
+console.log(`묶음: ${out} (${(html.length / 1024).toFixed(0)}KB${imgN ? ` · 사진 ${imgN}장` : ''}) — 엔진이 새로 나오면 다시 묶는다`);

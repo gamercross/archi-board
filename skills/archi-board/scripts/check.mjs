@@ -100,6 +100,15 @@ arr(B.usecases).forEach(u => {
 });
 // 글이 길면 읽기 불편하다 — 판단 · 차트와 이야기의 문장 길이를 본다(자세한 것은 근거 · 문서에 두고 한 줄은 짧게)
 const LONG = (w, what, v, max) => { const n = typeof v === 'string' ? [...v].length : 0; if (n > max * 2) err(`${w}: ${what}이 ${n}자다 — ${max * 2}자를 넘으면 안 된다. ${max}자 안팎으로 줄이고 자세한 것은 basis나 문서에 둔다`); else if (n > max) warn(`${w}: ${what}이 ${n}자다 — ${max}자 안팎으로 짧게 쓴다`); };
+// 패널 안 사진(img) — images 열쇠이거나 경로 · 주소여야 한다. 없는 열쇠면 빈 칸이 된다
+{
+  const IM = B.images || {}, okImg = k => k === undefined || k === '' || IM[k] !== undefined || /^(data:|https?:|\.{0,2}\/|[\w.-]+\/)|\.(png|jpe?g|webp|gif|svg)$/i.test(k);
+  const chk = (w, k) => { if (!okImg(k)) err(`${w}: img ${k}가 images에도 없고 경로나 주소도 아니다`); };
+  arr(B.usecases).forEach(u => arr(u.story && u.story.scenes).forEach((sc, k) => chk(`유즈케이스 ${u.id}의 장면 ${k + 1}`, sc.img)));
+  arr(B.insights).forEach(x => chk(`판단 ${x.id}`, x.img));
+  Object.entries((B.objectMap && B.objectMap.objects) || {}).forEach(([id, o]) => chk(`객체 ${id}`, o.img));
+  if (B.panelBudget !== undefined && !(Number.isFinite(B.panelBudget) && B.panelBudget >= 300 && B.panelBudget <= 3000)) err('panelBudget은 300~3000 사이 숫자(패널에서 먼저 보이는 글자 수)');
+}
 // 상자 이름 · 설명도 짧게 — 이름은 카드와 상자에서 잘리고, 설명은 패널을 길게 만든다
 els.forEach(x => { LONG(`상자 ${x.id}`, '이름(n)', x.n, 22); LONG(`상자 ${x.id}`, '설명(d)', x.d, 60); });
 // 유저 스토리 — usecase.story의 칸 번호 · 상자 id · 장면 순서
