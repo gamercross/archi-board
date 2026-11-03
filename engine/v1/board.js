@@ -1114,9 +1114,25 @@ function clearFocus() {
   DFLOW.forEach(x => x.dom && x.dom.classList.remove('on'));
 }
 const panel = $('#panel');
+const PANEL_BUDGET = +(B.panelBudget || 600); // 패널 한 장에서 먼저 보이는 글자 수 — 넘으면 뒤쪽을 접는다
+function budgetFold(root) {
+  const kids = [...root.children];
+  if (kids.length < 4 || root.textContent.length <= PANEL_BUDGET * 1.25) return; // 조금 넘는 건 접지 않는다
+  let used = 0, cut = -1;
+  kids.forEach((c, i) => { if (cut >= 0) return; const n = c.textContent.length; if (i >= 2 && used + n > PANEL_BUDGET) cut = i; else used += n; }); // 예산을 넘기는 덩어리부터 접는다(앞의 두 덩어리는 늘 보인다)
+  if (cut < 0 || cut >= kids.length) return;
+  const KEEP = '.btn, .row, .ustp, .shot, .pthumb, svg, table, .insw, .skw, .insbar'; // 단추 · 그림 · 표는 접지 않는다
+  const foldable = kids.slice(cut).filter(c => !(c.matches(KEEP) || c.querySelector(KEEP)));
+  if (foldable.length < 2) return;
+  const d = document.createElement('details'); d.className = 'fold budget';
+  d.innerHTML = `<summary>더 보기 · ${foldable.length}개 항목</summary>`;
+  root.insertBefore(d, foldable[0]);
+  foldable.forEach(c => d.appendChild(c));
+}
 function openPanel(k, t, html, wide) {
   panel.classList.toggle('wide', !!wide);
   $('#pK').textContent = k; $('#pT').textContent = t; $('#pB').innerHTML = html; panel.hidden = false; $('#pB').scrollTop = 0;
+  $('#pB').querySelectorAll('[data-img]').forEach(b => b.addEventListener('click', () => openImg(b.dataset.img, b.dataset.cap)));
   $('#pB').querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => select(b.dataset.go, true)));
   $('#pB').querySelectorAll('[data-fr]').forEach(b => b.addEventListener('click', () => openFrame(b.dataset.fr)));
   $('#pB').querySelectorAll('[data-uc]').forEach(b => b.addEventListener('click', () => playUC(b.dataset.uc, +b.dataset.k)));
@@ -1132,6 +1148,7 @@ function openPanel(k, t, html, wide) {
   $('#pB').querySelectorAll('[data-dflow]').forEach(b => b.addEventListener('click', () => openFlow(+b.dataset.dflow)));
   $('#pB').querySelectorAll('[data-ustory]').forEach(b => b.addEventListener('click', () => { const [u, i] = b.dataset.ustory.split(':'); openUStory(u, i === undefined ? -1 : +i); }));
   $('#pB').querySelectorAll('[data-ins]').forEach(b => b.addEventListener('click', () => openInsight(b.dataset.ins)));
+  budgetFold($('#pB'));
 }
 function closePanel() { panel.hidden = true; }
 $('#pX').addEventListener('click', () => { clearFocus(); endStory(); closePanel(); });
@@ -1297,7 +1314,7 @@ function openObj(id) {
   o.dom.classList.add('sel');
   OE.forEach(e => { const on = e.a === id || e.b === id; e.dom.classList.toggle('on', on); e.lab.classList.toggle('on', on); });
   const st = byId[id] ? byId[id].s : 'done';
-  let h = `<div class="tags"><span class="verb">«${esc(OST[id])}»</span><span class="verb">${esc(o.pk.n)}</span>${ST[st] ? `<b class="chip ${st}">${ST[st]}</b>` : ''}</div>`;
+  let h = `<div class="tags"><span class="verb">«${esc(OST[id])}»</span><span class="verb">${esc(o.pk.n)}</span>${ST[st] ? `<b class="chip ${st}">${ST[st]}</b>` : ''}</div>` + thumb(o.img, ON[id]);
   h += `<p class="lead">${esc(o.one)}</p><p>${esc(o.what)}</p><p class="why"><b>왜 따로 있나</b> ${esc(o.why)}</p>`;
   if (o.how.length) h += `<div><h3>안에서 도는 순서</h3><ol>${o.how.map(liT).join('')}</ol></div>`;
   if (o.parts) h += `<div><h3>이 화면 안의 부분 · ${o.parts.length}</h3><ul class="parts">${o.parts.map(p => `<li><b>${esc(p.n)}</b> ${esc(p.d)} <code>${esc(p.fn)}</code></li>`).join('')}</ul></div>`;
@@ -1390,6 +1407,9 @@ function ustHL(u, cs, past, focus) {
   if (focus) focusOn(new Set([...lanes].filter(k => LN[k]).map(k => LN[k][1])), new Set(), false);
 }
 const ustBtn = (id, i, t, cls) => `<button class="${cls || 'btn'}" type="button" data-ustory="${esc(id)}:${i}">${t}</button>`;
+// 패널 안 사진: 비율이 정해진 작은 칸 하나. 늦게 떠도 칸이 안 움직이고, 누르면 큰 그림 창(lightbox)으로 연다
+const thumb = (key, cap) => key ? `<button class="pthumb" type="button" data-img="${esc(IMG[key] || key)}" data-cap="${esc(cap || '')}" aria-label="${esc(cap || '사진')} 크게 보기"><img src="${esc(IMG[key] || key)}" alt="${esc(cap || '')}" loading="lazy" decoding="async"></button>` : '';
+function openImg(src, cap) { $('#lbImg').src = src; $('#lbImg').alt = cap || ''; $('#lbCap').textContent = `${cap || ''} · 누르면 닫힌다`; lb.hidden = false; }
 const ustBlock = (h, body) => `<div class="ustb"><h3>${h}</h3>${body}</div>`;
 function openUStory(id, i) {
   stopTour(); clearFocus();
@@ -1415,7 +1435,7 @@ function openUStory(id, i) {
   } else if (i < n) {
     const sc = s.scenes[i], lo = Math.min(...sc.steps), lanes = [...new Set(sc.steps.flatMap(k => [u.steps[k].a, u.steps[k].b]))];
     kicker = `장면 ${i + 1} / ${n} · ${sceneChain(u, sc)}`; title = sc.title;
-    if (sc.sees) h += ustBlock('사용자가 보는 것', `<p>${esc(sc.sees)}</p>` + (sc.basis.length ? `<ul class="dot ustbs">${sc.basis.map(liT).join('')}</ul>` : ''));
+    if (sc.sees) h += ustBlock('사용자가 보는 것', thumb(sc.img, sc.title) + `<p>${esc(sc.sees)}</p>` + (sc.basis.length ? `<ul class="dot ustbs">${sc.basis.map(liT).join('')}</ul>` : ''));
     h += ustBlock('안에서 일어나는 일', `<ul class="ustin">${sc.steps.map(k => { const st = u.steps[k]; return `<li><span class="verb">${esc(st.a === st.b ? laneN(st.a) + ' 안에서' : laneN(st.a) + ' → ' + laneN(st.b))}${st.r ? ' (답)' : ''}</span>${st.alt ? `<span class="alt">${esc(st.alt)}</span>` : ''}${esc(st.t)}${st.c ? ` <code>${esc(st.c)}</code>` : ''}</li>`; }).join('')}</ul>` +
       `<div class="ustch">${[...new Set(lanes.map(L2O))].map(o => OBJ[o] ? `<button class="go" type="button" data-obj="${esc(o)}">${esc(ON[o])}</button>` : `<span class="dob p">${esc(o)}</span>`).join('')}</div>`);
     const br = s.branches.filter(b => b.at === i);
@@ -1576,6 +1596,7 @@ function openInsight(id) {
   const x = INSI[id], f = FR[x.f];
   let h = `<div class="tags"><span class="verb">${INSIGHTS[x.type]}</span>${f ? `<button class="go" type="button" data-fr="${esc(f.id)}">${esc(f.title)}</button>` : ''}</div>`;
   if (x.d) h += `<p class="lead">${esc(x.d)}</p>`;
+  h += thumb(x.img, x.t);
   h += x.type === 'heatmap' ? insHeat(x) : x.type === 'bar' ? insBar(x) : insSankey(x);
   h += `<div><h3>이 값을 만든 순서</h3>${insMake(x)}</div>`;
   if (arr(x.rubric).length) h += `<div><h3>값의 기준</h3>${fold(x.rubric.map(liT), 4, 'dot')}</div>`;

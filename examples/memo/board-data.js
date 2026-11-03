@@ -1,5 +1,6 @@
 // archi-board 예시 — 작은 메모 앱. 실제 서비스가 아니라 형식을 보여 주려고 지은 것이다.
 window.BOARD = {
+  images: {save: 'shots/save.svg'},   // 패널 안 사진 — 경로는 이 파일 기준. 한 파일로 묶으면 data: 주소로 들어간다
   format: 1,
   title: '메모 앱 보드',
   sub: '예시 · 메모를 쓰고 저장하고 찾는 작은 웹 앱',
@@ -129,7 +130,7 @@ window.BOARD = {
       who: 'st_user', goal: 'g_fast', why: '적을 곳을 찾다가 잊는다',
       summary: '바쁜 사람이 글을 쓰고 저장을 누르면, 초안이 먼저 남고, 서버가 데이터베이스에 한 줄을 넣고, 저장됨이 돌아와 목록 맨 위에 보인다.',
       scenes: [
-        {steps: [0], title: '글을 적고 저장을 누른다', sees: '입력칸에 글, 저장 단추', basis: ['web/app.js — 입력칸과 저장 단추']},
+        {steps: [0], img: 'save', title: '글을 적고 저장을 누른다', sees: '입력칸에 글, 저장 단추', basis: ['web/app.js — 입력칸과 저장 단추']},
         {steps: [1], title: '초안을 이 브라우저에 먼저 남긴다', sees: '화면은 그대로', basis: ['web/app.js — localStorage memo:draft']},
         {steps: [2], title: '메모를 서버로 보낸다', sees: '아직 화면에 변화가 없다. 글은 이미 초안에 남아 있다', basis: ['web/app.js — POST /api/notes']},
         {steps: [3], title: '데이터베이스에 한 줄 넣는다'},
