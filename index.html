@@ -1128,9 +1128,9 @@ window.BOARD = {
     {f: 'bpmn_loop', id: 'ba_agent', t: 'bactor', n: 'Claude 에이전트 · 사용자', d: 'SKILL.md 절차에 따라 코드를 분석하고 보드를 생성·검증·탐색하는 협업 주체.', s: 'done', c: 'skills/archi-board/SKILL.md'},
     {f: 'bpmn_loop', id: 'bp_front', t: 'bprocess', n: '1. 청중 정의 · 앞면 설계', d: '누가 보는지 정의하고 네 질문에 답하는 앞면(한 장 그림 · 차례 그림)을 쉬운 말로 먼저 구성한다.', s: 'done', c: 'skills/archi-board/references/audience.md'},
     {f: 'bpmn_loop', id: 'bp_read', t: 'bprocess', n: '2. 코드 역공학 · 사실 수집', d: '진입점부터 부품 목록 → 유즈케이스 순서도 → 데이터 저장소 순서로 코드에 있는 사실만 수집한다.', s: 'done', c: 'skills/archi-board/references/reading-code.md'},
-    {f: 'bpmn_loop', id: 'bp_write', t: 'bprocess', n: '3. 데이터 합성 · 채점', d: 'window.BOARD 형식에 맞춰 앞뒷면 상자, 객체/데이터 지도, rubric 기반 insights를 작성한다.', s: 'done', c: 'skills/archi-board/references/data-format.md'},
+    {f: 'bpmn_loop', id: 'bp_write', t: 'bprocess', n: '3. 데이터 합성 · 채점', d: 'board-data.js를 쓴다 — 상자 · 지도 · 판단 차트.', s: 'done', c: 'skills/archi-board/references/data-format.md'},
     {f: 'bpmn_loop', id: 'bp_check', t: 'bprocess', n: '4. 무브라우저 정적 점검', d: 'check.mjs를 실행해 ID 누락, 스키마 오류, 순환 그래프, 앞면 코드 용어 경고를 교정한다.', s: 'done', c: 'skills/archi-board/scripts/check.mjs'},
-    {f: 'bpmn_loop', id: 'bp_serve', t: 'bprocess', n: '5. 엔진 렌더링 · 5초 시험', d: '공용 엔진(index.html) 또는 단일 번들(inline.mjs)로 렌더링하고 5초 인지 시험을 수행한다.', s: 'done', c: 'engine/v1/board.js'},
+    {f: 'bpmn_loop', id: 'bp_serve', t: 'bprocess', n: '5. 엔진 렌더링 · 5초 시험', d: '공용 엔진이나 단일 파일로 그리고 5초 시험을 본다.', s: 'done', c: 'engine/v1/board.js'},
     {f: 'bpmn_loop', id: 'bp_sync', t: 'bprocess', n: '6. 코드 변경 시 증분 갱신', d: '코드가 바뀌면 전체를 다시 쓰지 않고 변경된 부품·데이터·앞면 칸만 찾아 근거와 함께 고친다.', s: 'done', c: 'skills/archi-board/SKILL.md'},
 
     // =========================================================================
@@ -1150,42 +1150,42 @@ window.BOARD = {
     {f: 'arch_4tier', id: 'cap_selfserve', t: 'capability', n: '외부 사용자 셀프 온보딩', d: '처음 방문한 외부 사용자가 쇼케이스와 가이드 투어로 즉시 스킬을 이해하고 도입하는 역량.', s: 'done', c: 'index.html'},
 
     // [업무 층 - bus : 1계층 유저층 & BPMN 이벤트/서비스]
-    {f: 'arch_4tier', id: 'ba_viewer', t: 'bactor', n: '처음 보는 사람 (User · Evaluator)', d: '사용자 · 평가자 · 기획자 · 새 팀원. 앞면(view)과 따라가기 투어로 프로젝트를 이해한다.', s: 'done', c: 'skills/archi-board/references/audience.md'},
-    {f: 'arch_4tier', id: 'ba_builder', t: 'bactor', n: '만드는 사람 (Developer · Maintainer)', d: '개발자 · 아키텍트 · 엔진 관리자. 뒷면(객체·데이터·순서도·차트)으로 코드를 유지보수한다.', s: 'done', c: 'README.md'},
+    {f: 'arch_4tier', id: 'ba_viewer', t: 'bactor', n: '처음 보는 사람', d: '평가자 · 기획자 · 새 팀원. 앞면과 투어로 이해한다.', s: 'done', c: 'skills/archi-board/references/audience.md'},
+    {f: 'arch_4tier', id: 'ba_builder', t: 'bactor', n: '만드는 사람', d: '개발자 · 관리자. 뒷면으로 코드를 고친다.', s: 'done', c: 'README.md'},
     {f: 'arch_4tier', id: 'be_req', t: 'bevent', n: '보드 생성 · 업데이트 · 번들 요청', d: '사용자가 에이전트에게 자연어로 보드 작업이나 단일 파일 묶기를 지시하는 BPMN 시작 사건.', s: 'done', c: 'skills/archi-board/SKILL.md'},
     {f: 'arch_4tier', id: 'bs_understand', t: 'bservice', n: '5초 프로젝트 구조 파악 서비스', d: '누가 쓰나 · 받는 도움 · 하는 일 · 바탕 기술을 위에서 아래 띠로 즉시 전달하는 서비스.', s: 'done', c: 'skills/archi-board/references/audience.md'},
     {f: 'arch_4tier', id: 'bs_audit', t: 'bservice', n: '아키텍처 · 데이터 · 위험도 감사', d: '부품별 책임, 데이터 수명 주기, 정량 위험도(열지도)를 근거와 함께 점검하는 서비스.', s: 'done', c: 'skills/archi-board/references/reading-code.md'},
 
     // [프로그램 층 - app : 2계층 사용자 인터페이스(UI) & 3계층 기능(Function)]
-    {f: 'arch_4tier', id: 'ac_shell', t: 'aiface', n: '[2계층 UI] 상단 전환 띠 & 네비게이션', d: '브랜드 헤더, 처음 보는 사람/만드는 사람 토글(data-audm), 창 바로가기 칩 바, 상태 미터바.', s: 'done', c: 'engine/v1/board.js'},
-    {f: 'arch_4tier', id: 'ac_canvas', t: 'aiface', n: '[2계층 UI] 무한 보드 캔버스 & 미니맵', d: '팬/줌 월드 좌표계, 시맨틱 줌(원거리 요약 sum ↔ 근거리 상자 el), SVG 곡선 화살표, 미니맵.', s: 'done', c: 'engine/v1/board.js'},
-    {f: 'arch_4tier', id: 'ac_panel', t: 'aiface', n: '[2계층 UI] 상세 패널 · 투어 · 차트 뷰어', d: '우측 슬라이드 패널(상자·객체·데이터·판단 차트), 하단 따라가기(tour) 컨트롤, 읽는 법 모달.', s: 'done', c: 'engine/v1/board.js'},
+    {f: 'arch_4tier', id: 'ac_shell', t: 'aiface', n: '[UI] 상단 전환 띠', d: '머리글 · 앞면/뒷면 전환 · 창 바로가기.', s: 'done', c: 'engine/v1/board.js'},
+    {f: 'arch_4tier', id: 'ac_canvas', t: 'aiface', n: '[UI] 무한 보드 · 미니맵', d: '끌기 · 확대, 멀리서는 요약 · 가까이서는 상자.', s: 'done', c: 'engine/v1/board.js'},
+    {f: 'arch_4tier', id: 'ac_panel', t: 'aiface', n: '[UI] 상세 패널 · 투어', d: '오른쪽 패널, 아래 따라가기 단추, 읽는 법.', s: 'done', c: 'engine/v1/board.js'},
     {f: 'arch_4tier', id: 'ui_showcase', t: 'aiface', n: '[2계층 UI] 쇼케이스 웰컴 헤더', d: '외부 방문자에게 스킬 가치 요약, 원클릭 설치 명령어 복사, 도메인별 예시 전환 탭을 제공.', s: 'done', c: 'index.html'},
-    {f: 'arch_4tier', id: 'ui_tour_cta', t: 'aiface', n: '[2계층 UI] 플로팅 투어 배너 & 코치마크', d: '첫 화면 하단 "30초 흐름 따라가기" 배너(#tourCta)와 드래그·줌·클릭 조작 코치마크(#hint).', s: 'done', c: 'engine/v1/board.js'},
+    {f: 'arch_4tier', id: 'ui_tour_cta', t: 'aiface', n: '[UI] 투어 배너 · 안내', d: '첫 화면 아래 배너와 조작 안내.', s: 'done', c: 'engine/v1/board.js'},
     {f: 'arch_4tier', id: 'ui_pres', t: 'aiface', n: '[2계층 UI] 발표(슬라이드) 모드', d: '상단 칩과 미니맵을 숨기고 키보드 화살표로 프레임 간을 프레젠테이션처럼 이동하는 뷰 모드(#presBar).', s: 'done', c: 'engine/v1/board.js'},
     {f: 'arch_4tier', id: 'ac_skill', t: 'acomp', n: '[3계층 기능] 스킬 절차 오케스트레이터', d: '7단계 신규 생성 절차와 증분 수정 절차를 정의한 SKILL.md 및 3종 레퍼런스 가이드.', s: 'done', c: 'skills/archi-board/SKILL.md'},
     {f: 'arch_4tier', id: 'ac_check', t: 'acomp', n: '[3계층 기능] 무브라우저 정적 점검기', d: 'Node VM에서 엔진 MODEL과 board-data.js를 대조해 참조·범위·순환·쉬운 말 규칙을 검증.', s: 'done', c: 'skills/archi-board/scripts/check.mjs'},
-    {f: 'arch_4tier', id: 'ac_bundle', t: 'acomp', n: '[3계층 기능] 단일 파일 번들러 · 언패커', d: '오프라인·아티팩트용 단일 HTML 묶기(inline.mjs) 및 기존 단일 파일에서 데이터 꺼내기(unpack.mjs).', s: 'done', c: 'skills/archi-board/scripts/inline.mjs'},
-    {f: 'arch_4tier', id: 'do_bdata', t: 'dobject', n: '[데이터] board-data.js (window.BOARD)', d: '보드의 모든 창·상자·관계·순서도·객체·데이터·차트를 담는 유일한 프로젝트 데이터 파일.', s: 'done', c: 'examples/memo/board-data.js'},
+    {f: 'arch_4tier', id: 'ac_bundle', t: 'acomp', n: '[기능] 단일 파일 묶기', d: '한 파일로 묶고(inline) 데이터를 꺼낸다(unpack).', s: 'done', c: 'skills/archi-board/scripts/inline.mjs'},
+    {f: 'arch_4tier', id: 'do_bdata', t: 'dobject', n: '[데이터] board-data.js', d: '보드의 모든 것을 담는 유일한 데이터 파일.', s: 'done', c: 'examples/memo/board-data.js'},
 
     // [기술 층 - tec : 4계층 인프라(Infrastructure)]
-    {f: 'arch_4tier', id: 'ac_engine', t: 'syssw', n: '[4계층 인프라] 공용 렌더링 엔진 v1.3', d: '9가지 레이아웃 계산기, SVG 라우터, 양면 전환, 발표 모드가 담긴 무의존성 순수 JS/CSS 엔진.', s: 'done', c: 'engine/v1/board.js'},
-    {f: 'arch_4tier', id: 'node_cdn', t: 'node', n: '[4계층 인프라] GitHub Pages · CI · 마켓', d: '공용 엔진 정적 호스팅(GitHub Pages), 문법·왕복 검증 CI(Actions), Claude 플러그인 마켓플레이스.', s: 'done', c: '.github/workflows/check.yml'},
-    {f: 'arch_4tier', id: 'art_single', t: 'artifact', n: '[4계층 산출물] board.single.html', d: '인터넷 없이 열거나 claude.ai 아티팩트에 올리는 인라인 단일 HTML 사본.', s: 'done', c: 'skills/archi-board/scripts/inline.mjs'},
+    {f: 'arch_4tier', id: 'ac_engine', t: 'syssw', n: '[인프라] 공용 엔진 v1.4', d: '레이아웃 · 선 긋기 · 앞뒷면 · 발표 모드. 의존성 없음.', s: 'done', c: 'engine/v1/board.js'},
+    {f: 'arch_4tier', id: 'node_cdn', t: 'node', n: '[인프라] Pages · CI · 마켓', d: '엔진 호스팅, 점검 CI, 플러그인 마켓.', s: 'done', c: '.github/workflows/check.yml'},
+    {f: 'arch_4tier', id: 'art_single', t: 'artifact', n: 'board.single.html', d: '인터넷 없이 열리는 한 파일 사본.', s: 'done', c: 'skills/archi-board/scripts/inline.mjs'},
 
     // =========================================================================
     // 6. 뒷면 창: roadmap (이행 로드맵, layout: 'time')
     // =========================================================================
-    {f: 'roadmap', id: 'pl_v1', t: 'plateau', n: '1단계 · 코어 엔진 & 스킬 완성 (v1.0~1.2)', d: '무한 보드 엔진, 객체/데이터 지도, 판단 차트(1.1), 앞뒷면 청중 분리(1.2), 정적 점검기', s: 'done', col: 0},
-    {f: 'roadmap', id: 'pl_ux1', t: 'plateau', n: '2단계 · 외부 사용자 온보딩 쇼케이스 (완료)', d: '처음 방문한 외부인이 스킬의 가치를 즉시 이해하고 설치·체험하는 진입점 UI/UX', s: 'done', col: 1},
-    {f: 'roadmap', id: 'pl_ux2', t: 'plateau', n: '3단계 · 비개발자 뷰어 & 발표 UX 고도화 (v1.3)', d: '따라가기 투어 배너, 조작 코치마크, 발표(슬라이드) 모드로 활용성 극대화', s: 'done', col: 2},
+    {f: 'roadmap', id: 'pl_v1', t: 'plateau', n: '1단계 · 엔진 · 스킬 (v1.0~1.2)', d: '보드 엔진 · 지도 · 판단 차트 · 앞뒷면 · 점검기', s: 'done', col: 0},
+    {f: 'roadmap', id: 'pl_ux1', t: 'plateau', n: '2단계 · 처음 온 사람 안내', d: '처음 온 사람이 바로 이해하고 써 보는 입구', s: 'done', col: 1},
+    {f: 'roadmap', id: 'pl_ux2', t: 'plateau', n: '3단계 · 발표 (v1.3)', d: '투어 배너 · 조작 안내 · 발표 모드', s: 'done', col: 2},
     {f: 'roadmap', id: 'wp_core', t: 'wp', n: '엔진 v1.0 & 객체·데이터·순서도', s: 'done', col: 0, when: '완료', who: '코어팀', c: 'engine/v1/board.js'},
-    {f: 'roadmap', id: 'wp_ins', t: 'wp', n: '판단 · 차트 (열지도·막대·흐름도 v1.1)', s: 'done', col: 0, when: '완료', who: '코어팀', c: 'engine/v1/board.js'},
-    {f: 'roadmap', id: 'wp_aud', t: 'wp', n: '앞면(view) · 뒷면(build) 전환 (v1.2)', s: 'done', col: 0, when: '완료', who: '코어팀', c: 'engine/v1/board.js'},
+    {f: 'roadmap', id: 'wp_ins', t: 'wp', n: '판단 · 차트 (v1.1)', s: 'done', col: 0, when: '완료', who: '코어팀', c: 'engine/v1/board.js'},
+    {f: 'roadmap', id: 'wp_aud', t: 'wp', n: '앞면 · 뒷면 전환 (v1.2)', s: 'done', col: 0, when: '완료', who: '코어팀', c: 'engine/v1/board.js'},
     {f: 'roadmap', id: 'wp_show', t: 'wp', n: '쇼케이스 웰컴 헤더 & 원클릭 설치 복사', s: 'done', col: 1, when: '11/03', who: 'UI/UX', c: 'index.html'},
-    {f: 'roadmap', id: 'wp_tabs', t: 'wp', n: '다중 도메인 예시 전환 탭 & 3단계 요약', s: 'done', col: 1, when: '11/03', who: 'UI/UX', c: 'index.html'},
-    {f: 'roadmap', id: 'wp_cta', t: 'wp', n: '하단 플로팅 투어 배너 & 3.5초 코치마크', s: 'done', col: 2, when: '11/03', who: '엔진 UX', c: 'engine/v1/board.js'},
-    {f: 'roadmap', id: 'wp_pres', t: 'wp', n: '발표(Presentation) 슬라이드 모드', s: 'done', col: 2, when: '11/03', who: '엔진 UX', c: 'engine/v1/board.js'}
+    {f: 'roadmap', id: 'wp_tabs', t: 'wp', n: '예시 전환 탭 · 3단계 요약', s: 'done', col: 1, when: '11/03', who: 'UI/UX', c: 'index.html'},
+    {f: 'roadmap', id: 'wp_cta', t: 'wp', n: '투어 배너 · 코치마크', s: 'done', col: 2, when: '11/03', who: '엔진 UX', c: 'engine/v1/board.js'},
+    {f: 'roadmap', id: 'wp_pres', t: 'wp', n: '발표 모드', s: 'done', col: 2, when: '11/03', who: '엔진 UX', c: 'engine/v1/board.js'}
   ],
 
   // ───────── [상자 사이 관계 (relations)] ─────────
@@ -1393,7 +1393,7 @@ window.BOARD = {
         scenes: [
           {steps: [0], title: '한마디로 요청한다', sees: '대화창에 요청 한 줄', basis: ['README.md — "이 프로젝트 아키텍처 보드 만들어줘"']},
           {steps: [1, 2], title: '절차서를 읽고 앞면부터 설계한다'},
-          {steps: [3], title: '코드에서 부품 · 순서 · 데이터를 뽑아 쓴다', sees: 'board-data.js가 채워진다', basis: ['docs/board/board-data.js']},
+          {steps: [3], title: '코드에서 부품 · 순서를 뽑아 쓴다', sees: 'board-data.js가 채워진다', basis: ['docs/board/board-data.js']},
           {steps: [4, 5, 6], title: '점검하고, 잘못이 0개가 될 때까지 고친다', sees: '잘못 · 경고 줄이 나온다', basis: ['skills/archi-board/scripts/check.mjs']},
           {steps: [7, 8], title: '브라우저에 띄운다', sees: '앞면 한 장 그림부터 열린다', basis: ['docs/board/index.html']}
         ],
@@ -1418,12 +1418,12 @@ window.BOARD = {
         ['showcase', 'canvas', '객체 지도 · 데이터 지도 · 판단 차트 패널을 펼친다', 'openObj() · openInsight()', {r: true}]
       ],
       story: {
-        who: 'ba_viewer', want: '처음 열어 본 보드를 바로 이해하고, 더 보고 싶으면 파고들고 싶다', why: '직군이 달라도 같은 보드를 읽으려고',
+        who: 'ba_viewer', want: '열자마자 이해하고, 더 보고 싶으면 파고든다', why: '직군이 달라도 같은 보드를 읽으려고',
         scenes: [
           {steps: [0], title: '공유받은 링크를 연다', sees: '보드가 불러와진다', basis: ['index.html']},
           {steps: [1, 2], title: '공용 엔진을 불러온다'},
           {steps: [3], title: '처음 보는 사람 모드로 열린다', sees: '쉬운 말로 그린 한 장 그림', basis: ["engine/v1/board.js — AUDM = 'view'"]},
-          {steps: [4, 5], title: '흐름 따라가기를 누르면 핵심 상자를 차례로 비춘다', sees: '창과 상자가 차례로 켜진다', basis: ['engine/v1/board.js — 흐름 따라가기']},
+          {steps: [4, 5], title: '따라가기를 누르면 핵심 상자를 차례로 비춘다', sees: '창과 상자가 차례로 켜진다', basis: ['engine/v1/board.js — 흐름 따라가기']},
           {steps: [6, 7], title: '만드는 사람 모드로 파고든다', sees: '객체 지도 · 데이터 지도 · 판단 차트 패널이 열린다', basis: ['engine/v1/board.js — setMode · openObj · openInsight']}
         ]
       }
@@ -1445,7 +1445,7 @@ window.BOARD = {
         ['checker', 'agent', '검증 통과 후 새 엔진으로 다시 묶어 제공한다', 'inline.mjs 재실행', {r: true}]
       ],
       story: {
-        who: 'ba_builder', want: '인터넷 없이도 열리는 한 파일이 필요하다', why: '인터넷 없는 곳이나 claude.ai 아티팩트에 올려야 해서',
+        who: 'ba_builder', want: '인터넷 없이도 열리는 한 파일이 필요하다', why: '인터넷 없는 곳에서도 열어야 해서',
         scenes: [
           {steps: [0], title: '한 파일로 묶어 달라고 한다'},
           {steps: [1, 2], title: '엔진과 데이터를 한 파일에 넣는다', sees: 'board.single.html 한 개가 생긴다', basis: ['skills/archi-board/scripts/inline.mjs']},
@@ -1470,12 +1470,12 @@ window.BOARD = {
         ['cdn', 'engine', '기존에 만들어진 모든 보드가 새 엔진을 받아 즉시 개선된다', '자동 업그레이드 완료', {r: true}]
       ],
       story: {
-        who: 'ba_builder', want: '엔진을 고치면 이미 만든 보드가 다시 만들지 않아도 좋아지게 하고 싶다', why: '보드를 쓰는 모든 사람에게 한 번에 좋아져야 해서',
+        who: 'ba_builder', want: '엔진을 고치면 만든 보드도 저절로 좋아진다', why: '보드를 쓰는 모든 사람에게 한 번에 좋아져야 해서',
         scenes: [
           {steps: [0], title: '엔진을 하위 호환으로 고친다'},
-          {steps: [1, 2], title: '푸시하면 CI가 문법과 예시 데이터를 점검한다', basis: ['.github/workflows/check.yml']},
+          {steps: [1, 2], title: '푸시하면 CI가 문법과 예시를 점검한다', basis: ['.github/workflows/check.yml']},
           {steps: [3], title: '묶기 · 풀기 · 묶기 왕복이 같은지 본다'},
-          {steps: [4, 5], title: '통과하면 배포되고, 이미 만든 보드가 새 엔진을 받는다', sees: '이미 만든 보드가 새 엔진으로 열린다', basis: ['.github/workflows/check.yml · GitHub Pages']}
+          {steps: [4, 5], title: '통과하면 배포되고, 보드가 새 엔진을 받는다', sees: '이미 만든 보드가 새 엔진으로 열린다', basis: ['.github/workflows/check.yml · GitHub Pages']}
         ],
         branches: [{at: 2, when: '통과하지 못하면', then: '배포하지 않는다', end: '고친 뒤 다시 푸시'}]
       }
@@ -1520,7 +1520,7 @@ window.BOARD = {
     ],
     objects: {
       ba_viewer: {
-        name: '처음 보는 사람 (User · Evaluator)',
+        name: '처음 보는 사람',
         kind: '1계층 · 유저층',
         one: '앞면(한 장 그림 · 차례 그림)과 따라가기로 5초 안에 프로젝트를 이해한다',
         what: '서비스 사용자, 대회/과제 평가자, 기획자, 새로 합류한 팀원 등 코드를 직접 읽지 않는 청중.',
@@ -1536,7 +1536,7 @@ window.BOARD = {
         files: ['skills/archi-board/references/audience.md']
       },
       ba_builder: {
-        name: '만드는 사람 (Developer · Maintainer)',
+        name: '만드는 사람',
         kind: '1계층 · 유저층',
         one: '보드를 요청·활용해 코드를 유지보수하고 공용 엔진을 발전시킨다',
         what: '프로젝트 개발자, 시스템 아키텍트, 그리고 archi-board 엔진 관리자.',
@@ -1951,7 +1951,7 @@ window.BOARD = {
       ],
       basis: [
         'index.html — 쇼케이스 바 · 복사 단추 · 예시 탭',
-        'engine/v1/board.js — #tourCta 배너 · #presBar 발표 모드 · #hint',
+        'board.js — #tourCta · #presBar · #hint',
         'scripts/check.mjs — 앞면(view) 쉬운 말 · 상자 수 경고'
       ]
     },
