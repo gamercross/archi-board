@@ -1,11 +1,12 @@
-/*! archi-board engine v1.3.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
+/*! archi-board engine v1.4.0 — 무한 보드 위에 ArchiMate 창 · 객체 지도 · 데이터 지도 · 순서도를 그린다.
  * 1.2: 처음 보는 사람용 한 장 그림(layout 'view')과 '처음 보는 사람 / 만드는 사람' 전환.
  * 1.3: 유저 스토리(story)와 첫 화면 플로팅 투어 배너 · 발표(슬라이드) 모드 · 조작 코치마크.
+ * 1.4: 보드 위에 판단 차트를 직접 그리는 창(layout 'insight') · 값을 만든 순서(기준 → 값 → 근거 → 그림) 표시.
  * 데이터는 window.BOARD (board-data.js)에서 읽는다. 형식: https://github.com/gamercross/archi-board/blob/main/skills/archi-board/references/data-format.md
  * MIT License */
 (() => {
 'use strict';
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 if (!window.BOARD) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:24px;font:16px system-ui">board-data.js를 board.js보다 먼저 불러 window.BOARD를 채워 주세요.</p>'); return; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /*MODEL-START*/
@@ -224,6 +225,10 @@ const FR = {}; FRAMES.forEach(f => { FR[f.id] = f; f.items = E.filter(x => x.f =
 const FL = l => FRAMES.find(f => f.layout === l) || null;
 const FO = FL('objects'), FD = FL('datamap'), FM = FL('matrix'), FRING = FL('ring'), FSCR = FL('screens');
 
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const insLab = k => byId[k] ? {n: byId[k].n, a: `data-go="${esc(k)}"`} : OBJ[k] ? {n: ON[k], a: `data-obj="${esc(k)}"`} : DMI[k] ? {n: DMI[k].n, a: `data-dm="${esc(k)}"`} : {n: String(k), a: ''};
+const insName = k => insLab(k).n;
+const insBtn = k => { const l = insLab(k); return l.a ? `<button class="go" type="button" ${l.a}>${esc(l.n)}</button>` : esc(l.n); };
 function place(it, x, y, w, h) { it.lx = x; it.ly = y; it.w = w; it.h = h; }
 function rows(f, items, y) {
   const per = Math.max(1, Math.floor((f.w - 2 * PAD - LAB + G) / (EW + G)));
@@ -330,6 +335,45 @@ function layoutView(f) {
   });
   return y - VW.gy + 34;
 }
+// 보드 위에 판단 차트를 직접 그리는 창 (layout 'insight') — 차트 · 값의 기준 · 칸마다 근거 · 근거 위치 · 값을 만든 순서
+function insMake(x) { // 값을 만든 순서 — 데이터에서 읽어 맞는지 보여 준다(점검 결과를 대신하지는 않는다)
+  const num = v => v !== null && v !== undefined && Number.isFinite(+v);
+  let n = 0, ok = true, unit = '';
+  if (x.type === 'heatmap') {
+    const sc = Object.assign({min: 1, max: 3}, x.scale), cols = arr(x.cols).length, vals = arr(x.values);
+    ok = vals.length === arr(x.rows).length && vals.every(r => Array.isArray(r) && r.length === cols && r.every(v => v === null || (num(v) && +v >= sc.min && +v <= sc.max)));
+    n = vals.reduce((t, r) => t + (Array.isArray(r) ? r.filter(num).length : 0), 0); unit = '칸';
+  } else if (x.type === 'bar') { n = arr(x.items).length; ok = arr(x.items).every(i => Array.isArray(i) && num(i[1]) && +i[1] >= 0); unit = '항목'; }
+  else { n = arr(x.links).length; ok = arr(x.links).every(l => Array.isArray(l) && num(l[2]) && +l[2] > 0 && l[0] !== l[1]); unit = '흐름'; }
+  const rub = arr(x.rubric).length, bas = x.basis.length, nts = arr(x.notes).length, hm = x.type === 'heatmap';
+  const st = (t, d, k) => `<li class="${k}"><i>${k === 'ok' ? '✓' : k === 'na' ? '–' : '!'}</i><span><b>${t}</b><small>${esc(d)}</small></span></li>`;
+  return `<ol class="ifm" aria-label="이 값을 만든 순서">` +
+    st('기준을 먼저 쓴다', rub ? `${rub}줄` : hm ? '기준이 없다' : '해당 없음', rub ? 'ok' : hm ? 'warn' : 'na') +
+    st('값을 매긴다', n ? `${n}${unit}${ok ? '' : ' — 범위나 칸 수가 맞지 않다'}` : '값이 없다', ok && n ? 'ok' : 'warn') +
+    st('근거를 단다', bas || nts ? [bas && `근거 ${bas}개`, nts && `칸마다 ${nts}곳`].filter(Boolean).join(' · ') : '근거가 없다', bas ? 'ok' : 'warn') +
+    st('그린다', INSIGHTS[x.type], ok ? 'ok' : 'warn') + '</ol>';
+}
+function insBlock(x) {
+  const li = t => `<li>${esc(t)}</li>`, notes = arr(x.notes);
+  let k = 0;
+  const col = (h, body) => `<section><i>${++k}</i><h4>${h}</h4>${body}</section>`;
+  const side = (arr(x.rubric).length ? col('값의 기준', `<ul>${x.rubric.map(li).join('')}</ul>`) : '') +
+    (notes.length ? col('칸마다 붙은 근거', `<ul>${notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`).join('')}</ul>`) : '') +
+    col('근거 · 코드 위치', x.basis.length ? `<ul>${x.basis.map(li).join('')}</ul>` : '<p class="warn">근거가 적혀 있지 않다 — 코드로 확인하기 전에는 믿지 않는다.</p>');
+  const chart = x.type === 'heatmap' ? insHeat(x, true) : x.type === 'bar' ? insBar(x) : insSankey(x);
+  return `<article class="ifb"><header><b>${esc(x.t)}</b><span class="verb">${INSIGHTS[x.type]}</span><button class="go" type="button" data-ins="${esc(x.id)}">패널에서 크게 보기</button>${x.d ? `<p>${esc(x.d)}</p>` : ''}</header>` +
+    `<div class="ifg"><div class="ifc">${chart}</div><div class="ifn">${side}</div></div>${insMake(x)}</article>`;
+}
+function insFrame(f) { return (arr(f.insights).length ? arr(f.insights).map(id => INSI[id]) : INS).filter(Boolean).map(insBlock).join(''); }
+const ixAttr = f => { const c = Math.max(1, Math.min(3, +f.cols || 1)); return `class="ifx${c > 1 ? ' ifw' : ''}" style="grid-template-columns:repeat(${c},minmax(0,1fr))"`; };
+function layoutInsight(f) { // 같은 글꼴 · 너비로 안 보이는 곳에서 한 번 그려 높이를 잰다(글꼴이 바뀌어도 넘치지 않게 조금 넉넉히)
+  const w = f.w - 2 * PAD, m = document.createElement('div');
+  m.innerHTML = `<div ${ixAttr(f)}>${f.insHTML = insFrame(f)}</div>`;
+  m.style.cssText = `position:absolute;left:-99999px;top:0;visibility:hidden;width:${w}px`;
+  document.body.appendChild(m); const h = m.firstChild.offsetHeight; m.remove();
+  f.ix = {x: PAD, y: HEAD + 20, w, h: Math.ceil(h * 1.05) + 16};
+  return f.ix.y + f.ix.h + G;
+}
 function layout(f) {
   let bottom;
   if (f.layout === 'view') bottom = layoutView(f);
@@ -366,6 +410,7 @@ function layout(f) {
     bottom = f.mx.y + f.mx.h + G;
   } else if (f.layout === 'objects') bottom = layoutObjects(f);
   else if (f.layout === 'datamap') bottom = layoutData(f);
+  else if (f.layout === 'insight') bottom = layoutInsight(f);
   else bottom = rows(f, f.items, HEAD + 26);
   bottom = seqs(f, bottom);
   f.h = Math.round(bottom + PAD - G);
@@ -404,7 +449,6 @@ document.title = B.title || 'archi-board';
 document.body.insertAdjacentHTML('afterbegin', SHELL);
 const board = $('#board'), world = $('#world');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 function counts(items) {
   const c = {done: 0, part: 0, todo: 0, cand: 0, gone: 0};
@@ -429,6 +473,14 @@ FRAMES.forEach(f => {
     f.bands.map(b => `<div class="band" data-l="${b.lk}" style="top:${b.y}px;height:${b.h}px"><span>${LK[b.lk]}</span></div>`).join('') +
     arr(f.vrows).map(b => `<div class="vband${b.i % 2 ? ' odd' : ''}" style="top:${b.y}px;height:${b.h}px"><span>${esc(b.label)}</span></div>`).join('');
   d.querySelector('.fh').addEventListener('click', () => { if (!moved) openFrame(f.id); });
+  if (f.layout === 'insight') {
+    d.insertAdjacentHTML('beforeend', `<div ${ixAttr(f).replace('style="', `style="left:${f.ix.x}px;top:${f.ix.y}px;width:${f.ix.w}px;`)}>${f.insHTML}</div>`);
+    d.querySelector('.ifx').addEventListener('click', ev => {
+      const t = ev.target.closest('[data-go],[data-obj],[data-dm],[data-ins]');
+      if (!t || moved) return;
+      if (t.dataset.ins) openInsight(t.dataset.ins); else if (t.dataset.go) select(t.dataset.go, true); else if (t.dataset.obj) openObj(t.dataset.obj); else openData(t.dataset.dm);
+    });
+  }
   $('#frames').append(d); f.dom = d;
 
   const s = document.createElement('button');
@@ -1128,7 +1180,7 @@ function openFrame(id) {
   let h = `<p>${esc(f.desc)}</p><p class="why"><b>이 크기인 까닭</b> ${esc(f.why)}</p>`;
   h += `<div class="cnt">${meter(f.c)}<span>${countText(f.c) || '상태가 없는 원칙 · 목표만 있다'}</span></div>`;
   if (f.recent.length) h += `<div><h3>최근 한 일</h3><ul class="recent">${f.recent.map(([d, t]) => `<li><time>${esc(d)}</time><span>${esc(t)}</span></li>`).join('')}</ul></div>`;
-  h += insSec(INS.filter(x => x.f === id));
+  h += insSec(f.layout === 'insight' ? (arr(f.insights).length ? arr(f.insights).map(i => INSI[i]).filter(Boolean) : INS) : INS.filter(x => x.f === id));
   const fu = UC.filter(u => u.f === id);
   if (fu.length) h += `<div><h3>이 창 안의 순서</h3><ul>${fu.map(u => `<li><button class="go wide" type="button" data-uc="${u.id}" data-k="0">▶ ${esc(u.t)}<small>${u.steps.length}칸</small></button></li>`).join('')}</ul></div>`;
   if (FM && id === FM.id) h += `<div><button class="go" type="button" id="toList">유즈케이스 · 앱 목록 열기</button></div>`;
@@ -1448,11 +1500,8 @@ function openDataMap() {
   fly(camFor(fbox(f), 24));
 }
 /* ───────── 판단 · 차트 — 사람이나 AI가 코드를 보고 매긴 값을 그린다 (insights) ───────── */
-const insLab = k => byId[k] ? {n: byId[k].n, a: `data-go="${esc(k)}"`} : OBJ[k] ? {n: ON[k], a: `data-obj="${esc(k)}"`} : DMI[k] ? {n: DMI[k].n, a: `data-dm="${esc(k)}"`} : {n: String(k), a: ''};
-const insName = k => insLab(k).n;
-const insBtn = k => { const l = insLab(k); return l.a ? `<button class="go" type="button" ${l.a}>${esc(l.n)}</button>` : esc(l.n); };
 const insSec = list => list.length ? `<div><h3>판단 · 차트 ${list.length}</h3><ul>${list.map(x => `<li><button class="go wide" type="button" data-ins="${esc(x.id)}">${esc(x.t)}<small>${INSIGHTS[x.type]}</small></button></li>`).join('')}</ul></div>` : '';
-function insHeat(x) {
+function insHeat(x, bare) {
   const sc = Object.assign({min: 1, max: 3, high: 'bad', labels: []}, x.scale), span = (sc.max - sc.min) || 1;
   const bad = v => { const t = clamp((v - sc.min) / span, 0, 1); return sc.high === 'good' ? 1 - t : t; };
   const note = {}; arr(x.notes).forEach(([r, c, t]) => { note[r + '\u0000' + c] = t; });
@@ -1467,7 +1516,7 @@ function insHeat(x) {
     }).join('') + '</tr>';
   });
   h += '</tbody></table></div>';
-  if (arr(x.notes).length) h += `<div><h3>칸마다 붙은 근거</h3><ul class="dot">${x.notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`).join('')}</ul></div>`;
+  if (!bare && arr(x.notes).length) h += `<div><h3>칸마다 붙은 근거</h3><ul class="dot">${x.notes.map(([r, c, t]) => `<li><b>${esc(insName(r))} · ${esc(insName(c))}</b> ${esc(t)}</li>`).join('')}</ul></div>`;
   return h;
 }
 function insBar(x) {
@@ -1514,6 +1563,7 @@ function openInsight(id) {
   let h = `<div class="tags"><span class="verb">${INSIGHTS[x.type]}</span>${f ? `<button class="go" type="button" data-fr="${esc(f.id)}">${esc(f.title)}</button>` : ''}</div>`;
   if (x.d) h += `<p class="lead">${esc(x.d)}</p>`;
   h += x.type === 'heatmap' ? insHeat(x) : x.type === 'bar' ? insBar(x) : insSankey(x);
+  h += `<div><h3>이 값을 만든 순서</h3>${insMake(x)}</div>`;
   if (arr(x.rubric).length) h += `<div><h3>값의 기준</h3><ul class="dot">${x.rubric.map(liT).join('')}</ul></div>`;
   h += x.basis.length ? `<div><h3>근거 · ${x.basis.length}</h3><ul class="dot">${x.basis.map(liT).join('')}</ul></div>`
     : `<div><h3>근거</h3><ul class="dot warn"><li>근거가 적혀 있지 않다 — 이 값은 코드로 확인하기 전에는 믿지 않는다.</li></ul></div>`;

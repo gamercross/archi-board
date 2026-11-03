@@ -36,7 +36,7 @@
 ```
 
 - `weight` 1~5: 글자 크기와 중요도. `w`: 너비(px). 높이는 내용에 맞춰 엔진이 정한다.
-- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens` · `cards` · `view`(처음 보는 사람용 한 장 — 아래).
+- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens` · `cards` · `view`(처음 보는 사람용 한 장 — 아래). `insight`(엔진 1.4 — 보드 위에 판단 차트를 그린다. 아래 insights 절).
 - `aud`: `'view'` 처음 보는 사람 · `'build'` 만드는 사람. 없으면 `view` 레이아웃은 `'view'`, 나머지는 `'build'`. `view` 창이 하나라도 있으면 위 띠에 전환이 생기고, 처음 보는 사람 쪽에서는 `'view'` 창 · 그 창들끼리의 흐름 · 그 창만 비추는 따라가기만 보인다(엔진 1.2).
   `objects` · `datamap` · `matrix` · `ring` · `screens`는 보드에 **하나씩만**.
 - `main: true`인 창이 파란 테두리 메인 흐름이다(하나만 권함).
@@ -227,6 +227,24 @@ insights: [
 - **sankey**: `links`는 `[보내는 쪽, 받는 쪽, 양]`. 한 방향이어야 한다(돌고 도는 길은 점검이 막는다). `unit`은 양의 단위.
 - `rows` · `items` · `links`의 이름이 상자 · 객체 · 데이터 id이면 이름으로 바뀌고 눌러서 그 카드로 갈 수 있다.
 - 값을 지어내지 않는다. 근거를 댈 수 없는 칸은 `null`로 두고 `basis`에 "확인 못 함"이라고 쓴다.
+
+### 보드 위에 그리기 — layout 'insight' (엔진 1.4 이상)
+
+패널을 열지 않아도 차트가 보드 위에 보이게 하려면 창 하나를 `layout: 'insight'`로 만든다. 첫 화면(처음 보는 사람)에 두려면 `aud: 'view'`를 함께 쓴다.
+
+```js
+{id: 'v_insight', kicker: '처음 보는 사람에게 · 판단 값', title: '판단은 이렇게 만든다', weight: 4, w: 1840,
+ layout: 'insight', aud: 'view', cols: 2,             // cols: 차트를 몇 열로 놓을지(1~3, 기본 1)
+ insights: ['ins_ux_gap', 'ins_flow', 'ins_status'],   // 그릴 차트 id — 비우면 insights 전부
+ sub: '…', desc: '…', why: '…'}
+```
+
+- 차트마다 한 덩이로 나온다: 차트 · **① 값의 기준**(`rubric`) · **② 칸마다 붙은 근거**(`notes`) · **③ 근거 · 코드 위치**(`basis`) · 그 아래 **"이 값을 만든 순서"**.
+- "만든 순서"는 **기준을 먼저 쓴다 → 값을 매긴다 → 근거를 단다 → 그린다** 네 칸이다. 엔진이 데이터를 읽어 갖춰졌는지(✓) · 모자란지(!) · 해당 없는지(–)를 보여 준다. 값의 범위 · 칸 수 · 근거 유무만 보고, `check.mjs` 점검을 대신하지는 않는다.
+- 근거가 없으면 ③ 칸에 경고가 뜨고 "근거를 단다"가 !로 나온다. 열지도에 `rubric`이 없어도 !다(막대 · 흐름도는 기준이 필수가 아니라 –).
+- 차트가 길면 멀리서 볼 때 요약 카드로만 보이므로 `cols`로 줄이거나 차트 수를 줄인다.
+- 눌러서 크게 보려면 차트 머리의 "패널에서 크게 보기"를 누른다. 창 머리를 누르면 패널에 차트 목록이 열린다.
+- `check.mjs`는 `insights`에 없는 차트 id를 잘못으로 막는다.
 
 ## screens · matrix (선택)
 
