@@ -37,7 +37,7 @@ frames.forEach(f => {
   if (f.aud != null && !['view', 'build'].includes(f.aud)) err(`창 ${f.id}: aud는 'view'(처음 보는 사람) 또는 'build'(만드는 사람)`);
 });
 ['objects', 'datamap', 'matrix', 'ring', 'screens'].forEach(l => { if (frames.filter(f => f.layout === l).length > 1) err(`layout '${l}' 창은 하나만 둘 수 있다`); });
-const els = arr(B.elements).map(x => Array.isArray(x) ? { f: x[0], id: x[1], t: x[2], n: x[3], s: x[5], ...(x[7] || {}) } : x);
+const els = arr(B.elements).map(x => Array.isArray(x) ? { f: x[0], id: x[1], t: x[2], n: x[3], d: x[4], s: x[5], ...(x[7] || {}) } : x);
 const eid = dup(els.map(x => x.id), '상자');
 const ST = ['done', 'part', 'todo', 'cand', 'gone', 'rule', undefined, ''];
 els.forEach(x => {
@@ -99,13 +99,15 @@ arr(B.usecases).forEach(u => {
   });
 });
 // 글이 길면 읽기 불편하다 — 판단 · 차트와 이야기의 문장 길이를 본다(자세한 것은 근거 · 문서에 두고 한 줄은 짧게)
-const LONG = (w, what, v, max) => { const n = typeof v === 'string' ? [...v].length : 0; if (n > max) warn(`${w}: ${what}이 ${n}자다 — ${max}자 안팎으로 짧게 쓴다`); };
+const LONG = (w, what, v, max) => { const n = typeof v === 'string' ? [...v].length : 0; if (n > max * 2) err(`${w}: ${what}이 ${n}자다 — ${max * 2}자를 넘으면 안 된다. ${max}자 안팎으로 줄이고 자세한 것은 basis나 문서에 둔다`); else if (n > max) warn(`${w}: ${what}이 ${n}자다 — ${max}자 안팎으로 짧게 쓴다`); };
+// 상자 이름 · 설명도 짧게 — 이름은 카드와 상자에서 잘리고, 설명은 패널을 길게 만든다
+els.forEach(x => { LONG(`상자 ${x.id}`, '이름(n)', x.n, 22); LONG(`상자 ${x.id}`, '설명(d)', x.d, 60); });
 // 유저 스토리 — usecase.story의 칸 번호 · 상자 id · 장면 순서
 arr(B.usecases).forEach(u => {
   const st = u.story;
   if (!st) return;
   const w = `유즈케이스 ${u.id}의 story`, n = arr(u.steps).length;
-  LONG(w, 'want', st.want, 40); LONG(w, 'why', st.why, 40);
+  LONG(w, 'want', st.want, 30); LONG(w, 'why', st.why, 30);
   ['who', 'goal'].forEach(k => { if (st[k] && !eid.has(st[k])) err(`${w}: ${k}의 ${st[k]}가 상자에 없다`); });
   const scenes = arr(st.scenes), seen = [];
   scenes.forEach((sc, k) => {
@@ -118,7 +120,7 @@ arr(B.usecases).forEach(u => {
       else seen.push(i);
     });
     if (!sc.title) warn(`${w}: 장면 ${k + 1}에 title이 없다 — 칸의 "하는 일"을 쓴다`);
-    LONG(w, `장면 ${k + 1}의 title`, sc.title, 30); LONG(w, `장면 ${k + 1}의 sees`, sc.sees, 40);
+    LONG(w, `장면 ${k + 1}의 title`, sc.title, 24); LONG(w, `장면 ${k + 1}의 sees`, sc.sees, 30);
     if (sc.sees && ![].concat(sc.basis || []).filter(Boolean).length) warn(`${w}: 장면 ${k + 1}에 sees는 있는데 basis(근거)가 없다 — 화면 코드나 사진 위치를 적는다`);
   });
   if (scenes.length && seen.length < n) warn(`${w}: 칸 ${n - seen.length}개가 어느 장면에도 없어 이야기에서 빠진다`);
@@ -162,10 +164,10 @@ arr(B.insights).forEach(x => {
   if (!x.id) err('판단: id가 없다');
   if (!INS_TYPES.includes(x.type)) { err(`${w}: 모르는 type ${x.type} (${INS_TYPES.join(' · ')})`); return; }
   if (!x.t) warn(`${w}: 제목(t)이 없다`);
-  LONG(w, '제목(t)', x.t, 30); LONG(w, '설명(d)', x.d, 70);
-  arr(x.rubric).forEach((r, k) => LONG(w, `rubric ${k + 1}`, r, 60));
-  arr(x.notes).forEach((n, k) => LONG(w, `notes ${k + 1}`, n && n[2], 60));
-  [].concat(x.basis || []).forEach((bs, k) => LONG(w, `basis ${k + 1}`, bs, 70));
+  LONG(w, '제목(t)', x.t, 24); LONG(w, '설명(d)', x.d, 50);
+  arr(x.rubric).forEach((r, k) => LONG(w, `rubric ${k + 1}`, r, 45));
+  arr(x.notes).forEach((n, k) => LONG(w, `notes ${k + 1}`, n && n[2], 45));
+  [].concat(x.basis || []).forEach((bs, k) => LONG(w, `basis ${k + 1}`, bs, 55));
   if (x.f && !fid.has(x.f)) err(`${w}: 없는 창 ${x.f}`);
   [].concat(x.of || []).forEach(k => { if (!known(k)) err(`${w}: of의 ${k}를 찾을 수 없다 (상자 · 객체 · 데이터 id)`); });
   if (![].concat(x.basis || []).filter(Boolean).length) warn(`${w}: basis(근거)가 없다 — 값마다 코드 위치나 까닭을 적는다`);
