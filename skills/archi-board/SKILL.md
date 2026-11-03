@@ -44,6 +44,10 @@ compatibility: Node 18 이상(점검 스크립트). 보드는 브라우저로 �
 
 이미 묶은 보드만 있을 때(아티팩트를 `read`로 받은 HTML 등) 새 엔진으로 바꾸거나 데이터를 고치려면 먼저 꺼낸다:
 `node <이 스킬 폴더>/scripts/unpack.mjs <묶은 html> <자리>` → `board-data.js`(+ 머리 주석 `head.html`) → 고치고 → `check.mjs` → `inline.mjs <자리>`.
+
+## 다른 도구와 주고받기
+- 내보내기: `node <이 스킬 폴더>/scripts/export.mjs <자리>/board-data.js --mermaid out.md --archimate out.xml` — Mermaid(GitHub · 마크다운에서 보임)와 ArchiMate Open Exchange 파일(Archi 등에서 열림). 대응이 없는 칸(앞뒷면 · 판단 차트 · 근거 · 이야기)은 버리지 않고 파일 안 속성에 담는다.
+- 가져오기: `node <이 스킬 폴더>/scripts/import-archimate.mjs <model.xml> <자리>/board-data.js`. 이 스킬이 내보낸 파일이면 모든 칸이 돌아오고, 다른 도구의 파일이면 상자 · 선만 온다. 그 뒤 [reading-code.md](references/reading-code.md)의 "다른 형식에서 가져올 때" 순서로 채운다.
 아티팩트에 다시 올릴 때는 같은 주소로 올린다(메모 db 같은 기능이 이어진다).
 
 ## 지키는 것
