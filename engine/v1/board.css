@@ -554,3 +554,33 @@ a.btn{color:var(--ink);text-decoration:none;display:inline-block}
 .board.focus .e.vw{opacity:.1}
 .board.focus .e.vw.on{opacity:1}
 @media (max-width:720px){.aud .btn{padding:5px 9px}}
+
+/* 유저 스토리 — 유즈케이스를 이야기로 따라간다 */
+.ust-who{display:flex;align-items:center;gap:12px}
+.ust-who b{display:block;font-size:16px}
+.ust-who small{color:var(--mute);font-size:12px}
+.ust-av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--acc-soft);color:var(--acc-ink);display:grid;place-items:center;font-size:18px;font-weight:700}
+.ust-tri{display:grid;gap:10px;background:var(--soft);border-radius:10px;padding:14px 16px}
+.ust-tri>div{display:flex;gap:12px;align-items:baseline}
+.ust-tri small{flex:none;width:48px;color:var(--mute);font-size:12px}
+.ustb{display:grid;gap:8px;background:var(--soft);border-radius:10px;padding:14px 16px}
+.ustb h3{margin:0}
+.panel .ustr,.panel .ustl{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ustr{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.ustr button,.ustl button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;color:var(--ink);font-family:inherit}
+.ustr button:hover,.ustl button:hover{border-color:var(--acc)}
+.ustr button:focus-visible,.ustl button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.ustr em,.ustl em{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:var(--sheet);border:1px solid var(--line2)}
+.ustl li.done em{background:var(--okbg);color:var(--ok);border-color:transparent}
+.ustl li.cur button{border-color:var(--acc);background:var(--acc-soft)}
+.ustl li.cur em{background:var(--acc);color:var(--sheet);border-color:transparent}
+.ustl li:not(.done):not(.cur) button{opacity:.7}
+.ustp{display:flex;gap:5px}
+.ustp i{flex:1;height:6px;border-radius:3px;background:var(--line2)}
+.ustp i.done{background:var(--ok)}
+.ustp i.on{background:var(--acc);flex:2}
+.ustch{display:flex;flex-wrap:wrap;gap:6px}
+.ustbr li{display:block}
+.ustbr b{color:var(--warn)}
+.ustbs{font-size:12px;color:var(--mute)}
+@media (prefers-reduced-motion: reduce){.ustp i{transition:none}}
