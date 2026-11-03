@@ -93,10 +93,16 @@ docs/board/
 엔진이 안에 들어 있으므로 **저절로 바뀌지 않는다.** 스킬에게 "보드 다시 묶어줘"라고 하면 새 엔진으로 다시 묶는다.
 묶은 파일만 남아 있으면 `unpack.mjs`가 데이터를 꺼내 주므로, 고친 뒤 다시 묶을 수 있다.
 
+이 저장소의 쇼케이스(루트 `index.html`)도 같은 방식의 **한 파일**이다. 엔진 · 스타일 · 두 보드(스킬 아키텍처 · 작은 메모 앱)가 안에 들어 있어서 인터넷 없이도 열리고(글꼴만 온라인일 때 불러온다), claude.ai 아티팩트로도 올릴 수 있다. 위 띠의 탭으로 보드를 바꾼다.
+
 ## 구조
 
 ```
-engine/v1/board.js · board.css      그리는 엔진 (GitHub Pages로 나간다)
+index.html                          쇼케이스 한 파일 — 엔진 · 스타일 · 두 보드가 들어 있다 (tools/build-showcase.mjs가 만든다)
+showcase/index.src.html             index.html의 원본 틀 (위 띠 · 탭)
+docs/board/                         스킬 자체를 4계층 · BPMN으로 설명하는 보드 (board-data.js + index.html)
+tools/build-showcase.mjs            index.html을 만드는 도구 (--check는 원본과 같은지만 본다)
+engine/v1/board.js · board.css      그리는 엔진 (GitHub Pages로 나간다. 다른 사람의 보드가 불러 쓴다)
 skills/archi-board/SKILL.md         Claude가 따르는 절차
 skills/archi-board/references/      데이터 형식 · 코드 읽는 법
 skills/archi-board/assets/          보드 틀 (index.html)
@@ -110,7 +116,8 @@ examples/memo/                      예시 보드 (작은 메모 앱)
 - 형식을 깨는 바꿈이 필요하면 `engine/v2/`를 새로 만들고 데이터는 `format: 2`로 한다. 그동안 `v1`은 그대로 둔다.
 - 푸시 전에 확인할 것:
   - `node --check engine/v1/board.js`
-  - `node skills/archi-board/scripts/check.mjs examples/memo/board-data.js`
+  - `node skills/archi-board/scripts/check.mjs examples/memo/board-data.js` (스킬 아키텍처 보드는 `docs/board/board-data.js`)
+  - 엔진이나 보드 데이터를 고쳤다면 `node tools/build-showcase.mjs`로 루트 `index.html`을 다시 만든다 (CI가 `--check`로 같은지 본다)
   - 차트를 고쳤다면 예시 보드의 `판단 · 차트` 단추로 세 가지가 다 그려지는지 본다
   - 순서도 카드를 눌러 이야기가 열리고 장면을 따라 순서도가 같이 움직이는지 본다
   - 예시 보드를 브라우저로 한 번 연다
