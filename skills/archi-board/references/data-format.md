@@ -21,7 +21,8 @@
 | `objectMap` | 아니오 | 객체 지도 (layout `objects` 창이 있어야 한다) |
 | `dataMap` | 아니오 | 데이터 지도 (layout `datamap` 창이 있어야 한다) |
 | `insights` | 아니오 | 판단 · 차트 — 사람이나 AI가 매긴 값 (열지도 · 막대 · 흐름도). 엔진 1.1 이상 |
-| `screens` · `images` | 아니오 | 화면 사진 카드 (layout `screens` 창) |
+| `screens` · `images` | 아니오 | 화면 사진 카드 (layout `screens` 창). `images`는 패널 안 사진에도 쓴다 — 아래 "패널 안 사진" |
+| `panelBudget` | 아니오 | 패널에서 먼저 보이는 글자 수(기본 600, 300~3000). 넘으면 뒤쪽 설명을 "더 보기"로 접는다. 단추 · 그림 · 표는 접지 않는다 |
 | `cards` | 아니오 | 장면 · 단계 카드 (layout `cards` 창, 여러 개 가능) |
 | `legend` | 아니오 | "읽는 법"에 더할 문단. `**굵게**`만 된다 |
 | `matrixRows` · `rowNames` | 아니오 | 앱 × 유즈케이스 표 (layout `matrix` 창) |
@@ -246,6 +247,21 @@ insights: [
 - 차트가 길면 멀리서 볼 때 요약 카드로만 보이므로 `cols`로 줄이거나 차트 수를 줄인다.
 - 눌러서 크게 보려면 차트 머리의 "패널에서 크게 보기"를 누른다. 창 머리를 누르면 패널에 차트 목록이 열린다.
 - `check.mjs`는 `insights`에 없는 차트 id를 잘못으로 막는다.
+
+## 패널 안 사진 (선택)
+
+옆 패널(상자 · 객체 · 판단 · 이야기 장면)에 **작은 사진 한 장**을 넣을 수 있다. 칸은 높이가 정해져 있어 사진이 늦게 떠도 글이 밀리지 않고, 누르면 큰 그림 창으로 열린다.
+
+```js
+images: {save: 'shots/save.webp'},                                  // 열쇠 → 경로 · 주소 · data: URI (경로는 board-data.js 기준)
+usecases: [{ …, story: {scenes: [{steps: [0], title: '…', img: 'save'}]}}],   // 장면 사진 = 사용자가 보는 화면
+insights: [{id: 'risk', …, img: 'risk'}],                           // 판단 · 차트 옆에 근거 사진
+objectMap: {objects: {ac_web: {name: '웹 화면', img: 'save', …}}}   // 객체 카드 패널
+```
+
+- 사진은 **화면에서 직접 찍은 것**만 쓴다(지어낸 그림 금지). 가로 1600px 안팎 · webp 권장.
+- `inline.mjs`로 한 파일로 묶으면 폴더 안 사진 경로가 `data:` 주소로 들어간다(6MB를 넘으면 경고). 외부 주소(`https:`)는 오프라인에서 깨지니 파일로 둔다.
+- `check.mjs`는 `images`에도 없고 경로도 아닌 `img`를 잘못으로 막는다.
 
 ## screens · matrix (선택)
 
