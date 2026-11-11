@@ -23,3 +23,5 @@ jobs:
           node skills/archi-board/scripts/check.mjs /tmp/rt/board-data.js
           node skills/archi-board/scripts/inline.mjs /tmp/rt /tmp/rt.single.html
           cmp /tmp/memo.single.html /tmp/rt.single.html
+      - name: 내보내기 → 가져오기 왕복(ArchiMate · Mermaid)
+        run: node tools/test-export.mjs

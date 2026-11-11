@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="메모 앱 화면 — 입력칸과 저장 단추">
+<rect width="640" height="360" fill="#EEF2F8"/>
+<rect x="40" y="36" width="560" height="288" rx="16" fill="#FFFFFF" stroke="#B3BECF"/>
+<text x="64" y="80" font-family="sans-serif" font-size="20" font-weight="700" fill="#16181D">메모</text>
+<rect x="64" y="104" width="512" height="128" rx="10" fill="#F8FAFD" stroke="#B3BECF"/>
+<text x="84" y="140" font-family="sans-serif" font-size="18" fill="#59606E">글을 적는다…</text>
+<rect x="456" y="256" width="120" height="44" rx="10" fill="#4A6FD6"/>
+<text x="516" y="284" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">저장</text>
+</svg>

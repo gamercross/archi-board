@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inlineImages } from '../skills/archi-board/scripts/lib-inline-images.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
@@ -20,7 +21,7 @@ const put = (mark, text) => {
 put('<!--@CSS-->', `<style>\n${read('engine/v1/board.css')}\n</style>`);
 // 보드마다 window를 가려서 board-data.js를 고치지 않고 그대로 담는다 — 고르는 것은 아래 로더가 한다
 put('<!--@BOARDS-->', '<script>window.__B = {};</script>\n' + Object.entries(BOARDS).map(([k, f]) =>
-  `<script>\n(function () { var window = {};\n${guard(read(f))}\n__B[${JSON.stringify(k)}] = window.BOARD; })();\n</script>`).join('\n'));
+  `<script>\n(function () { var window = {};\n${guard(inlineImages(read(f), path.join(root, path.dirname(f))).data)}\n__B[${JSON.stringify(k)}] = window.BOARD; })();\n</script>`).join('\n'));
 put('<!--@ENGINE-->', `<script>\n${guard(read('engine/v1/board.js'))}\n</script>`);
 html = html.replace('<!doctype html>', '<!doctype html>\n<!-- 이 파일은 tools/build-showcase.mjs가 만든다 — 고치려면 showcase/index.src.html과 보드 데이터를 고치고 다시 만든다. -->');
 
