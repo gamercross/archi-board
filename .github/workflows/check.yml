@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - name: 엔진 문법
@@ -25,3 +26,10 @@ jobs:
           cmp /tmp/memo.single.html /tmp/rt.single.html
       - name: 내보내기 → 가져오기 왕복(ArchiMate · Mermaid)
         run: node tools/test-export.mjs
+      - name: ab (Rust) 시험 · 두 보드 읽기 · 근거 파일 확인
+        run: |
+          cargo test --manifest-path rust/Cargo.toml
+          cargo build --release --manifest-path rust/Cargo.toml
+          rust/target/release/ab check examples/memo/board-data.js
+          rust/target/release/ab check docs/board/board-data.js
+          rust/target/release/ab drift docs/board/board-data.js
