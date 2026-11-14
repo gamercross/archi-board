@@ -37,7 +37,7 @@
 ```
 
 - `weight` 1~5: 글자 크기와 중요도. `w`: 너비(px). 높이는 내용에 맞춰 엔진이 정한다.
-- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 — `plateau`와 `wp` 상자에 `col` 숫자) · `objects` · `datamap` · `matrix` · `screens` · `cards` · `view`(처음 보는 사람용 한 장 — 아래). `insight`(엔진 1.4 — 보드 위에 판단 차트를 그린다. 아래 insights 절).
+- `layout`: `rows`(기본 — 층별 줄) · `ring`(가운데 고리, `ring`과 `center`에 상자 id) · `time`(이행 계획 · 간트 — 아래 "time — 간트" 절) · `objects` · `datamap` · `matrix` · `screens` · `cards` · `view`(처음 보는 사람용 한 장 — 아래). `insight`(엔진 1.4 — 보드 위에 판단 차트를 그린다. 아래 insights 절).
 - `aud`: `'view'` 처음 보는 사람 · `'build'` 만드는 사람. 없으면 `view` 레이아웃은 `'view'`, 나머지는 `'build'`. `view` 창이 하나라도 있으면 위 띠에 전환이 생기고, 처음 보는 사람 쪽에서는 `'view'` 창 · 그 창들끼리의 흐름 · 그 창만 비추는 따라가기만 보인다(엔진 1.2).
   `objects` · `datamap` · `matrix` · `ring` · `screens`는 보드에 **하나씩만**.
 - `main: true`인 창이 파란 테두리 메인 흐름이다(하나만 권함).
@@ -70,6 +70,23 @@ elements: [
 - 선은 같은 창 안이면 **늘 보이는 꺾은선**으로 그린다. 틀과 그 안의 단계 사이에는 선을 그리지 않는다.
 - 상태는 `done`이면 표시가 없고, 나머지만 귀퉁이에 쉬운 말(일부 · 아직 · 후보 · 뺌)로 보인다. 처음 보는 사람 쪽 옆 칸에는 코드 위치(`c`)가 나오지 않는다.
 
+## time — 간트 (엔진 1.5)
+
+시기와 일을 간트처럼 그린다. 시기(`plateau`)는 위쪽 가로축에 `col` 순서로 왼쪽 → 오른쪽, 일(`wp`)은 같은 `col` 시기 칸 아래 막대다.
+
+```js
+frames: [{id: 'road', title: '만드는 순서', layout: 'time', w: 2000}],
+elements: [
+  {f: 'road', id: 'pl_now', t: 'plateau', n: '11~12월', col: 0, s: 'part'},     // part = 지금인 시기 — 칸 전체가 강조된다
+  {f: 'road', id: 'pl_next', t: 'plateau', n: '1~2월', col: 1, s: 'todo'},
+  {f: 'road', id: 'wp_a', t: 'wp', n: '권리 합의', col: 0, span: 2, when: '11~2월', who: '나와 팀', s: 'part'}   // span: 몇 시기에 걸치나(기본 1)
+]
+```
+
+- `who`가 있으면 `who`마다 가로 띠 한 줄로 묶고 띠 이름을 왼쪽에 쓴다. 한 띠 안에서 겹치지 않는 막대는 같은 줄을 쓴다.
+- 상태는 때의 말로 보인다 — 일: `done` 끝 · `part` 하는 중 · `todo` 할 일, 시기: `done` 지남 · `part` 지금 · `todo` 앞으로. 창 머리의 셈은 일만 센다.
+- 막대에는 이름(두 줄까지)과 `when`이 보인다. 띠가 없으면 `who`도 함께.
+
 ## elements — 상자
 
 ```js
@@ -84,7 +101,7 @@ elements: [
 | `n` · `d` | 이름(두 줄까지 보임) · 설명 |
 | `s` | 상태: `done` 있음 · `part` 일부 · `todo` 없음(점선) · `cand` 후보(점선) · `gone` 뺌. 상태가 없는 목표 · 원칙은 비워 둔다 |
 | `c` | 코드 위치(파일 · 함수) |
-| `col` · `when` · `who` | `time` 창에서만: 열 번호, 작업 묶음의 때와 사람 |
+| `col` · `span` · `when` · `who` | `time` 창에서만: 시기 열 번호, (일) 몇 시기에 걸치나, 때와 사람 — 아래 "time — 간트" 절 |
 
 배열로 써도 된다: `['parts', 'ac_api', 'acomp', 'API 서버', '설명', 'done', 'server/api.js', {추가 칸}]`.
 

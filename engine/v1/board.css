@@ -693,3 +693,24 @@ body{word-break:keep-all;overflow-wrap:anywhere}
 .pthumb:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .fold.budget{margin:10px 0}
 .fold.budget>summary{cursor:pointer;font-weight:600;color:var(--acc-ink)}
+
+/* 시간(간트) 창 — 시기는 위 가로축, 일은 그 시기 칸 아래 막대. 지금인 시기는 칸 전체에 옅은 강조 */
+.tcol{position:absolute;border-radius:12px;background:color-mix(in srgb,var(--soft) 45%,transparent);pointer-events:none}
+.tcol.cur{background:color-mix(in srgb,var(--acc) 9%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--acc) 40%,transparent)}
+.vband.tl{background:color-mix(in srgb,var(--soft) 55%,transparent)}
+.vband.tl.odd{background:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent)}
+.vband.tl span{font-size:15px;width:118px}
+.el.tm{justify-content:center;gap:4px;border-style:solid;border-width:1px}
+.el.tm .en{font-size:14px;-webkit-line-clamp:2}
+.el.tm .en .chip{margin-right:7px;vertical-align:1px}
+.el.tm-plateau{align-items:center;text-align:center;border-radius:12px}
+.el.tm-plateau .en{font-size:16px}
+.el.tm-plateau.st-part{box-shadow:0 0 0 2px var(--acc)}
+.el.tm-wp{border-radius:10px;border-left:5px solid var(--acc)}
+.el.tm-wp.st-done{border-left-color:var(--ok);opacity:.72}
+.el.tm-wp.st-part{border-left-color:var(--warn)}
+.el.tm-wp.st-cand{border-left-color:var(--cand);border-style:dashed}
+.el.tm-wp.st-gone{border-left-color:var(--gone)}
+.mbar.tl .todo{background:var(--acc)}
+.el.tm .chip.todo,.chip.tl.todo{background:var(--acc-soft);color:var(--acc-ink)}
+.el.tm-plateau .chip.done,.el.tm-wp .chip.done{background:var(--okbg);color:var(--ok)}
