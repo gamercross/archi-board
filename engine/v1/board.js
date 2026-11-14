@@ -388,7 +388,7 @@ function layoutTime(f) {
   const at = c => { let best = 0, d = Infinity; ps.forEach((p, i) => { const k = Math.abs(p.col - c); if (k < d) { d = k; best = i; } }); return best; };
   const whos = [...new Set(ws.map(w => w.who || ''))];
   const lanes = whos.some(Boolean);
-  const LW = lanes ? 150 : 0, GC = 12, PH = 76, BH = 66, BG = 8;
+  const LW = lanes ? 150 : 0, GC = 12, PH = 76, BH = 76, BG = 8;   // BH: 이름 두 줄 + 때 한 줄이 들어가는 높이
   const x0 = PAD + LW, cw = (f.w - PAD - x0 - (n - 1) * GC) / n, colX = i => x0 + i * (cw + GC);
   const top = HEAD + 22;
   ps.forEach((p, i) => place(p, colX(i), top, cw, PH));
