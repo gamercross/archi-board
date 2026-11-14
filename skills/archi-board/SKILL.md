@@ -19,7 +19,7 @@ compatibility: Node 18 이상(점검 스크립트). 보드는 브라우저로 �
 2. **틀을 복사한다.** 이 스킬 폴더의 `assets/board.html` → `<자리>/index.html`. 고칠 것은 `<title>` 하나.
 3. **앞면부터 — 처음 보는 사람용 그림.** [references/audience.md](references/audience.md)대로 — 누가 보나 한 줄 → 네 질문(무엇 · 누구 · 차례 · 받쳐 주는 것) →
    **한 장 그림**(층별 뷰)과 **차례 그림**(시작 사건 → 틀 안의 단계) 두 장. 쉬운 말, 한 장에 상자 25개 안쪽, 코드 이름 없이.
-4. **코드를 읽는다 — 뒷면.** [references/reading-code.md](references/reading-code.md)의 순서대로 — 부품 → 오가는 길 → 데이터 → (있으면) 목적 · 계획.
+4. **코드를 읽는다 — 뒷면.** `ab`가 설치돼 있으면 먼저 `ab scan <프로젝트>`로 언어 · 경로 · 표 · 환경 변수 · 많이 불리는 파일을 모은다([ab 쓰는 법](references/ab.md)). 모은 줄은 짐작이니 열어서 확인한다. [references/reading-code.md](references/reading-code.md)의 순서대로 — 부품 → 오가는 길 → 데이터 → (있으면) 목적 · 계획.
    큰 저장소면 폴더마다 나눠 읽고 사실만 모은다. 코드에 없는 것은 쓰지 않는다. 앞면의 상자는 `see`로 뒷면(객체 · 창)에 잇는다.
 5. **`board-data.js`를 쓴다.** 형식은 [references/data-format.md](references/data-format.md), 완성 예시는 저장소의 `examples/memo/board-data.js`.
    처음에는 **앞면 두 장 + 객체 지도 + 데이터 지도 + 유즈케이스 2~3개**로 시작하고, `start`는 한 장 그림으로 둔다. 사용자가 원하면 ArchiMate 창을 더한다.
@@ -32,6 +32,7 @@ compatibility: Node 18 이상(점검 스크립트). 보드는 브라우저로 �
 
 ## 고칠 때
 
+- 먼저 `ab brief <board-data.js>`로 보드를 한 화면으로 읽고, `ab drift <board-data.js>`로 근거 파일이 아직 있는지 · 보드 뒤에 바뀐 코드가 무엇인지 본다([ab](references/ab.md)). `ab`가 없으면 `board-data.js`를 읽는다.
 - `board-data.js`만 고친다. 코드가 바뀌었으면 바뀐 부품 · 데이터 · 순서만 다시 읽어 그 칸을 고치고, 6번 점검을 다시 돈다.
 - 기능이 바뀌면 **앞면(한 장 · 차례)도 같이** 고친다 — 뒷면만 고치면 처음 보는 사람이 옛 그림을 본다.
 - 앞면이 없는 보드를 고칠 때는 점검 경고를 알리고 앞면 두 장을 먼저 더하자고 제안한다.
