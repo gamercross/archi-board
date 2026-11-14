@@ -19,9 +19,11 @@ const put = (mark, text) => {
   html = html.replace(mark, () => text);
 };
 put('<!--@CSS-->', `<style>\n${read('engine/v1/board.css')}\n</style>`);
-// 보드마다 window를 가려서 board-data.js를 고치지 않고 그대로 담는다 — 고르는 것은 아래 로더가 한다
-put('<!--@BOARDS-->', '<script>window.__B = {};</script>\n' + Object.entries(BOARDS).map(([k, f]) =>
-  `<script>\n(function () { var window = {};\n${guard(inlineImages(read(f), path.join(root, path.dirname(f))).data)}\n__B[${JSON.stringify(k)}] = window.BOARD; })();\n</script>`).join('\n'));
+// 보드마다 window를 가려서 board-data.js를 고치지 않고 그대로 담는다 — 고르는 것은 아래 로더가 한다. 스튜디오 편집기용 원본 문자열(__B_SRC)도 함께 담는다.
+put('<!--@BOARDS-->', '<script>window.__B = {}; window.__B_SRC = {};</script>\n' + Object.entries(BOARDS).map(([k, f]) => {
+  const data = inlineImages(read(f), path.join(root, path.dirname(f))).data;
+  return `<script>\n(function () { var window = {};\n${guard(data)}\n__B[${JSON.stringify(k)}] = window.BOARD;\n__B_SRC[${JSON.stringify(k)}] = ${guard(JSON.stringify(data))}; })();\n</script>`;
+}).join('\n'));
 put('<!--@ENGINE-->', `<script>\n${guard(read('engine/v1/board.js'))}\n</script>`);
 html = html.replace('<!doctype html>', '<!doctype html>\n<!-- 이 파일은 tools/build-showcase.mjs가 만든다 — 고치려면 showcase/index.src.html과 보드 데이터를 고치고 다시 만든다. -->');
 
