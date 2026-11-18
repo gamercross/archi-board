@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v node >/dev/null 2>&1 && node \"${CLAUDE_PLUGIN_ROOT}/skills/archi-board/scripts/board-hook.mjs\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
