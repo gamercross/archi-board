@@ -877,6 +877,10 @@ body{word-break:keep-all;overflow-wrap:anywhere}
   }
 
   /* ───────── 공식 소개 · 문서 허브 (Docs View) ───────── */
+  .io-talk { flex: 1; min-height: 0; display: flex; background: var(--board); }
+  .io-talk[hidden] { display: none; }
+  .io-talk-frame { flex: 1; width: 100%; height: 100%; border: 0; background: var(--board); }
+
   .io-docs {
     flex: 1; min-height: 0; overflow-y: auto;
     background: var(--board);
@@ -987,6 +991,7 @@ body{word-break:keep-all;overflow-wrap:anywhere}
       <button class="io-nav-btn on" type="button" data-view="board" id="navBoard">🗺 라이브 보드</button>
       <button class="io-nav-btn" type="button" data-view="studio" id="navStudio">🛠 웹 스튜디오 (편집·점검)</button>
       <button class="io-nav-btn" type="button" data-view="docs" id="navDocs">📖 가이드 · 스키마</button>
+      <button class="io-nav-btn" type="button" data-view="talk" id="navTalk">🎤 발표</button>
     </nav>
   </div>
 
@@ -1058,6 +1063,11 @@ body{word-break:keep-all;overflow-wrap:anywhere}
     </div>
     <iframe class="st-iframe" id="studioPreview" title="archi-board 실시간 미리보기"></iframe>
   </div>
+</section>
+
+<!-- ───────── 발표 슬라이드 (talks/ 안의 독립 페이지를 보드 안에서 보여 준다) ───────── -->
+<section class="io-talk" id="talkView" hidden aria-label="발표 슬라이드">
+  <iframe class="io-talk-frame" id="talkFrame" title="AI 시대, 무엇을 믿고 만들까 — 발표 슬라이드" data-src="talks/2026-11-18-sw-engineering/index.html" allowfullscreen></iframe>
 </section>
 
 <!-- ───────── 3. 공식 가이드 · 스키마 레퍼런스 (Docs View) ───────── -->
@@ -2928,6 +2938,8 @@ window.BOARD = {
     const appEl = document.getElementById('app');
     const studioEl = document.getElementById('studioView');
     const docsEl = document.getElementById('docsView');
+    const talkEl = document.getElementById('talkView');
+    const talkFrame = document.getElementById('talkFrame');
     const switcherWrap = document.getElementById('boardSwitcherWrap');
     const navBtns = [...document.querySelectorAll('.io-nav-btn[data-view]')];
 
@@ -3198,6 +3210,9 @@ ${guard(engineJsText)}
       if (appEl) appEl.hidden = (v !== 'board');
       studioEl.hidden = (v !== 'studio');
       docsEl.hidden = (v !== 'docs');
+      talkEl.hidden = (v !== 'talk');
+      if (v === 'talk' && !talkFrame.getAttribute('src')) talkFrame.setAttribute('src', talkFrame.dataset.src);
+      if (v === 'talk') talkFrame.focus();
       switcherWrap.hidden = (v !== 'board');
       if (v === 'studio' && !studioLoadedOnce) updateStudio(true);
       if (v === 'board') dispatchEvent(new Event('resize'));
@@ -3216,7 +3231,7 @@ ${guard(engineJsText)}
     });
 
     const initView = params.get('view') || 'board';
-    if (['board', 'studio', 'docs'].includes(initView)) setView(initView);
+    if (['board', 'studio', 'docs', 'talk'].includes(initView)) setView(initView);
   });
 })();
 </script>
