@@ -33,3 +33,10 @@ jobs:
           rust/target/release/ab check examples/memo/board-data.js
           rust/target/release/ab check docs/board/board-data.js
           rust/target/release/ab drift docs/board/board-data.js
+          rust/target/release/ab impact examples/memo/board-data.js rq_keep
+      - name: 훅 — 보드가 근거로 쓰는 파일을 고치면 Claude에게 메모를 남긴다
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('hooks/hooks.json','utf8'))"
+          hook() { printf '{"session_id":"ci-%s","tool_name":"Edit","tool_input":{"file_path":"%s/%s"}}' "$RANDOM$RANDOM" "$PWD" "$1" | CLAUDE_PROJECT_DIR="$PWD" node skills/archi-board/scripts/board-hook.mjs; }
+          out=$(hook skills/archi-board/scripts/check.mjs); echo "$out"; case "$out" in *additionalContext*) ;; *) exit 1 ;; esac
+          out=$(hook LICENSE); test -z "$out"

@@ -16,7 +16,7 @@ if (!dataFile) { console.error('쓰는 법: node check.mjs <board-data.js> [boar
 const eng = fs.readFileSync(engineFile, 'utf8');
 const m = eng.match(/\/\*MODEL-START\*\/([\s\S]*?)\/\*MODEL-END\*\//);
 if (!m) { console.error('엔진에서 MODEL 표를 찾지 못했다:', engineFile); process.exit(2); }
-const model = vm.runInNewContext(m[1] + "\n;({TYPES, RELS, LAYERS, INSIGHTS: typeof INSIGHTS === 'undefined' ? {} : INSIGHTS})");
+const model = vm.runInNewContext(m[1] + "\n;({TYPES, RELS, LAYERS, INSIGHTS: typeof INSIGHTS === 'undefined' ? {} : INSIGHTS, RKIND: typeof RKIND === 'undefined' ? {} : RKIND, RVER: typeof RVER === 'undefined' ? {} : RVER})");
 
 const win = {};
 try { vm.runInNewContext(fs.readFileSync(dataFile, 'utf8'), { window: win }, { filename: dataFile }); }
@@ -47,6 +47,15 @@ els.forEach(x => {
   if (!x.n) err(`상자 ${x.id}: 이름(n)이 없다`);
   const f = frames.find(f => f.id === x.f);
   if (f && f.layout === 'time' && (x.t === 'plateau' || x.t === 'wp') && x.col === undefined) err(`상자 ${x.id}: time 창의 plateau · wp에는 col이 있어야 한다`);
+  // 엔진 1.6 — 요구(requirement)의 칸과 바뀐 상자(ch)
+  if (x.t === 'requirement') {
+    if (x.kind != null && !model.RKIND[x.kind]) err(`요구 ${x.id}: kind는 ${Object.keys(model.RKIND).join(' · ')} 가운데 하나`);
+    if (x.verify != null && !model.RVER[x.verify]) err(`요구 ${x.id}: verify는 ${Object.keys(model.RVER).join(' · ')} 가운데 하나`);
+    if (x.tests != null && !(Array.isArray(x.tests) && x.tests.every(t => typeof t === 'string'))) err(`요구 ${x.id}: tests는 시험 파일 경로의 배열`);
+    if (x.verify === 'test' && !arr(x.tests).length) warn(`요구 ${x.id}: 확인 방법이 시험(test)인데 tests가 비었다 — 시험 파일을 적거나 verify를 바꾼다`);
+    if (x.accept && [...String(x.accept)].length > 120) warn(`요구 ${x.id}: 인수 기준(accept)이 ${[...String(x.accept)].length}자 — 120자 안으로`);
+  } else ['no', 'kind', 'accept', 'verify'].forEach(k => { if (x[k] != null) warn(`상자 ${x.id}: ${k}는 요구(requirement) 상자의 칸이다`); });
+  if (x.ch != null && typeof x.ch !== 'string') err(`상자 ${x.id}: ch(바뀐 날 · 무엇)는 글이어야 한다`);
 });
 // 처음 보는 사람용 한 장 그림 (엔진 1.2) — 자리 칸 · 틀 안의 단계 · 쉬운 말
 const views = frames.filter(f => f.layout === 'view');
@@ -80,6 +89,8 @@ arr(B.relations).forEach(r => {
   if (!eid.has(b)) err(`관계 ${a} → ${b}: ${b}가 상자에 없다`);
   if (!model.RELS[t]) err(`관계 ${a} → ${b}: 모르는 관계 ${t}`);
 });
+// 요구가 있음 · 일부인데 채우는 상자(realization 선)가 없으면 알린다
+els.filter(x => x.t === 'requirement' && (x.s === 'done' || x.s === 'part')).forEach(x => { if (!arr(B.relations).some(r => (Array.isArray(r) ? r[1] === x.id && r[2] === 'realization' : r.to === x.id && r.type === 'realization'))) warn(`요구 ${x.id}: 상태가 ${x.s}인데 이 요구를 채우는 상자가 없다 — 채우는 상자에서 realization 선을 잇는다`); });
 arr(B.flows).forEach(x => { const [a, b] = Array.isArray(x) ? x : [x.from, x.to]; [a, b].forEach(id => { if (!fid.has(id)) err(`흐름 ${a} → ${b}: 없는 창 ${id}`); }); });
 arr(B.tour).forEach((t, i) => {
   arr(t.f).forEach(id => { if (!fid.has(id)) err(`따라가기 ${i + 1}: 없는 창 ${id}`); });

@@ -101,6 +101,8 @@ elements: [
 | `n` · `d` | 이름(두 줄까지 보임) · 설명 |
 | `s` | 상태: `done` 있음 · `part` 일부 · `todo` 없음(점선) · `cand` 후보(점선) · `gone` 뺌. 상태가 없는 목표 · 원칙은 비워 둔다 |
 | `c` | 코드 위치(파일 · 함수) |
+| `ch` | (1.6) 바뀐 날 · 무엇 — 상자에 '바뀜' 표시가 붙는다. 아래 "요구 · 바뀐 상자" |
+| `no` · `kind` · `accept` · `verify` · `tests` | (1.6) 요구(`requirement`) 상자의 칸 — 아래 "요구 · 바뀐 상자" |
 | `col` · `span` · `when` · `who` | `time` 창에서만: 시기 열 번호, (일) 몇 시기에 걸치나, 때와 사람 — 아래 "time — 간트" 절 |
 
 배열로 써도 된다: `['parts', 'ac_api', 'acomp', 'API 서버', '설명', 'done', 'server/api.js', {추가 칸}]`.
@@ -109,7 +111,7 @@ elements: [
 
 | 층 | 종류 |
 |---|---|
-| 동기 | `stakeholder` `driver` `assessment` `goal` `outcome` `principle` `constraint` |
+| 동기 | `stakeholder` `driver` `assessment` `goal` `outcome` `principle` `constraint` `requirement`(1.6) |
 | 전략 | `capability` `resource` `course` |
 | 업무 | `bactor` `brole` `bprocess` `bservice` `bevent`(1.2) `bobject` `product` |
 | 프로그램 | `acomp` `aiface` `aservice` `dobject` |
@@ -121,6 +123,33 @@ elements: [
 `['보내는 상자', '받는 상자', '관계']` — 관계: `realization` 실현 · `serving` 지원 · `assignment` 맡음 · `access` 읽고 씀 ·
 `flow` 넘겨줌 · `triggering` 이어짐 · `influence` 영향 · `composition` 이룸 · `aggregation` 묶음 · `association` 관련.
 창이 다른 상자끼리 이으면 평소에는 숨고, 상자를 누를 때 나타난다.
+
+## 요구 · 바뀐 상자 (엔진 1.6)
+
+요구(`t: 'requirement'`)는 동기 층 상자다. PRD의 요구 한 줄을 상자 하나로 둔다. 칸은 모두 고를 수 있다.
+
+```js
+{f: 'why', id: 'rq_keep', t: 'requirement', n: '끊겨도 쓴 글이 남는다', s: 'done',
+ no: 'FR-1', kind: 'func', accept: '비행기 모드에서 쓴 메모가 다시 연결되면 서버에 올라가 있다.', verify: 'test', tests: ['tests/draft.test.js']}
+```
+
+| 칸 | 뜻 |
+|---|---|
+| `no` | 요구 번호(FR-1 · NFR-2). 상자 머리에 보인다. PRD · 작업 목록과 같은 번호를 쓴다 |
+| `kind` | `func` 기능 · `nonfunc` 비기능(성능 · 보안 · 쓰기 쉬움) |
+| `accept` | 인수 기준 — 다 됐는지 판정하는 한 문장(120자 안) |
+| `verify` | 확인 방법 — `test` 시험 · `inspection` 검사 · `analysis` 분석 · `demonstration` 시연 (SysML · Mermaid requirementDiagram과 같은 넷) |
+| `tests` | 이 요구를 확인하는 시험 파일. `verify: 'test'`면 비우지 않는다 |
+
+- **채우는 상자 → 요구는 `realization` 선**이다(SysML · Mermaid의 *satisfies*). 시험은 `tests` 칸에 적는다(*verifies*). 요구가 목표 · 원칙을 이루면 요구 → 목표 · 원칙도 `realization`.
+- 상태가 `done` · `part`인데 채우는 상자가 없으면 점검이 경고한다. 아직 아무것도 채우지 않는 요구는 `s: 'todo'`.
+- ArchiMate 4는 제약(Constraint)을 따로 두지 않고 요구로 그린다. 새 보드는 `requirement`를 쓴다(`constraint`도 계속 읽힌다).
+
+**바뀐 상자 — `ch`.** 어느 상자에든 `ch: '11/18 · 2초에서 3초로'`(바뀐 날 · 무엇)를 달면 상자에 '바뀜' 표시가 붙고, 상자 옆 칸과 창 옆 칸에 바뀐 상자 목록과 "바뀐 곳 모두 비추기"가 나온다. "보드 업데이트해줘"로 칸을 고칠 때 바뀐 상자에 단다. 다음 업데이트 때 지난 `ch`는 지우거나 새 날짜로 바꾼다.
+
+**바뀌면 다시 볼 곳.** 선이 이어진 상자를 누르면 "이것이 바뀌면 — 다시 볼 곳 비추기"(요구면 "이 요구가 바뀌면")가 나온다. 엔진이 모으는 차례:
+바로 이어진 상자 → 그 상자에서 한 번 더(동기 층으로는 올라가지 않는다) → 같은 id의 객체 → 그 객체가 쓰고 읽는 데이터 → 그 상자 · 객체가 나오는 순서도 → 시험(`tests`) · 코드(`c` · `files`).
+보드에서 그 자리만 밝게 남고, 옆 칸에 목록이 나온다. 터미널에서는 `ab impact <board-data.js> <id>`가 같은 규칙으로 센다.
 
 ## flows · tour
 

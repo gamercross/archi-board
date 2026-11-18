@@ -332,7 +332,7 @@ mod tests {
     #[test]
     fn both_boards_load() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-        for (p, els) in [("docs/board/board-data.js", 98), ("examples/memo/board-data.js", 36)] {
+        for (p, els) in [("docs/board/board-data.js", 98), ("examples/memo/board-data.js", 38)] {
             let b = crate::board::load(&root.join(p)).unwrap();
             assert_eq!(b.els.len(), els, "{}", p);
             assert!(crate::check::run(&b).0.is_empty(), "{}", p);

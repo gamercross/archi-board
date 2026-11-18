@@ -3,11 +3,12 @@
  * 1.3: 유저 스토리(story)와 첫 화면 플로팅 투어 배너 · 발표(슬라이드) 모드 · 조작 코치마크.
  * 1.4: 보드 위에 판단 차트를 직접 그리는 창(layout 'insight') · 값을 만든 순서(기준 → 값 → 근거 → 그림) 표시.
  * 1.5: 시간 창(layout 'time')을 간트로 — 시기는 위 가로축, 일은 그 칸 아래 막대(span으로 여러 시기), who마다 줄. 상태는 '끝 · 하는 중 · 할 일'.
+ * 1.6: 요구(requirement) 상자 — 번호 · 기능/비기능 · 인수 기준 · 확인 방법 · 시험. "바뀌면 다시 볼 곳" 비추기(영향)와 바뀐 상자 표시(ch).
  * 데이터는 window.BOARD (board-data.js)에서 읽는다. 형식: https://github.com/gamercross/archi-board/blob/main/skills/archi-board/references/data-format.md
  * MIT License */
 (() => {
 'use strict';
-const VERSION = '1.5.0';
+const VERSION = '1.6.0';
 if (!window.BOARD) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:24px;font:16px system-ui">board-data.js를 board.js보다 먼저 불러 window.BOARD를 채워 주세요.</p>'); return; }
 const esc = s => String(s).replace(/ · /g, '\u00A0· ').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // ' · ' 앞을 붙여 가운뎃점이 줄 첫머리에 오지 않게
 /*MODEL-START*/
@@ -15,6 +16,7 @@ const esc = s => String(s).replace(/ · /g, '\u00A0· ').replace(/[&<>"']/g, c =
 const TYPES = {
   stakeholder:['이해관계자','Stakeholder','mot','cut'], driver:['동인','Driver','mot','cut'], assessment:['평가','Assessment','mot','cut'],
   goal:['목표','Goal','mot','cut'], outcome:['결과','Outcome','mot','cut'], principle:['원칙','Principle','mot','cut'], constraint:['제약','Constraint','mot','cut'],
+  requirement:['요구','Requirement','mot','cut'],
   capability:['능력','Capability','str','round'], resource:['자원','Resource','str','square'], course:['행동 방침','Course of Action','str','round'],
   bactor:['업무 행위자','Business Actor','bus','square'], brole:['업무 역할','Business Role','bus','square'], bprocess:['업무 프로세스','Business Process','bus','round'],
   bservice:['업무 서비스','Business Service','bus','pill'], bevent:['업무 사건','Business Event','bus','event'], bobject:['업무 객체','Business Object','bus','square'], product:['상품','Product','bus','square'],
@@ -34,6 +36,9 @@ const ST = {done:'있음', part:'일부', todo:'없음', cand:'후보', gone:'�
 // 시간(간트) 창에서는 '있음 · 없음' 대신 때의 말로 읽는다 — 일: 끝 · 하는 중 · 할 일, 시기: 지남 · 지금 · 앞으로
 const TST = {wp: {done:'끝', part:'하는 중', todo:'할 일', cand:'후보', gone:'뺌'}, plateau: {done:'지남', part:'지금', todo:'앞으로', cand:'후보', gone:'뺌'}};
 const INSIGHTS = {heatmap:'열지도', bar:'막대', sankey:'흐름도'};
+// 요구(requirement)의 칸 — kind: 기능 · 비기능, verify: 확인 방법(SysML · Mermaid requirementDiagram의 verifymethod와 같은 넷)
+const RKIND = {func:'기능', nonfunc:'비기능'};
+const RVER = {test:'시험', inspection:'검사', analysis:'분석', demonstration:'시연'};
 /*MODEL-END*/
 
 /* ───────── 데이터 읽기 — board-data.js가 window.BOARD에 둔 것을 엔진이 쓰는 모양으로 ───────── */
@@ -540,7 +545,7 @@ const ICON = {
   node: '<path d="M3 6.5h13v8.5H3zM3 6.5l3-3.5h13l-3 3.5M19 3v8.5l-3 3.5"/>', syssw: '<circle cx="10" cy="9" r="5.5"/><path d="M12.5 4.3A5.5 5.5 0 0 1 18 9.5"/>',
   artifact: '<path d="M5 2h8l4 4v9H5zM13 2v4h4"/>', goal: '<circle cx="11" cy="8.5" r="6"/><circle cx="11" cy="8.5" r="3"/><circle cx="11" cy="8.5" r=".6"/>',
   outcome: '<circle cx="10" cy="9" r="5.5"/><circle cx="10" cy="9" r="2.4"/><path d="M10 9l8-6M15 3h3v3"/>', principle: '<rect x="5" y="2" width="12" height="13" rx="1"/><path d="M11 5v5M11 12.5v.4"/>',
-  driver: '<circle cx="11" cy="8.5" r="5"/><path d="M11 1.5v14M4 8.5h14M6 3.5l10 10M16 3.5l-10 10"/>', constraint: '<path d="M6 3h14l-4 11H2z"/><path d="M8 3l-4 11"/>',
+  driver: '<circle cx="11" cy="8.5" r="5"/><path d="M11 1.5v14M4 8.5h14M6 3.5l10 10M16 3.5l-10 10"/>', constraint: '<path d="M6 3h14l-4 11H2z"/><path d="M8 3l-4 11"/>', requirement: '<path d="M6 3h14l-4 11H2z"/>',
   assessment: '<circle cx="9" cy="7.5" r="4.5"/><path d="M12.4 10.9l5 4.6"/>', capability: '<path d="M3 15h5v-4h5V7h5v8H3"/>', wp: '<rect x="2" y="4" width="18" height="9" rx="4.5"/><path d="M13 2l3 2-3 2"/>'
 };
 const isView = it => FR[it.f] && FR[it.f].layout === 'view';
@@ -555,13 +560,14 @@ const VST = {part: '일부', todo: '아직', cand: '후보', gone: '뺌'};
   b.dataset.l = it.t === 'plateau' ? 'pla' : lk;
   b.dataset.aud = AUD(FR[it.f]);
   b.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px`;
-  if (isView(it)) b.innerHTML = (ICON[it.t] ? `<svg class="vic" viewBox="0 0 22 17" aria-hidden="true">${ICON[it.t]}</svg>` : '') + (VST[it.s] ? `<b class="chip ${it.s}">${VST[it.s]}</b>` : '') +
+  const chg = it.ch ? `<b class="chip chg" title="${esc(it.ch)}">바뀜</b>` : ''; // 1.6: 바뀐 상자(ch) 표시
+  if (isView(it)) b.innerHTML = (ICON[it.t] ? `<svg class="vic" viewBox="0 0 22 17" aria-hidden="true">${ICON[it.t]}</svg>` : '') + (VST[it.s] ? `<b class="chip ${it.s}">${VST[it.s]}</b>` : '') + chg +
     `<span class="vn">${esc(it.n)}</span>` + (it.sub ? `<span class="vs">${esc(it.sub)}</span>` : '');
   else if (isTime(it)) {
     const lane = (FR[it.f].vrows || []).some(r => r.label && r.ids.includes(it.id));
     const ew = it.t === 'wp' ? [it.when, lane ? '' : it.who].filter(Boolean).join(' · ') : (it.sub || '');
-    b.innerHTML = `<span class="en">${stName(it) ? `<b class="chip ${it.s}">${stName(it)}</b>` : ''}${esc(it.n)}</span>` + (ew ? `<span class="ew">${esc(ew)}</span>` : '');
-  } else b.innerHTML = `<span class="et"><i>${ko}</i>${ST[it.s] ? `<b class="chip ${it.s}">${ST[it.s]}</b>` : ''}</span><span class="en">${esc(it.n)}</span>` +
+    b.innerHTML = `<span class="en">${stName(it) ? `<b class="chip ${it.s}">${stName(it)}</b>` : ''}${chg}${esc(it.n)}</span>` + (ew ? `<span class="ew">${esc(ew)}</span>` : '');
+  } else b.innerHTML = `<span class="et"><i>${ko}${it.no ? ' ' + esc(it.no) : ''}</i>${ST[it.s] ? `<b class="chip ${it.s}">${ST[it.s]}</b>` : ''}${chg}</span><span class="en">${esc(it.n)}</span>` +
     (it.t === 'wp' ? `<span class="ew">${esc(it.when)} · ${esc(it.who)}</span>` : '');
   b.addEventListener('click', () => { if (!moved) select(it.id, false); });
   $('#els').append(b); it.dom = b;
@@ -1156,7 +1162,7 @@ function budgetFold(root) {
   let used = 0, cut = -1;
   kids.forEach((c, i) => { if (cut >= 0) return; const n = c.textContent.length; if (i >= 2 && used + n > PANEL_BUDGET) cut = i; else used += n; }); // 예산을 넘기는 덩어리부터 접는다(앞의 두 덩어리는 늘 보인다)
   if (cut < 0 || cut >= kids.length) return;
-  const KEEP = '.btn, .row, .ustp, .shot, .pthumb, svg, table, .insw, .skw, .insbar'; // 단추 · 그림 · 표는 접지 않는다
+  const KEEP = '.btn, .row, .ustp, .shot, .pthumb, svg, table, .insw, .skw, .insbar, .imp'; // 단추 · 그림 · 표는 접지 않는다
   const foldable = kids.slice(cut).filter(c => !(c.matches(KEEP) || c.querySelector(KEEP)));
   if (foldable.length < 2) return;
   const d = document.createElement('details'); d.className = 'fold budget';
@@ -1183,12 +1189,80 @@ function openPanel(k, t, html, wide) {
   $('#pB').querySelectorAll('[data-dflow]').forEach(b => b.addEventListener('click', () => openFlow(+b.dataset.dflow)));
   $('#pB').querySelectorAll('[data-ustory]').forEach(b => b.addEventListener('click', () => { const [u, i] = b.dataset.ustory.split(':'); openUStory(u, i === undefined ? -1 : +i); }));
   $('#pB').querySelectorAll('[data-ins]').forEach(b => b.addEventListener('click', () => openInsight(b.dataset.ins)));
+  $('#pB').querySelectorAll('[data-imp]').forEach(b => b.addEventListener('click', () => openImpact(b.dataset.imp)));
+  $('#pB').querySelectorAll('[data-chg]').forEach(b => b.addEventListener('click', () => openChanged(b.dataset.chg)));
   budgetFold($('#pB'));
 }
 function closePanel() { panel.hidden = true; }
 $('#pX').addEventListener('click', () => { clearFocus(); endStory(); closePanel(); });
 
 const goBtn = id => { const x = byId[id]; return `<button class="go" type="button" data-go="${x.id}">${esc(x.n)}<small>${esc(FR[x.f].title)}</small></button>`; };
+
+/* ───────── 요구 · 바뀌면 다시 볼 곳 · 바뀐 상자 (엔진 1.6) ───────── */
+// 요구 상자의 칸: 번호(no) · 종류(kind) · 인수 기준(accept) · 확인 방법(verify) · 시험(tests), 그리고 이 요구를 채우는 상자(realization 선)
+function reqSec(it) {
+  const rows = [it.no && ['번호', esc(it.no)], RKIND[it.kind] && ['종류', RKIND[it.kind] + ' 요구'], it.accept && ['인수 기준', esc(it.accept)], RVER[it.verify] && ['확인 방법', RVER[it.verify]]].filter(Boolean);
+  let h = rows.length ? `<div class="req"><h3>요구</h3><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>` : '';
+  const t = arr(it.tests);
+  if (t.length) h += `<div><h3>이 요구를 확인하는 시험 · ${t.length}</h3><ul>${t.map(x => `<li><code>${esc(x)}</code></li>`).join('')}</ul></div>`;
+  const by = R.filter(([, b, k]) => b === it.id && k === 'realization').map(([a]) => a);
+  h += by.length ? `<div><h3>이 요구를 채우는 상자 · ${by.length}</h3><ul>${by.map(a => `<li>${goBtn(a)}</li>`).join('')}</ul></div>`
+    : '<p class="note">아직 이 요구를 채우는 상자가 없다 — 채우는 상자에서 이 요구로 realization 선을 잇는다.</p>';
+  return h;
+}
+const impBtn = it => `<div class="imp"><button class="go wide" type="button" data-imp="${it.id}">${it.t === 'requirement' ? '이 요구가 바뀌면' : '이것이 바뀌면'} — 다시 볼 곳 비추기<small>상자 · 객체 · 데이터 · 순서도 · 시험</small></button></div>`;
+// 상자 하나가 바뀌면 흔들리는 곳: 바로 이어진 상자 → 그 상자에서 한 번 더(동기 층으로는 올라가지 않는다) → 같은 id의 객체 →
+// 그 객체가 쓰고 읽는 데이터 → 그 상자 · 객체가 나오는 순서도 → 시험 · 코드 파일. ab impact가 같은 규칙으로 센다.
+function impactOf(id) {
+  const nb = x => { const s = new Set(); R.forEach(([a, b]) => { if (a === x && byId[b]) s.add(b); if (b === x && byId[a]) s.add(a); }); s.delete(x); return s; };
+  const mot = x => TYPES[byId[x].t][2] === 'mot';
+  const l1 = nb(id), l2 = new Set();
+  l1.forEach(x => { if (!mot(x)) nb(x).forEach(y => { if (y !== id && !l1.has(y) && !mot(y)) l2.add(y); }); });
+  const all = new Set([id, ...l1, ...l2]);
+  const objs = [...all].filter(x => OBJ[x]), os = new Set(objs);
+  const data = DM.filter(d => [...arr(d.w), ...arr(d.r), ...arr(d.v)].some(p => Array.isArray(p) && os.has(p[0])));
+  const ucs = UC.filter(u => u.lanes.some(k => (LN[k] && all.has(LN[k][1])) || os.has(L2O(k))) || arr(u.rel).some(x => all.has(x)));
+  const tests = [...new Set([...arr(byId[id].tests), ...data.flatMap(d => arr(d.tests))])];
+  const code = [...new Set([...[...all].map(x => byId[x].c).filter(Boolean), ...objs.flatMap(o => arr(OBJ[o].files))])];
+  const edges = new Set();
+  R.forEach(([a, b], i) => { if (all.has(a) && all.has(b) && (a === id || b === id || l1.has(a) || l1.has(b))) edges.add(i); });
+  return {l1: [...l1], l2: [...l2], all, objs, data, ucs, tests, code, edges};
+}
+const inMode = x => !HASV || AUD(FR[x.f]) === AUDM; // 지금 보기(처음 보는 사람 / 만드는 사람)에 보이는 상자
+function openImpact(id) {
+  const it = byId[id]; if (!it) return;
+  stopTour(); clearFocus(); endStory();
+  const m = impactOf(id);
+  focusOn(m.all, m.edges, false);
+  it.dom.classList.add('sel');
+  m.objs.forEach(o => OBJ[o].dom && OBJ[o].dom.classList.add('on'));
+  m.data.forEach(d => d.dom && d.dom.classList.add('on'));
+  if (m.objs.length) board.classList.add('ofocus');
+  const sec = (t, items) => items.length ? `<div><h3>${t} · ${items.length}</h3>${fold(items, 6)}</div>` : '';
+  let h = `<p>${it.t === 'requirement' ? '이 요구가 바뀌면' : '이것이 바뀌면'} 아래를 다시 본다. 보드에서 밝게 남은 곳이 그 자리다.</p>`;
+  h += sec('바로 이어진 상자', m.l1.map(x => `<li>${goBtn(x)}</li>`));
+  h += sec('한 번 더 건너 이어진 상자', m.l2.map(x => `<li>${goBtn(x)}</li>`));
+  h += sec('객체', m.objs.map(o => `<li><button class="go" type="button" data-obj="${esc(o)}">${esc(ON[o] || o)}</button></li>`));
+  h += sec('데이터', m.data.map(d => `<li><button class="go" type="button" data-dm="${esc(d.id)}">${esc(d.n)}</button></li>`));
+  h += sec('순서도', m.ucs.map(u => `<li><button class="go wide" type="button" data-uc="${u.id}" data-k="0">▶ ${esc(u.t)}</button></li>`));
+  h += sec('시험 파일', m.tests.map(t => `<li><code>${esc(t)}</code></li>`));
+  h += sec('코드 · 파일', m.code.map(t => `<li><code>${esc(t)}</code></li>`));
+  if (!m.l1.length) h += '<p class="note">이어진 상자가 없다 — 선(relations)을 이으면 바뀔 때 흔들리는 곳이 보인다.</p>';
+  openPanel('바뀌면 다시 볼 곳', it.n, h);
+  const vis = [...m.all].map(x => byId[x]).filter(inMode);
+  if (vis.length) fly(camFor(union(vis.map(x => ({x: x.x, y: x.y, w: x.w, h: x.h}))), 60));
+}
+// 바뀐 상자(ch): 창 하나 또는 보드 전체에서 모아 비춘다
+function openChanged(fid) {
+  const its = E.filter(x => x.ch && (!fid || x.f === fid));
+  if (!its.length) return;
+  stopTour(); clearFocus(); endStory();
+  focusOn(new Set(its.map(x => x.id)), new Set(), false);
+  openPanel('바뀐 상자', fid && FR[fid] ? FR[fid].title : '보드 전체',
+    `<p>바뀐 상자에는 '바뀜' 표시가 붙는다. 누르면 언제 무엇이 바뀌었는지와 그때 다시 볼 곳이 나온다.</p><div>${fold(its.map(x => `<li>${goBtn(x.id)}<small class="eln">${esc(x.ch)}</small></li>`), 8)}</div>`);
+  const vis = its.filter(inMode);
+  if (vis.length) fly(camFor(union(vis.map(x => ({x: x.x, y: x.y, w: x.w, h: x.h}))), 60));
+}
 function select(id, flyTo) {
   stopTour();
   const it = byId[id], ids = new Set([id]), ei = new Set(), out = [], inn = [];
@@ -1202,6 +1276,9 @@ function select(id, flyTo) {
   let h = '';
   if (stName(it)) h += `<div><b class="chip ${it.s}${isTime(it) ? ' tl' : ''}">${stName(it)}</b></div>`;
   if (it.d) h += `<p>${esc(it.d)}</p>`;
+  if (it.ch) h += `<p class="chgn"><b class="chip chg">바뀜</b> ${esc(it.ch)}</p>`;
+  if (it.t === 'requirement') h += reqSec(it);
+  if (out.length || inn.length) h += impBtn(it);
   if (it.t === 'wp') h += `<p><b>언제</b> ${esc(it.when)} · <b>누가</b> ${esc(it.who)}</p>`;
   if (it.c && !(HASV && AUDM === 'view')) h += `<div><h3>코드 · 파일 위치</h3><code>${esc(it.c)}</code></div>`;
   if (it.vin && byId[it.vin]) h += `<div><h3>이 단계가 들어 있는 일</h3>${goBtn(it.vin)}</div>`;
@@ -1234,6 +1311,8 @@ function openFrame(id) {
   let h = `<p>${esc(f.desc)}</p><p class="why"><b>이 크기인 까닭</b> ${esc(f.why)}</p>`;
   h += `<div class="cnt">${meter(f.c, f.layout === 'time')}<span>${countText(f.c, f.stl) || (f.items.length && f.items.every(x => TYPES[x.t][2] === 'mot') ? '상태가 없는 원칙 · 목표만 있다' : '상태를 적은 상자가 없다')}</span></div>`;
   if (f.recent.length) h += `<div><h3>최근 한 일</h3><ul class="recent">${f.recent.map(([d, t]) => `<li><time>${esc(d)}</time><span>${esc(t)}</span></li>`).join('')}</ul></div>`;
+  const chg = f.items.filter(x => x.ch);
+  if (chg.length) h += `<div class="imp"><h3>바뀐 상자 · ${chg.length}</h3>${fold(chg.map(x => `<li>${goBtn(x.id).replace(/<small>.*?<\/small>/, '')}<small class="eln">${esc(x.ch)}</small></li>`), 5)}<button class="go" type="button" data-chg="${id}">바뀐 곳 모두 비추기</button></div>`;
   h += insSec(f.layout === 'insight' ? (arr(f.insights).length ? arr(f.insights).map(i => INSI[i]).filter(Boolean) : INS) : INS.filter(x => x.f === id));
   const fu = UC.filter(u => u.f === id);
   if (fu.length) h += `<div><h3>이 창 안의 순서</h3><ul>${fu.map(u => `<li><button class="go wide" type="button" data-uc="${u.id}" data-k="0">▶ ${esc(u.t)}<small>${u.steps.length}칸</small></button></li>`).join('')}</ul></div>`;
@@ -1875,4 +1954,5 @@ document.querySelectorAll('.acts,.chips').forEach(edgeFade);
 const mainF = FRAMES.find(f => f.main);
 if (innerWidth <= 720 && mainF && !(HASV && AUDM === 'view')) { cam = camFor(fbox(mainF), 12); apply(); }
 window.ArchiBoard = {version: VERSION, format: FORMAT, setMode, mode: () => AUDM, openFrame, openObj: id => OBJ[id] && openObj(id), openData: id => DMI[id] && openData(id), openInsight: id => INSI[id] && openInsight(id), openStory: (id, i) => UCI[id] && openUStory(id, i), startPres, stopPres};
+Object.assign(window.ArchiBoard, {impact: id => byId[id] && openImpact(id), impactOf: id => byId[id] ? impactOf(id) : null, changed: fid => openChanged(fid)}); // 엔진 1.6
 })();

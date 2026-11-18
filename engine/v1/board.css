@@ -714,3 +714,14 @@ body{word-break:keep-all;overflow-wrap:anywhere}
 .mbar.tl .todo{background:var(--acc)}
 .el.tm .chip.todo,.chip.tl.todo{background:var(--acc-soft);color:var(--acc-ink)}
 .el.tm-plateau .chip.done,.el.tm-wp .chip.done{background:var(--okbg);color:var(--ok)}
+
+/* ───────── 1.6 요구 · 바뀌면 다시 볼 곳 · 바뀐 상자 ───────── */
+.chip.chg{background:var(--acc-soft);color:var(--acc-ink)}
+.el.vw .chip.chg{left:auto;right:10px}
+.panel .req dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:6px 0 0;font-size:13.5px}
+.panel .req dt{color:var(--mute);white-space:nowrap}
+.panel .req dd{margin:0}
+.panel .chgn{display:flex;align-items:baseline;gap:8px}
+.panel .imp .go.wide{border-color:var(--acc);font-weight:600}
+.panel .imp .go.wide small{display:block;margin:2px 0 0;font-weight:400}
+.panel .imp > .go{margin-top:8px}

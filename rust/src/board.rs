@@ -11,7 +11,12 @@ pub struct Board {
 
 pub fn load(path: &Path) -> Result<Board, String> {
     let src = std::fs::read_to_string(path).map_err(|e| format!("{}: {}", path.display(), e))?;
-    let b = parse_board(&src).map_err(|e| format!("{} {}", path.display(), e))?;
+    from_src(&src).map_err(|e| format!("{} {}", path.display(), e))
+}
+
+/// board-data.js의 글에서 바로 읽는다 (시험에서도 쓴다)
+pub fn from_src(src: &str) -> Result<Board, String> {
+    let b = parse_board(src)?;
     if !matches!(b, V::Obj(_)) {
         return Err("window.BOARD가 객체가 아니다".into());
     }
