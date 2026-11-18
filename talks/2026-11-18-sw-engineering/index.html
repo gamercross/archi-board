@@ -68,7 +68,6 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
 .fig{margin:44px 0 0}
 .fig svg{display:block;width:100%;height:auto}
 .fig text{font-family:'Noto Sans KR',sans-serif;fill:var(--ink)}
-.fig .pic{mix-blend-mode:multiply;filter:saturate(.6)}
 
 /* 2 차트 */
 .era{display:grid;grid-template-columns:1fr 560px;column-gap:56px;align-items:stretch;margin-top:40px}
@@ -106,6 +105,19 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
 .close a{display:block;margin-top:10px;font-size:36px;font-weight:700;color:var(--ink);text-decoration:none}
 .close code{display:block;margin-top:10px;font-family:var(--font-mono);font-size:24px;line-height:1.6;color:var(--ink)}
 .thanks{margin-top:48px;font-size:34px;font-weight:700}
+
+/* 5~11 강의마다 하나: 교수님 자료(3~9강)에서 예 하나씩 다시 그림 */
+.fig .mu,.fig .mu text{fill:var(--ink2)}
+.fig .gm,.fig .gm text{font-family:var(--font-display)}
+.req{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;margin-top:52px}
+.req>div{min-height:430px;padding:48px 56px;display:flex;flex-direction:column;justify-content:space-between}
+.req .r-fn{background:var(--lav)}
+.req .r-nf{background:var(--sky-field)}
+.req p{margin:0;color:var(--ink)}
+.req .k{font-size:30px;font-weight:700;color:var(--ink2)}
+.req .q{font-family:var(--font-display);font-weight:700;font-size:72px;line-height:1.22;letter-spacing:-.02em}
+.req .n{font-family:var(--font-display);font-weight:700;font-size:200px;line-height:.95;letter-spacing:-.03em}
+.req .q2{margin-top:12px;font-size:40px;font-weight:700}
 </style>
 </head>
 <body data-fit="fill">
@@ -157,7 +169,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     </div>
   </div>
   <p class="src">Stack Overflow 개발자 설문 2024 · 2025 · 2026. 같은 기간 "못 믿는다"는 31% → 46%</p>
-  <p class="pg">2 / 10</p>
+  <p class="pg">2 / 17</p>
   <div class="notes">Stack Overflow 개발자 설문입니다. AI 도구를 쓰는 사람은 76%에서 84%로 늘었는데, AI 답의 정확도를 믿는 사람은 43%에서 33%로 줄었습니다. 올해 설문에서 가장 많은 48%가 고른 답은 "쉽게 확인할 수 있을 때 믿는다"였습니다. 결국 확인할 수 있어야 믿을 수 있습니다.</div>
 </section>
 
@@ -176,7 +188,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
   </div>
   <p class="gdoc">구글 디자인 문서도 같은 것을 본다: 범위 · 목표 → 시스템 그림 · API · 데이터 저장 → 공통 관심사(보안 · 관측)</p>
   <p class="src">7단계: ByteByteGo 「A 7-step process to excel in system design interviews」 · 구글: Malte Ubl 「Design Docs at Google」</p>
-  <p class="pg">3 / 10</p>
+  <p class="pg">3 / 17</p>
   <div class="notes">빅테크가 시스템을 설계할 때 가장 크게 보는 단계입니다. 설계 면접에서 쓰는 7단계는 요구사항 정리, 규모 추정, 큰 구조 설계, 데이터베이스 설계, 인터페이스 설계, 확장과 성능, 신뢰성과 회복입니다. 구글이 코드를 짜기 전에 쓰는 디자인 문서도 범위와 목표, 시스템 그림과 API와 데이터 저장, 그리고 보안 같은 공통 관심사를 같은 줄기로 봅니다.</div>
 </section>
 
@@ -206,17 +218,407 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     <p>6강 모델 검증<br>7강 신뢰도 목표</p>
   </div>
   <p class="src">교수님 자료 「UML로 배우는 시스템 분석 설계」 3~9강</p>
-  <p class="pg">4 / 10</p>
-  <div class="notes">우리 수업에서 배운 내용은 이 7단계 안에 들어갑니다. 3강 요구분석과 4강 유스케이스는 요구사항 정리, 비기능 요구는 규모 추정, 7강 아키텍처는 큰 구조, 8강은 데이터베이스, 5강 클래스와 6강 순서 다이어그램과 9강 UI는 인터페이스, 7강의 성능 목표는 확장과 성능, 모델 검증과 신뢰도 목표는 신뢰성입니다. 그리고 이 단계들을 밟을 때 쓰는 문서가 PRD와 TDD입니다. PRD로 무엇을 만들지 정하고, TDD로 어떻게 만들고 확인할지 정합니다.</div>
+  <p class="pg">4 / 17</p>
+  <div class="notes">우리 수업에서 배운 내용은 이 7단계 안에 들어갑니다. 3강 요구분석과 4강 유스케이스는 요구사항 정리, 비기능 요구는 규모 추정, 7강 아키텍처는 큰 구조, 8강은 데이터베이스, 5강 클래스와 6강 순서 다이어그램과 9강 UI는 인터페이스, 7강의 성능 목표는 확장과 성능, 모델 검증과 신뢰도 목표는 신뢰성입니다. 그리고 이 단계들을 밟을 때 쓰는 문서가 PRD와 TDD입니다. PRD로 무엇을 만들지 정하고, TDD로 어떻게 만들고 확인할지 정합니다. 이제 3강부터 9강까지, 강의마다 하나씩 제가 공부한 것을 짧게 보여 드리겠습니다.</div>
 </section>
 
-<!-- 5 요구사항은 바뀐다 → 얽힌다 -->
+<!-- 5 3강 요구분석: PRD -->
+<section class="slide" data-title="3강 PRD">
+  <h2 class="hl">PRD, 무엇을 얼마나 잘 할지</h2>
+  <p class="sub">3강 요구분석 · 시스템이 할 일(기능)과 갖출 특성(비기능)을 적은 요구 문서</p>
+  <div class="req">
+    <div class="r-fn">
+      <p class="k">기능 요구 · 무엇을 하나</p>
+      <p class="q">목적지를 주소나<br>상호로 입력받는다</p>
+    </div>
+    <div class="r-nf">
+      <p class="k">비기능 요구 · 얼마나 잘 하나</p>
+      <div><p class="n">10초</p><p class="q2">안에 목적지를 찾는다</p></div>
+    </div>
+  </div>
+  <p class="src">교수님 자료 3강 p.7 「요구 정의 사례」 내비게이션 시스템 · 기능 요구 2.2와 성능 요구 2.3</p>
+  <p class="pg">5 / 17</p>
+  <div class="notes">먼저 3강 요구분석입니다. 요구는 시스템이 무엇을 해야 하고, 어떤 특성을 가져야 하는지 적은 것입니다. 이걸 사용자와 개발자가 같이 볼 수 있게 모은 문서가 PRD입니다. 교수님 자료의 내비게이션 예에서, 목적지를 주소나 상호로 입력받는다는 "무엇을 하느냐"라서 기능 요구, 목적지 탐색을 10초 안에 끝내야 한다는 "얼마나 잘 하느냐"라서 비기능 요구입니다. 요구 문서에는 이 둘과 함께 개요, 그리고 다 됐는지 확인할 인수 테스트 기준이 들어갑니다.</div>
+</section>
+
+<!-- 6 4강 기능적 모델: 유스케이스 -->
+<section class="slide" data-title="4강 유스케이스">
+  <h2 class="hl">유스케이스, 사용자 눈으로 본 기능</h2>
+  <p class="sub">4강 기능적 모델 · 누가(액터) 무엇을(유스케이스) 하는지와 그 관계</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1680 600" role="img" aria-label="유스케이스 다이어그램, 온라인 쇼핑몰: 주 액터 고객이 상품 주문을 한다. 상품 주문은 로그인을 반드시 포함(include)하고, 쿠폰 받기는 조건이 맞을 때 상품 주문을 확장(extend)하며, 카카오페이 결제는 상품 주문을 구체화(일반화)한다. 결제 시스템은 부 액터다">
+      <defs>
+        <marker id="ucOpen" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="26" markerHeight="26" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="#46527F" stroke-width="2"/></marker>
+        <marker id="ucGen" viewBox="0 0 14 14" refX="13" refY="7" markerWidth="34" markerHeight="34" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L13,7 L1,13 z" fill="#E2E8F2" stroke="#46527F" stroke-width="1.5"/></marker>
+      </defs>
+      <!-- 시스템 경계 -->
+      <rect x="380" y="0" width="900" height="600" fill="#E2E8F2"/>
+      <text x="408" y="50" font-size="28" font-weight="800">온라인 쇼핑몰</text>
+      <!-- 연관 -->
+      <g stroke="#46527F" stroke-width="5">
+        <line x1="254" y1="300" x2="660" y2="300"/>
+        <line x1="1000" y1="300" x2="1380" y2="300"/>
+      </g>
+      <!-- include · extend · 일반화 -->
+      <g stroke="#46527F" stroke-width="4" fill="none">
+        <line x1="830" y1="236" x2="830" y2="166" stroke-dasharray="12 9" marker-end="url(#ucOpen)"/>
+        <line x1="645" y1="454" x2="756" y2="362" stroke-dasharray="12 9" marker-end="url(#ucOpen)"/>
+        <line x1="1022" y1="453" x2="904" y2="359" marker-end="url(#ucGen)"/>
+      </g>
+      <ellipse cx="830" cy="300" rx="170" ry="62" fill="#BBDCF3"/>
+      <ellipse cx="830" cy="110" rx="120" ry="50" fill="#F4EAD2"/>
+      <ellipse cx="590" cy="500" rx="135" ry="50" fill="#DCF0E7"/>
+      <ellipse cx="1080" cy="500" rx="165" ry="50" fill="#F6E4EA"/>
+      <g font-weight="800" text-anchor="middle">
+        <text x="830" y="311" font-size="32">상품 주문</text>
+        <text x="830" y="120" font-size="30">로그인</text>
+        <text x="590" y="510" font-size="30">쿠폰 받기</text>
+        <text x="1080" y="510" font-size="28">카카오페이 결제</text>
+      </g>
+      <g font-size="24" font-weight="800">
+        <text x="856" y="190">«include»</text>
+        <text x="664" y="388" text-anchor="end">«extend»</text>
+        <text x="1030" y="392">일반화</text>
+      </g>
+      <g font-size="22" font-weight="500" class="mu">
+        <text x="856" y="218">반드시 포함</text>
+        <text x="664" y="416" text-anchor="end">조건이 맞을 때만</text>
+        <text x="1030" y="420">구체화한 기능</text>
+      </g>
+      <!-- 고객(주 액터) -->
+      <g stroke="#1A2766" stroke-width="6" stroke-linecap="round" fill="none">
+        <circle cx="190" cy="222" r="30" fill="#EEF2F8"/>
+        <line x1="190" y1="252" x2="190" y2="352"/>
+        <line x1="134" y1="290" x2="246" y2="290"/>
+        <line x1="190" y1="352" x2="146" y2="426"/>
+        <line x1="190" y1="352" x2="234" y2="426"/>
+      </g>
+      <text x="190" y="478" font-size="32" font-weight="800" text-anchor="middle">고객</text>
+      <text x="190" y="514" font-size="24" class="mu" text-anchor="middle">주 액터</text>
+      <!-- 결제 시스템(부 액터) -->
+      <rect x="1380" y="246" width="260" height="108" fill="#E6E1F6"/>
+      <text x="1510" y="286" font-size="22" class="mu" text-anchor="middle">«actor»</text>
+      <text x="1510" y="328" font-size="30" font-weight="800" text-anchor="middle">결제 시스템</text>
+      <text x="1510" y="394" font-size="24" class="mu" text-anchor="middle">부 액터</text>
+    </svg>
+  </figure>
+  <p class="src">교수님 자료 4강 p.8 유스케이스 개념 그림(Online Shopping System)을 우리말로 다시 그림</p>
+  <p class="pg">6 / 17</p>
+  <div class="notes">4강은 기능적 모델, 유스케이스입니다. 사용자 눈으로 시스템이 무엇을 하는지 그립니다. 사람 모양이 액터, 타원이 유스케이스입니다. 고객이 상품을 주문하려면 로그인이 꼭 들어가니 include, 쿠폰 받기는 조건이 맞을 때만 붙으니 extend, 카카오페이 결제는 상품 주문을 구체화한 것이라 일반화입니다. 오른쪽 결제 시스템처럼 사람이 아닌 다른 시스템도 액터가 됩니다.</div>
+</section>
+
+<!-- 7 5강 정적 모델링: 클래스 다이어그램 -->
+<section class="slide" data-title="5강 정적 모델">
+  <h2 class="hl">정적 모델, 변하지 않는 구조</h2>
+  <p class="sub">5강 정적 모델링 · 클래스 다이어그램: 이름, 속성, 오퍼레이션과 클래스 사이의 관계</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1680 470" role="img" aria-label="클래스 다이어그램, 인터넷 서점: Account(계정) 1개는 Order(주문)를 0개 이상 가지고, Order 1개는 Item(주문 항목)을 1개 이상 담고, Item 여러 개가 Book(책) 1권을 가리킨다. 클래스는 이름, 속성, 오퍼레이션 세 칸이다">
+      <g font-size="26" font-weight="700" text-anchor="end" class="mu">
+        <text x="176" y="104">이름</text>
+        <text x="176" y="206">속성</text>
+        <text x="176" y="320">오퍼레이션</text>
+      </g>
+      <g font-size="24" class="mu">
+        <text x="200" y="42">계정</text>
+        <text x="580" y="42">주문</text>
+        <text x="970" y="42">주문 항목</text>
+        <text x="1410" y="42">책</text>
+      </g>
+      <!-- 관계 · 다중도 -->
+      <g stroke="#46527F" stroke-width="4">
+        <line x1="470" y1="209" x2="580" y2="209"/>
+        <line x1="860" y1="209" x2="970" y2="209"/>
+        <line x1="1300" y1="209" x2="1410" y2="209"/>
+      </g>
+      <g font-size="24" font-weight="800">
+        <text x="482" y="195">1</text>
+        <text x="568" y="195" text-anchor="end">0..*</text>
+        <text x="872" y="195">1</text>
+        <text x="958" y="195" text-anchor="end">1..*</text>
+        <text x="1312" y="195">0..*</text>
+        <text x="1398" y="195" text-anchor="end">1</text>
+      </g>
+      <g font-size="22" class="mu" text-anchor="middle">
+        <text x="525" y="245">가진다</text>
+        <text x="915" y="245">담는다</text>
+        <text x="1355" y="245">가리킨다</text>
+      </g>
+      <!-- 클래스 넷: 이름 · 속성 · 오퍼레이션 -->
+      <rect x="200" y="60" width="270" height="70" fill="#E8D6A8"/><rect x="200" y="130" width="270" height="132" fill="#F8F2E4"/><rect x="200" y="262" width="270" height="96" fill="#F0E4C8"/>
+      <rect x="580" y="60" width="280" height="70" fill="#E8D6A8"/><rect x="580" y="130" width="280" height="132" fill="#F8F2E4"/><rect x="580" y="262" width="280" height="96" fill="#F0E4C8"/>
+      <rect x="970" y="60" width="330" height="70" fill="#E8D6A8"/><rect x="970" y="130" width="330" height="132" fill="#F8F2E4"/><rect x="970" y="262" width="330" height="96" fill="#F0E4C8"/>
+      <rect x="1410" y="60" width="270" height="70" fill="#E8D6A8"/><rect x="1410" y="130" width="270" height="132" fill="#F8F2E4"/><rect x="1410" y="262" width="270" height="96" fill="#F0E4C8"/>
+      <g font-size="30" font-weight="800" text-anchor="middle">
+        <text x="335" y="106">Account</text>
+        <text x="720" y="106">Order</text>
+        <text x="1135" y="106">Item</text>
+        <text x="1545" y="106">Book</text>
+      </g>
+      <g font-size="22" font-weight="500">
+        <text x="222" y="172">userID</text><text x="222" y="208">password</text><text x="222" y="244">emailAddress</text>
+        <text x="222" y="304">validateAccount()</text>
+        <text x="602" y="172">ID</text><text x="602" y="208">datePlaced</text><text x="602" y="244">status</text>
+        <text x="602" y="304">changeStatus()</text><text x="602" y="340">retrieveDetails()</text>
+        <text x="992" y="172">quantity</text><text x="992" y="208">cost</text>
+        <text x="992" y="304">updateQuantityAndCost()</text>
+        <text x="1432" y="172">title</text><text x="1432" y="208">price</text><text x="1432" y="244">publisher</text>
+        <text x="1432" y="304">retrieveDetails()</text>
+      </g>
+      <text x="200" y="440" font-size="28" font-weight="500">계정 하나에 주문은 0개 이상(0..*), 주문 하나에 주문 항목은 1개 이상(1..*)</text>
+    </svg>
+  </figure>
+  <p class="src">교수님 자료 5강 p.29 인터넷 서점 클래스 다이어그램에서 네 클래스만 골라 다시 그림</p>
+  <p class="pg">7 / 17</p>
+  <div class="notes">5강은 정적 모델링입니다. 시간이 흘러도 바뀌지 않는 구조를 클래스 다이어그램으로 그립니다. 클래스는 위에서부터 이름, 속성, 오퍼레이션 세 칸이고, 선은 클래스 사이의 관계입니다. 교수님 자료의 인터넷 서점에서 네 개만 골랐습니다. 계정 하나는 주문을 0개 이상 가지고, 주문 하나는 주문 항목을 1개 이상 담고, 주문 항목은 책 한 권을 가리킵니다. 선 끝의 이 숫자를 다중도라고 합니다.</div>
+</section>
+
+<!-- 8 6강 동적 모델링: 순서 다이어그램 -->
+<section class="slide" data-title="6강 동적 모델">
+  <h2 class="hl">동적 모델, 시간 따라 오가는 메시지</h2>
+  <p class="sub">6강 동적 모델링 · 순서 다이어그램: 누가 누구에게 무엇을, 위에서 아래로</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1680 600" role="img" aria-label="순서 다이어그램, 레스토랑: 직원이 손님에게 예약 여부를 묻고 손님은 안 했다고 답한다. 인원을 묻자 4명이라고 답한다. 직원이 좌석표를 확인하고 빈 좌석이 있다는 답을 받는다. 직원이 손님을 자리로 안내한다">
+      <defs>
+        <marker id="sqReq" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#46527F"/></marker>
+        <marker id="sqRep" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="#46527F" stroke-width="2"/></marker>
+      </defs>
+      <!-- 생명선 머리 -->
+      <rect x="260" y="0" width="240" height="72" fill="#F6E4EA"/>
+      <rect x="780" y="0" width="240" height="72" fill="#BBDCF3"/>
+      <rect x="1300" y="0" width="240" height="72" fill="#F4EAD2"/>
+      <g font-size="30" font-weight="800" text-anchor="middle">
+        <text x="380" y="47">손님</text>
+        <text x="900" y="47">직원</text>
+        <text x="1420" y="47">좌석표</text>
+      </g>
+      <g stroke="#46527F" stroke-width="3" stroke-dasharray="10 10">
+        <line x1="380" y1="72" x2="380" y2="560"/>
+        <line x1="900" y1="72" x2="900" y2="560"/>
+        <line x1="1420" y1="72" x2="1420" y2="560"/>
+      </g>
+      <!-- 시간 -->
+      <text x="90" y="96" font-size="28" font-weight="800" text-anchor="middle">시간</text>
+      <line x1="90" y1="112" x2="90" y2="556" stroke="#46527F" stroke-width="5" marker-end="url(#sqReq)"/>
+      <!-- 메시지: 실선 = 요청, 점선 = 응답 -->
+      <g stroke="#46527F" stroke-width="4" fill="none">
+        <line x1="900" y1="132" x2="380" y2="132" marker-end="url(#sqReq)"/>
+        <line x1="380" y1="198" x2="900" y2="198" stroke-dasharray="12 9" marker-end="url(#sqRep)"/>
+        <line x1="900" y1="264" x2="380" y2="264" marker-end="url(#sqReq)"/>
+        <line x1="380" y1="330" x2="900" y2="330" stroke-dasharray="12 9" marker-end="url(#sqRep)"/>
+        <line x1="900" y1="396" x2="1420" y2="396" marker-end="url(#sqReq)"/>
+        <line x1="1420" y1="462" x2="900" y2="462" stroke-dasharray="12 9" marker-end="url(#sqRep)"/>
+        <line x1="900" y1="528" x2="380" y2="528" marker-end="url(#sqReq)"/>
+      </g>
+      <g font-size="27" font-weight="700" text-anchor="middle">
+        <text x="640" y="118">예약하셨나요?</text>
+        <text x="640" y="184">예약 안 했습니다</text>
+        <text x="640" y="250">몇 분입니까?</text>
+        <text x="640" y="316">4명입니다</text>
+        <text x="1160" y="382">좌석표 확인</text>
+        <text x="1160" y="448">빈 좌석 있음</text>
+        <text x="640" y="514">이쪽으로 오세요</text>
+      </g>
+      <text x="1680" y="596" font-size="22" class="mu" text-anchor="end">실선은 요청, 점선은 응답</text>
+    </svg>
+  </figure>
+  <p class="src">교수님 자료 6강 p.3 레스토랑 사례(손님과 직원의 대화)를 p.7 · 8 순서 다이어그램 표기로 다시 그림</p>
+  <p class="pg">8 / 17</p>
+  <div class="notes">6강은 동적 모델링입니다. 정적 모델이 구조라면, 동적 모델은 시간에 따라 무엇이 오가는지입니다. 교수님 자료의 레스토랑 예를 순서 다이어그램으로 옮겼습니다. 위에서 아래로 시간이 흐릅니다. 직원이 손님에게 예약 여부와 인원을 묻고, 좌석표를 확인한 뒤 자리로 안내합니다. 실선은 요청, 점선은 응답입니다. 6강에서는 이 순서 다이어그램을 상태 다이어그램과 맞춰 보는 모델 검증도 배웠습니다.</div>
+</section>
+
+<!-- 9 7강 아키텍처: 3계층 -->
+<section class="slide" data-title="7강 아키텍처">
+  <h2 class="hl">아키텍처, 층으로 나눈다</h2>
+  <p class="sub">7강 아키텍처 · 3계층: 한 층을 바꿔도 다른 층은 그대로</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1680 600" role="img" aria-label="3계층 아키텍처: 인터페이스 층이 응용 로직 층을 부르고, 응용 로직 층이 저장 층을 부른다. 인터페이스 층은 자주 바뀌고, 응용 로직 층은 업무 규칙을 지키며, 저장 층은 데이터를 오래 남긴다">
+      <defs><marker id="lyDep" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="26" markerHeight="26" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L11,6 L1,11" fill="none" stroke="#46527F" stroke-width="2"/></marker></defs>
+      <!-- 패키지 셋 -->
+      <rect x="0" y="0" width="220" height="40" fill="#BBDCF3"/><rect x="0" y="36" width="980" height="124" fill="#BBDCF3"/>
+      <rect x="0" y="218" width="220" height="40" fill="#E6E1F6"/><rect x="0" y="254" width="980" height="124" fill="#E6E1F6"/>
+      <rect x="0" y="436" width="220" height="40" fill="#DCF0E7"/><rect x="0" y="472" width="980" height="124" fill="#DCF0E7"/>
+      <g font-size="38" font-weight="800">
+        <text x="40" y="96">인터페이스 층</text>
+        <text x="40" y="314">응용 로직 층</text>
+        <text x="40" y="532">저장 층</text>
+      </g>
+      <g font-size="24" class="mu">
+        <text x="40" y="136">Interface</text>
+        <text x="40" y="354">Application Logic</text>
+        <text x="40" y="572">Storage</text>
+      </g>
+      <g font-size="28" font-weight="700">
+        <text x="460" y="96">윈도우 · 웹 페이지</text>
+        <text x="460" y="314">처리 · 규칙 확인 · 알림</text>
+        <text x="460" y="532">저장 · 검색 · 질의</text>
+      </g>
+      <g font-size="24" class="mu">
+        <text x="460" y="136">사용자와 만나는 경계 객체</text>
+        <text x="460" y="354">제어 · 엔티티 객체</text>
+        <text x="460" y="572">데이터베이스에 지속 저장</text>
+      </g>
+      <!-- 의존: 위층만 아래층을 부른다 -->
+      <g stroke="#46527F" stroke-width="4" stroke-dasharray="10 8" fill="none">
+        <line x1="300" y1="168" x2="300" y2="248" marker-end="url(#lyDep)"/>
+        <line x1="300" y1="386" x2="300" y2="466" marker-end="url(#lyDep)"/>
+      </g>
+      <g font-size="24" font-weight="700">
+        <text x="322" y="216">부른다</text>
+        <text x="322" y="434">부른다</text>
+      </g>
+      <!-- 왜 나누나 -->
+      <g font-size="46" font-weight="700" class="gm">
+        <text x="1060" y="114">자주 바뀐다</text>
+        <text x="1060" y="332">규칙을 지킨다</text>
+        <text x="1060" y="550">오래 남는다</text>
+      </g>
+    </svg>
+  </figure>
+  <p class="src">교수님 자료 7강 p.29 「3 계층」 · p.26 MVC 「분리하는 이유: 화면이 모델보다 자주 바뀐다」</p>
+  <p class="pg">9 / 17</p>
+  <div class="notes">7강은 아키텍처입니다. 분석에서 찾은 클래스들을 묶어 큰 구조를 잡습니다. 대표적인 3계층은 사용자와 만나는 인터페이스 층, 처리와 규칙을 맡는 응용 로직 층, 데이터를 남기는 저장 층으로 나누고, 위층만 아래층을 부릅니다. 화면은 자주 바뀌고 데이터는 오래 가니까, 이렇게 나눠 두면 화면을 바꿔도 아래층은 그대로 둘 수 있습니다.</div>
+</section>
+
+<!-- 10 8강 데이터 설계: ERD -->
+<section class="slide" data-title="8강 데이터 설계">
+  <h2 class="hl">데이터 설계, 다대다는 표로 푼다</h2>
+  <p class="sub">8강 데이터 설계 · ERD에서 M:N 관계는 가운데 표를 두어 1:N 둘로 바꾼다</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1680 476" role="img" aria-label="ERD 전과 후: 전에는 회원(MEMBER)과 비디오(VIDEO)가 서로 여러 개인 다대다였다. 후에는 가운데 대여(RENTAL) 표를 두어, 회원 1명이 대여 여러 건을 시작하고 비디오 1개가 대여 여러 건에 골라지는 일대다 둘이 되었다. 대여 표의 칸은 회원 번호, 비디오 아이디, 빌린 날, 돌려준 날이다">
+      <g font-size="30" font-weight="800">
+        <text x="0" y="66">전</text>
+        <text x="0" y="236">후</text>
+      </g>
+      <!-- 전: 회원과 비디오가 바로 M:N -->
+      <line x1="375" y1="55" x2="1395" y2="55" stroke="#B4476A" stroke-width="5" stroke-dasharray="14 10"/>
+      <rect x="90" y="0" width="285" height="110" fill="#BBDCF3"/>
+      <rect x="1395" y="0" width="285" height="110" fill="#BBDCF3"/>
+      <g text-anchor="middle">
+        <text x="232" y="52" font-size="32" font-weight="800">MEMBER</text>
+        <text x="232" y="88" font-size="24" class="mu">회원</text>
+        <text x="1537" y="52" font-size="32" font-weight="800">VIDEO</text>
+        <text x="1537" y="88" font-size="24" class="mu">비디오</text>
+      </g>
+      <g font-size="28" font-weight="800">
+        <text x="393" y="40">M</text>
+        <text x="1377" y="40" text-anchor="end">N</text>
+      </g>
+      <text x="885" y="98" font-size="24" class="mu" text-anchor="middle">회원도 비디오도 서로 여러 개, 표 하나로 못 담는다</text>
+      <!-- 후: RENTAL을 가운데 두고 1:N 둘 -->
+      <g stroke="#46527F" stroke-width="5">
+        <line x1="375" y1="225" x2="445" y2="225"/>
+        <line x1="685" y1="225" x2="755" y2="225"/>
+        <line x1="1015" y1="225" x2="1085" y2="225"/>
+        <line x1="1325" y1="225" x2="1395" y2="225"/>
+      </g>
+      <rect x="90" y="170" width="285" height="110" fill="#BBDCF3"/>
+      <rect x="755" y="170" width="260" height="110" fill="#F6E4EA"/>
+      <rect x="1395" y="170" width="285" height="110" fill="#BBDCF3"/>
+      <polygon points="445,225 565,163 685,225 565,287" fill="#E2E8F2"/>
+      <polygon points="1085,225 1205,163 1325,225 1205,287" fill="#E2E8F2"/>
+      <g text-anchor="middle">
+        <text x="232" y="222" font-size="32" font-weight="800">MEMBER</text>
+        <text x="232" y="258" font-size="24" class="mu">회원</text>
+        <text x="885" y="222" font-size="32" font-weight="800">RENTAL</text>
+        <text x="885" y="258" font-size="24" class="mu">대여</text>
+        <text x="1537" y="222" font-size="32" font-weight="800">VIDEO</text>
+        <text x="1537" y="258" font-size="24" class="mu">비디오</text>
+        <text x="565" y="222" font-size="21" font-weight="800">INITIATES</text>
+        <text x="565" y="250" font-size="20" class="mu">시작한다</text>
+        <text x="1205" y="222" font-size="21" font-weight="800">SELECTED FOR</text>
+        <text x="1205" y="250" font-size="20" class="mu">골라진다</text>
+      </g>
+      <g font-size="28" font-weight="800">
+        <text x="389" y="210">1</text>
+        <text x="741" y="210" text-anchor="end">M</text>
+        <text x="1029" y="210">M</text>
+        <text x="1381" y="210" text-anchor="end">1</text>
+      </g>
+      <!-- RENTAL 표의 칸 -->
+      <text x="345" y="336" font-size="24" font-weight="800">RENTAL 표의 칸</text>
+      <rect x="345" y="350" width="300" height="74" fill="#BBDCF3"/>
+      <rect x="649" y="350" width="236" height="74" fill="#BBDCF3"/>
+      <rect x="889" y="350" width="256" height="74" fill="#E2E8F2"/>
+      <rect x="1149" y="350" width="276" height="74" fill="#E2E8F2"/>
+      <g font-size="22" font-weight="800" text-anchor="middle">
+        <text x="495" y="395">MEMBER-NUMBER</text>
+        <text x="767" y="395">VIDEO-ID</text>
+        <text x="1017" y="395">DATE-RENTED</text>
+        <text x="1287" y="395">DATE-RETURNED</text>
+      </g>
+      <g font-size="22" class="mu" text-anchor="middle">
+        <text x="495" y="460">회원 키</text>
+        <text x="767" y="460">비디오 키</text>
+        <text x="1017" y="460">빌린 날</text>
+        <text x="1287" y="460">돌려준 날</text>
+      </g>
+    </svg>
+  </figure>
+  <p class="src">교수님 자료 8강 p.22 · 23 「데이터베이스 설계 단계」 비디오 대여: M:N의 관계를 1:N으로 바꿈</p>
+  <p class="pg">10 / 17</p>
+  <div class="notes">8강은 데이터 설계입니다. ERD로 엔티티와 관계를 그리고, 정규화로 중복을 없앱니다. 교수님 자료의 비디오 대여 예에서, 회원은 비디오를 여러 개 빌리고 비디오도 여러 회원이 빌리니 다대다입니다. 다대다는 표 하나로 담을 수 없어서, 가운데 대여 표를 두고 회원 번호와 비디오 아이디를 함께 넣어 일대다 둘로 바꿉니다.</div>
+</section>
+
+<!-- 11 9강 UI 설계: 가시성 · 피드백 -->
+<section class="slide" data-title="9강 UI 설계">
+  <h2 class="hl">UI 설계, 보이고 알려 준다</h2>
+  <p class="sub">9강 UI 설계 · 좋은 UI가 되려면 가시성과 피드백</p>
+  <figure class="fig">
+    <svg viewBox="0 0 1680 520" role="img" aria-label="글 편집기의 굵게 단추가 눌려 있어 지금 굵게가 켜진 상태가 보인다(가시성). 마우스를 올리면 굵게 Ctrl+B 말풍선이 뜨고, 누르면 글자가 바로 굵어진다(피드백)">
+      <!-- 편집기 도구 막대 -->
+      <rect x="0" y="0" width="860" height="136" fill="#E2E8F2"/>
+      <rect x="24" y="20" width="96" height="96" fill="#5BB8E8"/>
+      <rect x="136" y="20" width="96" height="96" fill="#EEF2F8"/>
+      <rect x="248" y="20" width="96" height="96" fill="#EEF2F8"/>
+      <rect x="360" y="20" width="96" height="96" fill="#EEF2F8"/>
+      <rect x="472" y="20" width="96" height="96" fill="#EEF2F8"/>
+      <g font-size="50" text-anchor="middle">
+        <text x="72" y="86" font-weight="900">B</text>
+        <text x="184" y="86" font-weight="500" font-style="italic">I</text>
+        <text x="296" y="84" font-weight="500">U</text>
+        <text x="408" y="86" font-weight="500">S</text>
+      </g>
+      <g stroke="#1A2766" stroke-width="4" stroke-linecap="round">
+        <line x1="276" y1="96" x2="316" y2="96"/>
+        <line x1="384" y1="68" x2="432" y2="68"/>
+        <line x1="496" y1="48" x2="544" y2="48"/><line x1="496" y1="68" x2="532" y2="68"/><line x1="496" y1="88" x2="544" y2="88"/>
+      </g>
+      <!-- 말풍선 -->
+      <polygon points="52,170 72,150 92,170" fill="#F4EAD2"/>
+      <rect x="24" y="168" width="250" height="66" fill="#F4EAD2"/>
+      <text x="149" y="211" font-size="26" font-weight="800" text-anchor="middle">굵게  Ctrl+B</text>
+      <!-- 마우스 -->
+      <polygon points="100,84 100,130 111,120 120,140 129,136 120,116 136,116" fill="#1A2766" stroke="#EEF2F8" stroke-width="3" stroke-linejoin="round"/>
+      <!-- 문서 -->
+      <rect x="0" y="264" width="860" height="256" fill="#F5F7FB"/>
+      <text x="48" y="366" font-size="46" font-weight="900">AI가 짜 주는 시대,</text>
+      <text x="48" y="446" font-size="46" font-weight="400" class="mu">무엇을 믿고 만들까</text>
+      <!-- 두 조건 -->
+      <rect x="940" y="0" width="740" height="242" fill="#DCEBF8"/>
+      <text x="984" y="82" font-size="46" font-weight="700" class="gm">가시성</text>
+      <text x="984" y="144" font-size="30" font-weight="700">지금 어떤 상태인지 보인다</text>
+      <text x="984" y="196" font-size="26" class="mu">B가 눌려 있다 = 굵게가 켜져 있다</text>
+      <rect x="940" y="278" width="740" height="242" fill="#F4EAD2"/>
+      <text x="984" y="360" font-size="46" font-weight="700" class="gm">피드백</text>
+      <text x="984" y="422" font-size="30" font-weight="700">하기 전 · 중 · 후를 알려 준다</text>
+      <text x="984" y="474" font-size="26" class="mu">올리면 말풍선, 누르면 바로 굵게</text>
+    </svg>
+  </figure>
+  <p class="src">교수님 자료 9강 p.21 「좋은 UI가 되려면」 가시성(visibility) · 피드백(feedback), 워드 굵게 단추 예</p>
+  <p class="pg">11 / 17</p>
+  <div class="notes">마지막 9강은 UI 설계입니다. 좋은 UI가 되려면 가시성과 피드백이 있어야 합니다. 워드의 굵게 단추처럼, 눌려 있는 모양만 봐도 지금 굵게가 켜져 있다는 걸 아는 게 가시성이고, 마우스를 올리면 말풍선이 뜨고 누르면 글자가 바로 굵어지는 게 피드백입니다. 여기까지가 3강부터 9강까지 제가 공부한 내용입니다.</div>
+</section>
+
+<!-- 12 요구사항은 바뀐다 → 얽힌다 -->
 <section class="slide f-rose" data-title="요구사항은 바뀐다">
   <h2 class="hl">요구사항은 계속 바뀐다</h2>
   <p class="sub">바뀔 때마다 사람이 이 그림들을 하나씩 다시 그려야 해서, 작업이 어려워진다</p>
   <figure class="fig" style="margin-top:34px">
-    <svg viewBox="0 0 1680 640" role="img" aria-label="요구사항 하나가 바뀌면 4강 유스케이스, 5강 클래스, 6강 상태, 7강 계층, 8강 ERD 그림을 모두 다시 그려야 한다">
-      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B4476A"/></marker></defs>
+    <svg viewBox="0 0 1680 640" role="img" aria-label="요구사항 하나(주문 취소 규칙)가 바뀌면 4강 유스케이스의 주문 취소, 5강 클래스의 status와 changeStatus(), 6강 상태의 취소됨, 7강 계층의 취소 단추 · 취소 규칙 · 주문 상태, 8강 ERD의 ORDER까지 다섯 그림을 모두 다시 그려야 한다">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B4476A"/></marker>
+        <marker id="stA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#46527F"/></marker>
+      </defs>
       <!-- 화살표 -->
       <g stroke="#B4476A" stroke-width="7" stroke-linecap="round" fill="none" marker-end="url(#ah)">
         <line x1="722" y1="262" x2="474" y2="186"/>
@@ -229,30 +631,127 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
       <circle cx="840" cy="306" r="122" fill="#E7A2B5"/>
       <text x="840" y="296" font-size="36" font-weight="800" text-anchor="middle">요구사항</text>
       <text x="840" y="342" font-size="36" font-weight="800" text-anchor="middle">변경</text>
-      <!-- 다섯 그림 -->
+      <!-- 다섯 그림: 교수님 자료의 주문 예를 다시 그림. 분홍 = 취소 규칙이 바뀌면 고칠 곳 -->
       <rect x="0" y="0" width="460" height="300" fill="#FBF0F3"/>
-      <image class="pic" href="img/p4-usecase.png" x="14" y="12" width="432" height="236" preserveAspectRatio="xMidYMid meet"/>
-      <text x="22" y="284" font-size="26" font-weight="700">4강 유스케이스</text>
       <rect x="1220" y="0" width="460" height="300" fill="#FBF0F3"/>
-      <image class="pic" href="img/p5-class.png" x="1234" y="12" width="432" height="236" preserveAspectRatio="xMidYMid meet"/>
-      <text x="1242" y="284" font-size="26" font-weight="700">5강 클래스</text>
       <rect x="0" y="380" width="520" height="250" fill="#FBF0F3"/>
-      <image class="pic" href="img/p6-state.png" x="14" y="392" width="492" height="186" preserveAspectRatio="xMidYMid meet"/>
-      <text x="22" y="614" font-size="26" font-weight="700">6강 상태</text>
       <rect x="580" y="476" width="520" height="164" fill="#FBF0F3"/>
-      <image class="pic" href="img/p7-layers.png" x="594" y="486" width="492" height="112" preserveAspectRatio="xMidYMid meet"/>
-      <text x="602" y="628" font-size="26" font-weight="700">7강 계층</text>
       <rect x="1160" y="380" width="520" height="250" fill="#FBF0F3"/>
-      <image class="pic" href="img/p8-erd.png" x="1174" y="392" width="492" height="186" preserveAspectRatio="xMidYMid meet"/>
-      <text x="1182" y="614" font-size="26" font-weight="700">8강 ERD</text>
+      <g font-size="26" font-weight="700">
+        <text x="22" y="284">4강 유스케이스</text>
+        <text x="1242" y="284">5강 클래스</text>
+        <text x="22" y="614">6강 상태</text>
+        <text x="602" y="628">7강 계층</text>
+        <text x="1182" y="614">8강 ERD</text>
+      </g>
+      <!-- 4강 유스케이스: 온라인 고객 · 주문 취소 · 타이머 -->
+      <g stroke="#46527F" stroke-width="3">
+        <line x1="98" y1="90" x2="148" y2="68"/>
+        <line x1="98" y1="106" x2="148" y2="144"/>
+        <line x1="314" y1="66" x2="362" y2="90"/>
+      </g>
+      <g stroke="#1A2766" stroke-width="4" stroke-linecap="round" fill="none">
+        <circle cx="70" cy="62" r="15" fill="#FBF0F3"/><line x1="70" y1="77" x2="70" y2="128"/><line x1="46" y1="98" x2="94" y2="98"/><line x1="70" y1="128" x2="50" y2="166"/><line x1="70" y1="128" x2="90" y2="166"/>
+        <circle cx="390" cy="62" r="15" fill="#FBF0F3"/><line x1="390" y1="77" x2="390" y2="128"/><line x1="366" y1="98" x2="414" y2="98"/><line x1="390" y1="128" x2="370" y2="166"/><line x1="390" y1="128" x2="410" y2="166"/>
+      </g>
+      <ellipse cx="231" cy="64" rx="84" ry="28" fill="#E7A2B5"/>
+      <ellipse cx="231" cy="150" rx="84" ry="28" fill="#CFE5F6"/>
+      <g font-size="19" font-weight="800" text-anchor="middle">
+        <text x="231" y="71">주문 취소</text>
+        <text x="231" y="157">책 주문</text>
+        <text x="70" y="194" font-size="18">온라인 고객</text>
+        <text x="390" y="194" font-size="18">타이머</text>
+      </g>
+      <!-- 5강 클래스: Account · Order · Item -->
+      <g stroke="#46527F" stroke-width="3">
+        <line x1="1354" y1="93" x2="1390" y2="93"/>
+        <line x1="1530" y1="93" x2="1566" y2="93"/>
+      </g>
+      <rect x="1234" y="24" width="120" height="34" fill="#E8D6A8"/><rect x="1234" y="58" width="120" height="70" fill="#F8F2E4"/><rect x="1234" y="128" width="120" height="48" fill="#F0E4C8"/>
+      <rect x="1390" y="24" width="140" height="34" fill="#E8D6A8"/><rect x="1390" y="58" width="140" height="70" fill="#F8F2E4"/><rect x="1390" y="128" width="140" height="48" fill="#F0E4C8"/>
+      <rect x="1566" y="24" width="100" height="34" fill="#E8D6A8"/><rect x="1566" y="58" width="100" height="70" fill="#F8F2E4"/><rect x="1566" y="128" width="100" height="48" fill="#F0E4C8"/>
+      <rect x="1390" y="95" width="140" height="26" fill="#E7A2B5"/>
+      <rect x="1390" y="136" width="140" height="32" fill="#E7A2B5"/>
+      <g font-size="17" font-weight="800" text-anchor="middle">
+        <text x="1294" y="47">Account</text><text x="1460" y="47">Order</text><text x="1616" y="47">Item</text>
+      </g>
+      <g font-size="16" font-weight="500">
+        <text x="1244" y="84">userID</text><text x="1244" y="112">password</text><text x="1244" y="158">setEmail()</text>
+        <text x="1400" y="84">datePlaced</text><text x="1400" y="113" font-weight="800">status</text><text x="1400" y="158" font-weight="800">changeStatus()</text>
+        <text x="1576" y="84">quantity</text><text x="1576" y="112">cost</text><text x="1576" y="158">getItem()</text>
+      </g>
+      <g font-size="15" font-weight="800">
+        <text x="1358" y="85">1</text><text x="1386" y="85" text-anchor="end">*</text>
+        <text x="1534" y="85">1</text><text x="1562" y="85" text-anchor="end">*</text>
+      </g>
+      <!-- 6강 상태: 처리 중(주문됨 → 확정됨) → 배송됨 → 받음, 처리 중 → 취소됨 -->
+      <rect x="48" y="402" width="262" height="92" rx="14" fill="#EEF2F8"/>
+      <text x="60" y="421" font-size="15" class="mu">처리 중</text>
+      <g fill="#CFE5F6">
+        <rect x="62" y="428" width="88" height="40" rx="10"/>
+        <rect x="206" y="428" width="88" height="40" rx="10"/>
+        <rect x="340" y="428" width="88" height="40" rx="10"/>
+        <rect x="340" y="496" width="88" height="40" rx="10"/>
+      </g>
+      <rect x="120" y="520" width="96" height="40" rx="10" fill="#E7A2B5"/>
+      <circle cx="30" cy="448" r="8" fill="#1A2766"/>
+      <g stroke="#46527F" stroke-width="2.5" fill="none" marker-end="url(#stA)">
+        <line x1="38" y1="448" x2="60" y2="448"/>
+        <line x1="150" y1="448" x2="204" y2="448"/>
+        <line x1="310" y1="448" x2="338" y2="448"/>
+        <line x1="384" y1="468" x2="384" y2="494"/>
+        <line x1="428" y1="516" x2="456" y2="516"/>
+        <line x1="168" y1="494" x2="168" y2="518"/>
+        <line x1="216" y1="540" x2="248" y2="540"/>
+      </g>
+      <g fill="none" stroke="#1A2766" stroke-width="3"><circle cx="469" cy="516" r="11"/><circle cx="261" cy="540" r="11"/></g>
+      <g fill="#1A2766"><circle cx="469" cy="516" r="6"/><circle cx="261" cy="540" r="6"/></g>
+      <g font-size="16" font-weight="700" text-anchor="middle">
+        <text x="106" y="454">주문됨</text><text x="250" y="454">확정됨</text><text x="384" y="454">배송됨</text><text x="384" y="522">받음</text>
+        <text x="168" y="546" font-weight="800">취소됨</text>
+        <text x="177" y="440" font-size="14" font-weight="500">승인</text>
+      </g>
+      <!-- 7강 계층: HCI · 비즈니스 · 데이터 레이어 -->
+      <rect x="594" y="488" width="492" height="32" fill="#CFE5F6"/>
+      <rect x="594" y="526" width="492" height="32" fill="#E6E1F6"/>
+      <rect x="594" y="564" width="492" height="32" fill="#DCF0E7"/>
+      <g fill="#E7A2B5"><rect x="968" y="492" width="112" height="24"/><rect x="968" y="530" width="112" height="24"/><rect x="968" y="568" width="112" height="24"/></g>
+      <g font-size="17" font-weight="700">
+        <text x="606" y="510">HCI 레이어 · 화면</text>
+        <text x="606" y="548">비즈니스 레이어 · 업무 규칙</text>
+        <text x="606" y="586">데이터 레이어 · 저장</text>
+      </g>
+      <g font-size="15" font-weight="800" text-anchor="middle">
+        <text x="1024" y="509">취소 단추</text><text x="1024" y="547">취소 규칙</text><text x="1024" y="585">주문 상태</text>
+      </g>
+      <!-- 8강 ERD: CUSTOMER 1 — PLACES — M ORDER M — LISTS — N PRODUCT -->
+      <g stroke="#46527F" stroke-width="3">
+        <line x1="1320" y1="434" x2="1344" y2="434"/>
+        <line x1="1444" y1="434" x2="1470" y2="434"/>
+        <line x1="1540" y1="456" x2="1540" y2="478"/>
+        <line x1="1540" y1="526" x2="1540" y2="540"/>
+      </g>
+      <rect x="1180" y="412" width="140" height="44" fill="#CFE5F6"/>
+      <rect x="1470" y="412" width="140" height="44" fill="#E7A2B5"/>
+      <rect x="1470" y="540" width="140" height="38" fill="#CFE5F6"/>
+      <polygon points="1344,434 1394,410 1444,434 1394,458" fill="#EEF2F8"/>
+      <polygon points="1494,502 1540,478 1586,502 1540,526" fill="#EEF2F8"/>
+      <g font-size="17" font-weight="800" text-anchor="middle">
+        <text x="1250" y="440">CUSTOMER</text><text x="1540" y="440">ORDER</text><text x="1540" y="565">PRODUCT</text>
+        <text x="1394" y="439" font-size="14">PLACES</text><text x="1540" y="507" font-size="14">LISTS</text>
+      </g>
+      <g font-size="15" font-weight="800">
+        <text x="1325" y="425">1</text><text x="1466" y="425" text-anchor="end">M</text>
+        <text x="1548" y="473">M</text><text x="1548" y="537">N</text>
+      </g>
     </svg>
   </figure>
-  <p class="src">그림: 교수님 자료 4 · 5 · 6 · 7 · 8강, 모두 같은 "주문" 이야기</p>
-  <p class="pg">5 / 10</p>
-  <div class="notes">그런데 요구사항은 한 번 정해도 계속 바뀝니다. 교수님 자료의 그림을 모아 보면 유스케이스, 클래스, 상태, 계층, ERD가 모두 같은 "주문" 이야기입니다. 그래서 주문 취소 규칙 하나만 바뀌어도 이 다섯 그림을 전부 다시 그려야 하고, 그래서 작업이 어려워집니다. 그림들이 따로따로 그려져 있기 때문입니다.</div>
+  <p class="src">그림: 교수님 자료 4 · 5 · 6 · 7 · 8강의 같은 "주문" 예를 다시 그림. 분홍은 취소 규칙이 바뀌면 고칠 곳</p>
+  <p class="pg">12 / 17</p>
+  <div class="notes">그런데 요구사항은 한 번 정해도 계속 바뀝니다. 교수님 자료의 그림을 모아 보면 유스케이스, 클래스, 상태, 계층, ERD가 모두 같은 "주문" 이야기입니다. 그래서 주문 취소 규칙 하나만 바뀌어도, 분홍으로 칠한 곳처럼 이 다섯 그림을 전부 다시 그려야 하고, 그래서 작업이 어려워집니다. 그림들이 따로따로 그려져 있기 때문입니다.</div>
 </section>
 
-<!-- 6 ArchiMate -->
+<!-- 13 ArchiMate -->
 <section class="slide" data-title="ArchiMate">
   <h2 class="hl">이어 붙이면 큰 틀, ArchiMate</h2>
   <p class="sub">"책 주문" 한 줄이 네 층을 모두 지난다</p>
@@ -291,11 +790,11 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     </svg>
   </figure>
   <p class="src">ArchiMate: The Open Group 표준 표기법. 왜 · 누가 · 무엇으로 · 어디서를 층으로 잇는다 (층 이름은 쉬운 말로 줄임)</p>
-  <p class="pg">6 / 10</p>
+  <p class="pg">13 / 17</p>
   <div class="notes">이 그림들을 이어 붙이면 큰 틀이 됩니다. 그 표준이 ArchiMate입니다. 동기 층에 왜, 업무 층에 누가 무엇을, 애플리케이션 층에 어떤 부품과 데이터로, 기술 층에 어디서 돌아가는지를 둡니다. 분홍 줄처럼 "책 주문" 하나가 네 층을 모두 지나가니, 한 장에 이어 두면 무엇이 같이 바뀌는지 바로 보입니다.</div>
 </section>
 
-<!-- 7 archi-board -->
+<!-- 14 archi-board -->
 <section class="slide f-sky" data-title="archi-board">
   <h2 class="hl">archi-board, 이것들을 바탕으로 만들었다</h2>
   <p class="sub">"아키텍처 보드 만들어줘" 한마디면, 코드를 읽어 보드 한 장</p>
@@ -310,11 +809,11 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     <div class="shot"><img src="img/board.png" alt="archi-board가 자기 저장소를 그린 보드: 목표, 사용자, 사용자 인터페이스, 기능, 인프라 층"></div>
   </div>
   <p class="src">github.com/gamercross/archi-board · Claude Code 스킬 · 오른쪽은 archi-board가 자기 저장소를 그린 보드</p>
-  <p class="pg">7 / 10</p>
+  <p class="pg">14 / 17</p>
   <div class="notes">그래서 만든 것이 archi-board입니다. 맨 아래 시스템 설계 7단계, 그 위에 수업의 UML 모델, 설계 문서인 PRD와 TDD, 그리고 층으로 잇는 ArchiMate. 이것들을 바탕으로 만든 Claude Code 스킬입니다. 프로젝트 폴더에서 "아키텍처 보드 만들어줘"라고 하면 AI가 코드를 읽고 보드 한 장을 그립니다. 오른쪽은 archi-board가 자기 자신을 그린 보드입니다.</div>
 </section>
 
-<!-- 8 바뀌어도 엔진이 다시 그린다 -->
+<!-- 15 바뀌어도 엔진이 다시 그린다 -->
 <section class="slide" data-title="엔진이 다시 그린다">
   <h2 class="hl">바뀌어도, 엔진이 다시 그린다</h2>
   <p class="sub">사람이 다섯 번 고칠 일을, 데이터 한 파일과 엔진이 한 번에</p>
@@ -387,11 +886,11 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     </svg>
   </figure>
   <p class="src">archi-board README "코드가 바뀌면 보드 업데이트해줘: 바뀐 칸만 다시 읽어 고친다" · ab drift: 보드를 쓴 뒤 바뀐 코드를 찾는다</p>
-  <p class="pg">8 / 10</p>
+  <p class="pg">15 / 17</p>
   <div class="notes">앞에서 요구사항이 바뀌면 사람이 그림 다섯 장을 하나씩 고쳐야 한다고 했습니다. 하나라도 빠뜨리면 그림끼리 어긋나죠. archi-board에서는 다릅니다. "보드 업데이트해줘" 한마디면 AI가 바뀐 곳만 다시 읽어 board-data.js 한 파일의 그 칸만 고치고, 엔진이 유저 스토리, 객체 지도, 순서도, ArchiMate 창, 데이터 지도를 한 번에 다시 그립니다. 모든 창이 같은 한 파일에서 나오니 서로 어긋날 수가 없습니다. 바뀐 곳은 drift 도구가 먼저 찾아 줍니다. 사람은 다섯 번 고칠 일을 한 번 확인만 하면 됩니다.</div>
 </section>
 
-<!-- 9 7단계 → 보드의 창 -->
+<!-- 16 7단계 → 보드의 창 -->
 <section class="slide f-sky" data-title="7단계가 보드의 창으로">
   <h2 class="hl">7단계가 보드의 창이 된다</h2>
   <p class="sub">상자마다 근거와 코드 위치가 붙어, 바로 확인할 수 있다</p>
@@ -417,11 +916,11 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     </div>
   </div>
   <p class="src">창 이름은 archi-board README 기준. 창끼리 이어져 있어 한 곳을 누르면 관련된 곳이 같이 열린다</p>
-  <p class="pg">9 / 10</p>
+  <p class="pg">16 / 17</p>
   <div class="notes">7단계는 보드에서 각자 창이 됩니다. 요구사항은 동기 층과 유저 스토리, 규모는 판단 차트, 큰 구조는 ArchiMate 창, 데이터는 데이터 지도, 인터페이스는 객체 지도와 순서도, 확장과 성능은 위험 열지도, 신뢰성은 점검 스크립트와 drift입니다. 상자마다 근거와 코드 위치가 붙어 있어서, AI가 그린 것도 바로 확인할 수 있습니다.</div>
 </section>
 
-<!-- 10 정리 -->
+<!-- 17 정리 -->
 <section class="slide" data-title="정리">
   <h2 class="hl xl">확인할 수 있어야<br>믿을 수 있다</h2>
   <p class="sub">7단계로 설계하고, 바뀌면 엔진이 다시 그린다</p>
@@ -431,7 +930,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
   </div>
   <p class="thanks">감사합니다</p>
   <p class="src">이재엽 · AITool기반소프트웨어공학 · 2026. 11. 18</p>
-  <p class="pg">10 / 10</p>
+  <p class="pg">17 / 17</p>
   <div class="notes">정리하겠습니다. AI를 쓰는 만큼 확인할 수 있어야 믿을 수 있습니다. 빅테크의 시스템 설계 7단계와 수업 내용으로 설계하고, 요구사항이 바뀌면 사람이 하나씩 고치는 대신 archi-board의 엔진이 보드를 다시 그려 확인하게 해 줍니다. 이제 실제 보드를 잠깐 보여 드리겠습니다. (보드 열기 → 처음 보는 사람 / 만드는 사람 → 흐름 따라가기) 감사합니다.</div>
 </section>
 
