@@ -45,7 +45,8 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
 .st b{font-family:var(--font-display);font-weight:700;font-size:70px;line-height:1}
 .st span{font-size:29px;font-weight:700;line-height:1.28;margin-top:14px}
 .c1{background:#D3E8F7}.c2{background:#C3E0F5}.c3{background:#B2D8F2}.c4{background:#A1CFEF}.c5{background:#8FC6EC}.c6{background:#7DBEEA}.c7{background:#6AB5E7}
-.big .k1{height:200px}.big .k2{height:255px}.big .k3{height:310px}.big .k4{height:365px}.big .k5{height:420px}.big .k6{height:475px}.big .k7{height:530px}
+.big .k1{height:180px}.big .k2{height:230px}.big .k3{height:280px}.big .k4{height:330px}.big .k5{height:380px}.big .k6{height:430px}.big .k7{height:480px}
+.gdoc{margin:24px 0 0;font-size:27px;font-weight:500;color:var(--ink)}
 .stairs.big{margin-top:52px}
 
 /* 4 수업이 단계 안에 */
@@ -160,22 +161,23 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
   <div class="notes">Stack Overflow 개발자 설문입니다. AI 도구를 쓰는 사람은 76%에서 84%로 늘었는데, AI 답의 정확도를 믿는 사람은 43%에서 33%로 줄었습니다. 올해 설문에서 가장 많은 48%가 고른 답은 "쉽게 확인할 수 있을 때 믿는다"였습니다. 결국 확인할 수 있어야 믿을 수 있습니다.</div>
 </section>
 
-<!-- 3 구글 시스템 설계 7단계 -->
+<!-- 3 빅테크 시스템 설계 7단계 -->
 <section class="slide f-sky" data-title="시스템 설계 7단계">
-  <h2 class="hl">구글 시스템 설계 7단계</h2>
-  <p class="sub">구글 같은 빅테크가 설계 면접에서 묻는 일곱 걸음</p>
+  <h2 class="hl">빅테크 시스템 설계 7단계</h2>
+  <p class="sub">설계 면접에서 쓰는 일곱 단계, 구글 디자인 문서도 같은 줄기를 본다</p>
   <div class="stairs big">
     <div class="st c1 k1"><b>1</b><span>요구사항 정리</span></div>
     <div class="st c2 k2"><b>2</b><span>규모 추정</span></div>
-    <div class="st c3 k3"><b>3</b><span>API 정의</span></div>
-    <div class="st c4 k4"><b>4</b><span>데이터 모델</span></div>
-    <div class="st c5 k5"><b>5</b><span>큰 구조 설계</span></div>
-    <div class="st c6 k6"><b>6</b><span>상세 설계</span></div>
-    <div class="st c7 k7"><b>7</b><span>병목 점검</span></div>
+    <div class="st c3 k3"><b>3</b><span>큰 구조 설계</span></div>
+    <div class="st c4 k4"><b>4</b><span>데이터베이스 설계</span></div>
+    <div class="st c5 k5"><b>5</b><span>인터페이스 설계</span></div>
+    <div class="st c6 k6"><b>6</b><span>확장 · 성능</span></div>
+    <div class="st c7 k7"><b>7</b><span>신뢰성 · 회복</span></div>
   </div>
-  <p class="src">시스템 설계 면접에서 널리 쓰는 7단계 틀: Grokking the System Design Interview · ByteByteGo</p>
+  <p class="gdoc">구글 디자인 문서도 같은 것을 본다: 범위 · 목표 → 시스템 그림 · API · 데이터 저장 → 공통 관심사(보안 · 관측)</p>
+  <p class="src">7단계: ByteByteGo 「A 7-step process to excel in system design interviews」 · 구글: Malte Ubl 「Design Docs at Google」</p>
   <p class="pg">3 / 10</p>
-  <div class="notes">그래서 무엇을 배워야 할까요. 큰 틀은 구글 같은 빅테크가 시스템을 설계할 때 밟는 일곱 단계입니다. 요구사항을 정리하고, 규모를 추정하고, API와 데이터 모델을 정하고, 큰 구조를 그린 뒤 상세 설계를 하고, 마지막에 병목을 점검합니다.</div>
+  <div class="notes">빅테크가 시스템을 설계할 때 가장 크게 보는 단계입니다. 설계 면접에서 쓰는 7단계는 요구사항 정리, 규모 추정, 큰 구조 설계, 데이터베이스 설계, 인터페이스 설계, 확장과 성능, 신뢰성과 회복입니다. 구글이 코드를 짜기 전에 쓰는 디자인 문서도 범위와 목표, 시스템 그림과 API와 데이터 저장, 그리고 보안 같은 공통 관심사를 같은 줄기로 봅니다.</div>
 </section>
 
 <!-- 4 그 단계 안에 우리 수업 + PRD · TDD -->
@@ -188,24 +190,24 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
   <div class="stairs small">
     <div class="st c1 k1"><b>1</b><span>요구사항 정리</span></div>
     <div class="st c2 k2"><b>2</b><span>규모 추정</span></div>
-    <div class="st c3 k3"><b>3</b><span>API 정의</span></div>
-    <div class="st c4 k4"><b>4</b><span>데이터 모델</span></div>
-    <div class="st c5 k5"><b>5</b><span>큰 구조 설계</span></div>
-    <div class="st c6 k6"><b>6</b><span>상세 설계</span></div>
-    <div class="st c7 k7"><b>7</b><span>병목 점검</span></div>
+    <div class="st c3 k3"><b>3</b><span>큰 구조 설계</span></div>
+    <div class="st c4 k4"><b>4</b><span>데이터베이스 설계</span></div>
+    <div class="st c5 k5"><b>5</b><span>인터페이스 설계</span></div>
+    <div class="st c6 k6"><b>6</b><span>확장 · 성능</span></div>
+    <div class="st c7 k7"><b>7</b><span>신뢰성 · 회복</span></div>
   </div>
   <div class="g7 lects">
     <p>3강 요구분석<br>4강 유스케이스</p>
     <p>3강 비기능 요구</p>
-    <p>5강 클래스 · 오퍼레이션</p>
-    <p>8강 데이터 설계</p>
     <p>7강 아키텍처</p>
-    <p>6강 동적 모델<br>9강 UI 설계</p>
-    <p>6강 모델 검증<br>7강 설계 목표</p>
+    <p>8강 데이터 설계</p>
+    <p>5강 클래스<br>6강 순서<br>9강 UI 설계</p>
+    <p>7강 성능 목표</p>
+    <p>6강 모델 검증<br>7강 신뢰도 목표</p>
   </div>
   <p class="src">교수님 자료 「UML로 배우는 시스템 분석 설계」 3~9강</p>
   <p class="pg">4 / 10</p>
-  <div class="notes">우리 수업에서 배운 내용은 이 7단계 안에 들어갑니다. 3강 요구분석과 4강 유스케이스는 1단계, 비기능 요구는 규모 추정, 5강 클래스는 API, 8강은 데이터 모델, 7강은 큰 구조, 6강 동적 모델과 9강 UI는 상세 설계, 모델 검증은 마지막 점검입니다. 그리고 이 단계들을 밟을 때 쓰는 문서가 PRD와 TDD입니다. PRD로 무엇을 만들지 정하고, TDD로 어떻게 만들고 확인할지 정합니다.</div>
+  <div class="notes">우리 수업에서 배운 내용은 이 7단계 안에 들어갑니다. 3강 요구분석과 4강 유스케이스는 요구사항 정리, 비기능 요구는 규모 추정, 7강 아키텍처는 큰 구조, 8강은 데이터베이스, 5강 클래스와 6강 순서 다이어그램과 9강 UI는 인터페이스, 7강의 성능 목표는 확장과 성능, 모델 검증과 신뢰도 목표는 신뢰성입니다. 그리고 이 단계들을 밟을 때 쓰는 문서가 PRD와 TDD입니다. PRD로 무엇을 만들지 정하고, TDD로 어떻게 만들고 확인할지 정합니다.</div>
 </section>
 
 <!-- 5 요구사항은 바뀐다 → 얽힌다 -->
@@ -303,7 +305,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
       <div class="s-am">ArchiMate · 층으로 잇기</div>
       <div class="s-pt">PRD · TDD · 설계 문서</div>
       <div class="s-uml">수업의 UML 모델 · 3~9강</div>
-      <div class="s-7">구글 시스템 설계 7단계</div>
+      <div class="s-7">빅테크 시스템 설계 7단계</div>
     </div>
     <div class="shot"><img src="img/board.png" alt="archi-board가 자기 저장소를 그린 보드: 목표, 사용자, 사용자 인터페이스, 기능, 인프라 층"></div>
   </div>
@@ -347,7 +349,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
         <rect x="860" y="180" width="300" height="44" fill="#FBF0F3" fill-opacity=".45"/><text x="880" y="211" fill-opacity=".5">계층</text><text x="1144" y="211" font-size="22" font-weight="800" fill="#B4476A" text-anchor="end">빠뜨림</text>
         <rect x="860" y="232" width="300" height="44" fill="#FBF0F3"/><text x="880" y="263">ERD</text>
       </g>
-      <text x="1220" y="150" font-size="52" font-family="GM">다섯 번, 손으로</text>
+      <text x="1220" y="150" font-size="52" font-weight="700" font-family="GM">다섯 번, 손으로</text>
       <text x="1220" y="198" font-size="26" font-weight="500" fill="#46527F">빠뜨리면 그림끼리</text>
       <text x="1220" y="234" font-size="26" font-weight="500" fill="#46527F">어긋난다</text>
 
@@ -364,7 +366,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
       <text x="471" y="552" font-size="23" font-weight="500" text-anchor="middle" fill="#46527F">바뀐 칸만 고침</text>
       <line x1="622" y1="501" x2="668" y2="501" stroke="#46527F" stroke-width="5" marker-end="url(#aN)"/>
       <rect x="676" y="446" width="130" height="110" fill="#5BB8E8"/>
-      <text x="741" y="513" font-size="34" font-family="GM" text-anchor="middle">엔진</text>
+      <text x="741" y="513" font-size="34" font-weight="700" font-family="GM" text-anchor="middle">엔진</text>
       <g stroke="#2a78d6" stroke-width="4" fill="none" marker-end="url(#aB)">
         <line x1="812" y1="501" x2="850" y2="376"/>
         <line x1="812" y1="501" x2="850" y2="428"/>
@@ -373,13 +375,13 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
         <line x1="812" y1="501" x2="850" y2="584"/>
       </g>
       <g font-size="25" font-weight="700">
-        <rect x="860" y="354" width="300" height="44" fill="#EEF5FC"/><text x="880" y="385">유저 스토리</text><text x="1140" y="385" text-anchor="end" fill="#2a78d6">✓</text>
-        <rect x="860" y="406" width="300" height="44" fill="#EEF5FC"/><text x="880" y="437">객체 지도</text><text x="1140" y="437" text-anchor="end" fill="#2a78d6">✓</text>
-        <rect x="860" y="458" width="300" height="44" fill="#EEF5FC"/><text x="880" y="489">순서도</text><text x="1140" y="489" text-anchor="end" fill="#2a78d6">✓</text>
-        <rect x="860" y="510" width="300" height="44" fill="#EEF5FC"/><text x="880" y="541">ArchiMate 창</text><text x="1140" y="541" text-anchor="end" fill="#2a78d6">✓</text>
-        <rect x="860" y="562" width="300" height="44" fill="#EEF5FC"/><text x="880" y="593">데이터 지도</text><text x="1140" y="593" text-anchor="end" fill="#2a78d6">✓</text>
+        <rect x="860" y="354" width="300" height="44" fill="#EEF5FC"/><text x="880" y="385">유저 스토리</text><polyline points="1116,376 1125,384 1142,368" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="860" y="406" width="300" height="44" fill="#EEF5FC"/><text x="880" y="437">객체 지도</text><polyline points="1116,428 1125,436 1142,420" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="860" y="458" width="300" height="44" fill="#EEF5FC"/><text x="880" y="489">순서도</text><polyline points="1116,480 1125,488 1142,472" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="860" y="510" width="300" height="44" fill="#EEF5FC"/><text x="880" y="541">ArchiMate 창</text><polyline points="1116,532 1125,540 1142,524" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="860" y="562" width="300" height="44" fill="#EEF5FC"/><text x="880" y="593">데이터 지도</text><polyline points="1116,584 1125,592 1142,576" fill="none" stroke="#2a78d6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
-      <text x="1220" y="480" font-size="52" font-family="GM">한 번, 엔진이</text>
+      <text x="1220" y="480" font-size="52" font-weight="700" font-family="GM">한 번, 엔진이</text>
       <text x="1220" y="528" font-size="26" font-weight="500" fill="#46527F">모든 창이 한 파일에서 나와</text>
       <text x="1220" y="564" font-size="26" font-weight="500" fill="#46527F">어긋나지 않는다</text>
     </svg>
@@ -389,7 +391,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
   <div class="notes">앞에서 요구사항이 바뀌면 사람이 그림 다섯 장을 하나씩 고쳐야 한다고 했습니다. 하나라도 빠뜨리면 그림끼리 어긋나죠. archi-board에서는 다릅니다. "보드 업데이트해줘" 한마디면 AI가 바뀐 곳만 다시 읽어 board-data.js 한 파일의 그 칸만 고치고, 엔진이 유저 스토리, 객체 지도, 순서도, ArchiMate 창, 데이터 지도를 한 번에 다시 그립니다. 모든 창이 같은 한 파일에서 나오니 서로 어긋날 수가 없습니다. 바뀐 곳은 drift 도구가 먼저 찾아 줍니다. 사람은 다섯 번 고칠 일을 한 번 확인만 하면 됩니다.</div>
 </section>
 
-<!-- 8 7단계 → 보드의 창 -->
+<!-- 9 7단계 → 보드의 창 -->
 <section class="slide f-sky" data-title="7단계가 보드의 창으로">
   <h2 class="hl">7단계가 보드의 창이 된다</h2>
   <p class="sub">상자마다 근거와 코드 위치가 붙어, 바로 확인할 수 있다</p>
@@ -397,29 +399,29 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
     <div class="stairs tw">
       <div class="st c1 k1"><b>1</b><span>요구사항</span></div>
       <div class="st c2 k2"><b>2</b><span>규모</span></div>
-      <div class="st c3 k3"><b>3</b><span>API</span></div>
+      <div class="st c3 k3"><b>3</b><span>큰 구조</span></div>
       <div class="st c4 k4"><b>4</b><span>데이터</span></div>
-      <div class="st c5 k5"><b>5</b><span>큰 구조</span></div>
-      <div class="st c6 k6"><b>6</b><span>상세</span></div>
-      <div class="st c7 k7"><b>7</b><span>점검</span></div>
+      <div class="st c5 k5"><b>5</b><span>인터페이스</span></div>
+      <div class="st c6 k6"><b>6</b><span>확장 · 성능</span></div>
+      <div class="st c7 k7"><b>7</b><span>신뢰성</span></div>
     </div>
     <div class="g7 arrow-row"><p>↓</p><p>↓</p><p>↓</p><p>↓</p><p>↓</p><p>↓</p><p>↓</p></div>
     <div class="g7 win">
       <p>동기 층 · 유저 스토리</p>
       <p>판단 차트</p>
-      <p>객체 지도</p>
-      <p>데이터 지도</p>
       <p>ArchiMate 창</p>
-      <p>유즈케이스 순서도</p>
-      <p>점검 · 위험 열지도</p>
+      <p>데이터 지도</p>
+      <p>객체 지도 · 순서도</p>
+      <p>위험 열지도</p>
+      <p>점검 · drift</p>
     </div>
   </div>
   <p class="src">창 이름은 archi-board README 기준. 창끼리 이어져 있어 한 곳을 누르면 관련된 곳이 같이 열린다</p>
   <p class="pg">9 / 10</p>
-  <div class="notes">7단계는 보드에서 각자 창이 됩니다. 요구사항은 동기 층과 유저 스토리, 규모는 판단 차트, API는 객체 지도, 데이터는 데이터 지도, 큰 구조는 ArchiMate 창, 상세 설계는 유즈케이스 순서도, 점검은 점검 스크립트와 위험 열지도입니다. 상자마다 근거와 코드 위치가 붙어 있어서, AI가 그린 것도 바로 확인할 수 있습니다.</div>
+  <div class="notes">7단계는 보드에서 각자 창이 됩니다. 요구사항은 동기 층과 유저 스토리, 규모는 판단 차트, 큰 구조는 ArchiMate 창, 데이터는 데이터 지도, 인터페이스는 객체 지도와 순서도, 확장과 성능은 위험 열지도, 신뢰성은 점검 스크립트와 drift입니다. 상자마다 근거와 코드 위치가 붙어 있어서, AI가 그린 것도 바로 확인할 수 있습니다.</div>
 </section>
 
-<!-- 9 정리 -->
+<!-- 10 정리 -->
 <section class="slide" data-title="정리">
   <h2 class="hl xl">확인할 수 있어야<br>믿을 수 있다</h2>
   <p class="sub">7단계로 설계하고, 바뀌면 엔진이 다시 그린다</p>
@@ -430,7 +432,7 @@ body{word-break:keep-all;overflow-wrap:break-word;font-family:var(--font-sans);c
   <p class="thanks">감사합니다</p>
   <p class="src">이재엽 · AITool기반소프트웨어공학 · 2026. 11. 18</p>
   <p class="pg">10 / 10</p>
-  <div class="notes">정리하겠습니다. AI를 쓰는 만큼 확인할 수 있어야 믿을 수 있습니다. 시스템 설계 7단계와 수업 내용으로 설계하고, 바뀌는 요구사항은 ArchiMate처럼 한 장에 이어서, archi-board로 코드에서 바로 확인합니다. 이제 실제 보드를 잠깐 보여 드리겠습니다. (보드 열기 → 처음 보는 사람 / 만드는 사람 → 흐름 따라가기) 감사합니다.</div>
+  <div class="notes">정리하겠습니다. AI를 쓰는 만큼 확인할 수 있어야 믿을 수 있습니다. 빅테크의 시스템 설계 7단계와 수업 내용으로 설계하고, 요구사항이 바뀌면 사람이 하나씩 고치는 대신 archi-board의 엔진이 보드를 다시 그려 확인하게 해 줍니다. 이제 실제 보드를 잠깐 보여 드리겠습니다. (보드 열기 → 처음 보는 사람 / 만드는 사람 → 흐름 따라가기) 감사합니다.</div>
 </section>
 
 </div>
